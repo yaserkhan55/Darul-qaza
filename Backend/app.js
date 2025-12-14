@@ -7,7 +7,6 @@ import caseRoutes from "./routes/case.Routes.js";
 
 const app = express();
 
-// CORS configuration - allows both dev ports and production
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
@@ -17,26 +16,15 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // In development, allow localhost origins and requests with no origin (Postman, etc.)
-      if (process.env.NODE_ENV !== "production") {
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error("Not allowed by CORS"));
-        }
-      } else {
-        // In production, only allow configured frontend URL
-        if (origin && allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error("Not allowed by CORS"));
-        }
-      }
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(null, false);
     },
     credentials: true,
   })
 );
 
+app.options("*", cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
