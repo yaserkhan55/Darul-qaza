@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAuth, getToken } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/clerk-react";
 import { attachClerkToken } from "../api/axios";
 
 /**
@@ -8,14 +8,14 @@ import { attachClerkToken } from "../api/axios";
  * Sets up axios to automatically attach Clerk tokens to API requests
  */
 export default function ClerkAuthSetup() {
-  const { isLoaded } = useAuth();
+  const { isLoaded, getToken } = useAuth();
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && getToken) {
       // Attach token interceptor - getToken() will return null if not signed in, which is fine
       attachClerkToken(getToken);
     }
-  }, [isLoaded]);
+  }, [isLoaded, getToken]);
 
   return null; // This component doesn't render anything
 }
