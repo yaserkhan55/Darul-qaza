@@ -1,8 +1,9 @@
+import { useLocation } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { useLocation } from "react-router-dom";
+import ClerkAuthSetup from "./components/ClerkAuthSetup";
 
 export default function App() {
   const location = useLocation();
@@ -10,6 +11,8 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      {/* Setup Clerk token attachment - only works inside ClerkProvider */}
+      <ClerkAuthSetup />
       <div className="min-h-screen bg-islamicBeige flex flex-col overflow-x-hidden">
         <Navbar />
         <main
