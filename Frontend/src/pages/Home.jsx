@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -71,100 +72,129 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-islamicBeige to-white">
+    <div className="min-h-screen bg-gradient-to-b from-islamicBeige to-white overflow-x-hidden">
       {/* Islamic Geometric Pattern Background */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(15, 118, 110, 0.1) 35px, rgba(15, 118, 110, 0.1) 70px)`,
-        }}></div>
+      <div className="absolute inset-0 opacity-5 pointer-events-none overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(15, 118, 110, 0.1) 35px, rgba(15, 118, 110, 0.1) 70px)`,
+          }}
+        ></div>
       </div>
 
-      {/* Hero Section */}
-  
+      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 w-full">
+        {/* START DIVORCE CASE SECTION - FIRST AND MOST PROMINENT */}
+        <section className="mb-12 sm:mb-16 animate-fade-in">
+          <div className="bg-gradient-to-br from-white via-teal-50 to-white rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-12 border-2 border-islamicGreen/20 relative overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-islamicGreen/5 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-islamicGold/5 rounded-full blur-3xl"></div>
+            
+            <div className="relative z-10">
+              <div className="text-center mb-6 sm:mb-8">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-islamicGreen mb-4 animate-slide-up">
+                  Start Your Divorce Case
+                </h1>
+                <p className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto">
+                  Begin your journey with a dignified, Shariah-compliant process. Select the type of divorce proceeding that applies to your situation.
+                </p>
+              </div>
 
-      <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
-        {/* Introduction Section */}
-        <section className="mb-12 sm:mb-16">
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 border border-teal-100">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-islamicGreen mb-4 text-center">
-              Understanding Islamic Divorce
-            </h2>
-            <div className="prose prose-lg max-w-none text-gray-700 space-y-4 text-sm sm:text-base">
-              <p>
-                Dar-ul-Qaza provides a dignified, Shariah-compliant platform for resolving family matters 
-                according to Islamic principles. Our process ensures fairness, transparency, and adherence to 
-                Islamic law while protecting the rights of all parties involved.
-              </p>
-              <p>
-                The Islamic divorce process is designed to first attempt reconciliation (Sulah) between spouses. 
-                If reconciliation is not possible, the process proceeds through carefully defined steps, ensuring 
-                all legal and religious requirements are met before a final decision is made by a qualified Qazi 
-                (Islamic judge).
-              </p>
-              <p className="text-islamicGreen font-medium">
-                All cases are handled with the utmost respect, confidentiality, and in accordance with Islamic jurisprudence.
-              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+                {divorceTypes.map((item) => (
+                  <div
+                    key={item.type}
+                    className={`border-2 rounded-xl p-5 sm:p-6 cursor-pointer transition-all duration-300 transform ${
+                      selectedType === item.type
+                        ? "border-islamicGreen bg-teal-50 shadow-lg scale-105"
+                        : "border-gray-200 hover:border-teal-300 hover:shadow-md hover:scale-102"
+                    }`}
+                    onClick={() => setSelectedType(item.type)}
+                  >
+                    <h3 className="text-lg sm:text-xl font-semibold text-islamicGreen mb-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
+                      {item.description}
+                    </p>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      {item.details}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-center">
+                <SignedIn>
+                  <button
+                    onClick={() => {
+                      if (selectedType) {
+                        handleStartCase(selectedType);
+                      } else {
+                        alert("Please select a divorce type first");
+                      }
+                    }}
+                    className={`relative bg-islamicGreen hover:bg-teal-700 text-white font-bold py-4 px-10 sm:px-12 rounded-lg shadow-xl transition-all duration-300 text-base sm:text-lg transform hover:scale-105 active:scale-95 ${
+                      !selectedType ? "animate-pulse" : ""
+                    }`}
+                    style={{
+                      boxShadow: !selectedType
+                        ? "0 0 30px rgba(15, 118, 110, 0.7)"
+                        : "0 10px 25px -5px rgba(15, 118, 110, 0.5)",
+                    }}
+                  >
+                    {selectedType
+                      ? `Proceed with ${divorceTypes.find((t) => t.type === selectedType)?.title}`
+                      : "Start Divorce Case"}
+                    {!selectedType && (
+                      <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-islamicGold opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-4 w-4 bg-islamicGold"></span>
+                      </span>
+                    )}
+                  </button>
+                </SignedIn>
+                <SignedOut>
+                  <button
+                    onClick={() => navigate("/sign-in")}
+                    className="relative bg-islamicGreen hover:bg-teal-700 text-white font-bold py-4 px-10 sm:px-12 rounded-lg shadow-xl transition-all duration-300 text-base sm:text-lg transform hover:scale-105 active:scale-95"
+                    style={{
+                      boxShadow: "0 10px 25px -5px rgba(15, 118, 110, 0.5)",
+                    }}
+                  >
+                    Sign In to Start
+                  </button>
+                </SignedOut>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Start Divorce Case Section */}
+        {/* Understanding Islamic Divorce Section - SECOND */}
         <section className="mb-12 sm:mb-16">
           <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 border border-teal-100">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-islamicGreen mb-6 text-center">
-              Start Divorce Case
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-islamicGreen mb-4 sm:mb-6 text-center">
+              Understanding Islamic Divorce
             </h2>
-            <p className="text-center text-gray-600 mb-8 text-sm sm:text-base">
-              Select the type of divorce proceeding that applies to your situation
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-              {divorceTypes.map((item) => (
-                <div
-                  key={item.type}
-                  className={`border-2 rounded-xl p-4 sm:p-6 cursor-pointer transition-all duration-300 ${
-                    selectedType === item.type
-                      ? "border-islamicGreen bg-teal-50 shadow-md"
-                      : "border-gray-200 hover:border-teal-300 hover:shadow-md"
-                  }`}
-                  onClick={() => setSelectedType(item.type)}
-                >
-                  <h3 className="text-lg sm:text-xl font-semibold text-islamicGreen mb-2">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">{item.description}</p>
-                  <p className="text-xs text-gray-500 leading-relaxed">{item.details}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => {
-                  if (selectedType) {
-                    handleStartCase(selectedType);
-                  } else {
-                    alert("Please select a divorce type first");
-                  }
-                }}
-                className={`relative bg-islamicGreen hover:bg-teal-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 text-sm sm:text-base transform hover:scale-105 ${
-                  !selectedType ? 'animate-pulse' : ''
-                }`}
-                style={{
-                  boxShadow: !selectedType ? '0 0 25px rgba(15, 118, 110, 0.6)' : '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                }}
-              >
-                {selectedType 
-                  ? `Proceed with ${divorceTypes.find(t => t.type === selectedType)?.title}`
-                  : "Start Divorce Case"
-                }
-                {!selectedType && (
-                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-islamicGold opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-islamicGold"></span>
-                  </span>
-                )}
-              </button>
+            <div className="prose prose-lg max-w-none text-gray-700 space-y-4 text-sm sm:text-base">
+              <p>
+                Dar-ul-Qaza provides a dignified, Shariah-compliant platform for
+                resolving family matters according to Islamic principles. Our
+                process ensures fairness, transparency, and adherence to Islamic
+                law while protecting the rights of all parties involved.
+              </p>
+              <p>
+                The Islamic divorce process is designed to first attempt
+                reconciliation (Sulah) between spouses. If reconciliation is not
+                possible, the process proceeds through carefully defined steps,
+                ensuring all legal and religious requirements are met before a
+                final decision is made by a qualified Qazi (Islamic judge).
+              </p>
+              <p className="text-islamicGreen font-medium">
+                All cases are handled with the utmost respect, confidentiality,
+                and in accordance with Islamic jurisprudence.
+              </p>
             </div>
           </div>
         </section>
@@ -186,11 +216,15 @@ export default function Home() {
                       {step.number}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xl sm:text-2xl mb-1 sm:mb-2">{step.icon}</div>
+                      <div className="text-xl sm:text-2xl mb-1 sm:mb-2">
+                        {step.icon}
+                      </div>
                       <h3 className="text-base sm:text-lg font-semibold text-islamicGreen mb-1 sm:mb-2">
                         {step.title}
                       </h3>
-                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{step.description}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                        {step.description}
+                      </p>
                     </div>
                   </div>
                   {index < steps.length - 1 && (
@@ -270,16 +304,12 @@ export default function Home() {
               <div className="text-center">
                 <div className="text-3xl mb-3">📧</div>
                 <h3 className="font-semibold mb-2">Email Support</h3>
-                <p className="text-sm text-teal-100">
-                  support@darulqaza.org
-                </p>
+                <p className="text-sm text-teal-100">support@darulqaza.org</p>
               </div>
             </div>
           </div>
         </section>
       </main>
-
     </div>
   );
 }
-

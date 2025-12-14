@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getToken } from "@clerk/clerk-react";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -8,12 +9,16 @@ const api = axios.create({
   },
 });
 
-// Add token to requests
+// Add Clerk token to requests
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config) => {
+    try {
+      const token = await getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error("Error getting token:", error);
     }
     return config;
   },
@@ -27,9 +32,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
+      // Clerk will handle authentication redirects
+      console.error("Unauthorized request");
     }
     return Promise.reject(error);
   }
