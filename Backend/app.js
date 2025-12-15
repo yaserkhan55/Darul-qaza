@@ -8,9 +8,10 @@ import caseRoutes from "./routes/case.Routes.js";
 const app = express();
 
 // Support comma-separated FRONTEND_URL values for multiple deploys (e.g. Vercel preview/prod)
+// Normalize by removing any trailing slashes so origin match works reliably.
 const frontendOrigins = (env.FRONTEND_URL || "")
   .split(",")
-  .map((o) => o.trim())
+  .map((o) => o.trim().replace(/\/$/, ""))
   .filter(Boolean);
 
 const allowedOrigins = [
@@ -23,7 +24,8 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      const normalizedOrigin = origin.replace(/\/$/, "");
+      if (allowedOrigins.includes(normalizedOrigin)) return callback(null, true);
       return callback(new Error("Not allowed by CORS"), false);
     },
     credentials: true,
