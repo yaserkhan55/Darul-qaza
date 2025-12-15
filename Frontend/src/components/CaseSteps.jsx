@@ -16,7 +16,8 @@ export default function CaseSteps({ caseData, onUpdated }) {
 
   const renderStepForm = () => {
     switch (caseData.status) {
-      case "STARTED":
+      // New workflow: DRAFT is the application step
+      case "DRAFT":
         return (
           <DivorceForm
             caseId={caseData._id}
@@ -24,31 +25,12 @@ export default function CaseSteps({ caseData, onUpdated }) {
           />
         );
 
+      // Legacy statuses (kept for safety if old data exists)
+      case "STARTED":
       case "FORM_COMPLETED":
-        return (
-          <ResolutionForm
-            caseId={caseData._id}
-            onSuccess={onUpdated}
-          />
-        );
-
       case "RESOLUTION_SUCCESS":
       case "RESOLUTION_FAILED":
-        return (
-          <AgreementForm
-            caseId={caseData._id}
-            onSuccess={onUpdated}
-          />
-        );
-
       case "AGREEMENT_DONE":
-        return (
-          <AffidavitsForm
-            caseId={caseData._id}
-            onSuccess={onUpdated}
-          />
-        );
-
       case "AFFIDAVITS_DONE":
         return (
           <div className="text-center py-8 sm:py-12">
