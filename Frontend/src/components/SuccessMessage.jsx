@@ -8,8 +8,14 @@ export default function SuccessMessage({ message, onClose }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Success!</h3>
-          <p className="text-gray-600 mb-6">{message}</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Case Submitted / کیس جمع ہو گیا
+          </h3>
+          <p className="text-gray-600 mb-4">{message}</p>
+          <p className="text-[11px] sm:text-xs text-gray-500 mb-6 leading-relaxed">
+            This platform facilitates case submission only. Final decisions are made by qualified
+            Islamic authorities in accordance with Islamic law.
+          </p>
           <button
             onClick={onClose}
             className="bg-islamicGreen text-white px-6 py-2 rounded-lg hover:opacity-90 transition font-medium"

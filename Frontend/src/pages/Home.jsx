@@ -171,6 +171,22 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Trust Messaging Section */}
+        <section className="mb-12 sm:mb-16">
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 border border-emerald-100">
+            <div className="max-w-3xl mx-auto text-center space-y-3">
+              <h2 className="text-xl sm:text-2xl font-semibold text-islamicGreen">
+                A Calm, Scholarly Review Process
+              </h2>
+              <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                All cases are reviewed by qualified Islamic scholars and processed according to
+                established Islamic principles. /
+                تمام کیسز مستند اسلامی علما کے زیرِ نگرانی اور معروف فقہی اصولوں کے مطابق نمٹائے جاتے ہیں۔
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Understanding Islamic Divorce Section - SECOND */}
         <section className="mb-12 sm:mb-16">
           <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 border border-teal-100">

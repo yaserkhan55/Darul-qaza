@@ -56,12 +56,16 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-teal-600 pt-6 text-center">
+        <div className="border-t border-teal-600 pt-6 text-center space-y-2">
+          <p className="text-xs sm:text-sm text-teal-100 max-w-3xl mx-auto">
+            This platform facilitates case submission only. Final decisions are made by qualified
+            Islamic authorities in accordance with Islamic law.
+          </p>
           <p className="text-sm text-teal-100">
             © {currentYear} Dar-ul-Qaza. All rights reserved.
           </p>
-          <p className="text-xs text-teal-200 mt-2">
-            Serving the Muslim community with dignity and respect
+          <p className="text-xs text-teal-200">
+            Serving the Muslim community with dignity, care, and respect.
           </p>
         </div>
       </div>

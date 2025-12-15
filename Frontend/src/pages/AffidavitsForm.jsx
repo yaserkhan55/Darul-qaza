@@ -94,6 +94,10 @@ export default function AffidavitsForm({ caseId, onSuccess }) {
           )}
         </button>
       </form>
+      <p className="mt-3 text-[11px] sm:text-xs text-gray-500 leading-relaxed">
+        This platform facilitates case submission only. Final decisions are made by qualified
+        Islamic authorities in accordance with Islamic law.
+      </p>
     </div>
   );
 }
