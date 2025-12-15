@@ -63,12 +63,6 @@ export default function Home() {
       description: "Divorce initiated by the wife with mutual consent",
       details: "The wife seeks khula, often involving return of mahr or other agreed terms.",
     },
-    {
-      type: "FASKH",
-      title: "Faskh",
-      description: "Judicial annulment by Qazi when reconciliation is not possible",
-      details: "The Qazi dissolves the marriage when conditions are met and reconciliation fails.",
-    },
   ];
 
   return (
