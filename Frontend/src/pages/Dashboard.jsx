@@ -113,9 +113,27 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-            <StatCard label="Active / جاری" value={stats.active} color="text-emerald-600" />
-            <StatCard label="Completed / مکمل" value={stats.completed} color="text-blue-600" />
-            <StatCard label="Under Review / زیر جائزہ" value={stats.underReview} color="text-amber-600" />
+            <StatCard
+              label="Active / جاری"
+              value={stats.active}
+              color="text-emerald-700"
+              icon="active"
+              accent="from-emerald-50 to-white"
+            />
+            <StatCard
+              label="Completed / مکمل"
+              value={stats.completed}
+              color="text-blue-700"
+              icon="completed"
+              accent="from-blue-50 to-white"
+            />
+            <StatCard
+              label="Under Review / زیر جائزہ"
+              value={stats.underReview}
+              color="text-amber-700"
+              icon="review"
+              accent="from-amber-50 to-white"
+            />
           </div>
         </div>
 
@@ -232,11 +250,37 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ label, value, color }) {
+function StatCard({ label, value, color, icon, accent = "from-gray-50 to-white" }) {
+  const iconMap = {
+    active: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l3 3" />
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    ),
+    completed: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="m5 13 4 4L19 7" />
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    ),
+    review: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l2.5 2.5" />
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    ),
+  };
+
   return (
-    <div className="flex-1 bg-gradient-to-br from-gray-50 to-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm">
-      <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
-      <p className={`text-2xl font-bold ${color}`}>{value}</p>
+    <div className={`flex-1 bg-gradient-to-br ${accent} border border-gray-100 rounded-xl px-4 py-3 shadow-sm`}>
+      <div className="flex items-center gap-2 text-gray-600">
+        <div className={`p-2 rounded-lg bg-white/70 ${color.replace("text", "text")}`}>
+          {iconMap[icon] || null}
+        </div>
+        <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
+      </div>
+      <p className={`text-2xl font-bold ${color} mt-2`}>{value}</p>
     </div>
   );
 }
