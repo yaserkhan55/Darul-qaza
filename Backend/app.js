@@ -7,10 +7,16 @@ import caseRoutes from "./routes/case.Routes.js";
 
 const app = express();
 
+// Support comma-separated FRONTEND_URL values for multiple deploys (e.g. Vercel preview/prod)
+const frontendOrigins = (env.FRONTEND_URL || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
-  env.FRONTEND_URL,
+  ...frontendOrigins,
 ].filter(Boolean);
 
 app.use(
@@ -18,7 +24,7 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(null, false);
+      return callback(new Error("Not allowed by CORS"), false);
     },
     credentials: true,
   })
