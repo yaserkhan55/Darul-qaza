@@ -1,8 +1,19 @@
-  import { useEffect, useState } from "react";
-  import { useLocation } from "react-router-dom";
-  import { getMyCases, startCase } from "../api/case.api";
-  import StatusBadge from "../components/StatusBadge";
-  import CaseSteps from "../components/CaseSteps";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { getMyCases, startCase } from "../api/case.api";
+import StatusBadge from "../components/StatusBadge";
+import CaseSteps from "../components/CaseSteps";
+
+const STEP_LABELS = {
+  STARTED: "Divorce Form / خلع فارم",
+  FORM_COMPLETED: "Resolution (Sulh) / صلح کی کوشش",
+  RESOLUTION_SUCCESS: "Agreement / معاہدہ",
+  RESOLUTION_FAILED: "Agreement / معاہدہ",
+  AGREEMENT_DONE: "Affidavits / حلف نامے",
+  AFFIDAVITS_DONE: "Under Review / زیرِ جائزہ",
+  UNDER_REVIEW: "Under Review / زیرِ جائزہ",
+  APPROVED: "Certificate Ready / سرٹیفکیٹ تیار",
+};
 
 export default function Dashboard() {
   const location = useLocation();
@@ -10,39 +21,68 @@ export default function Dashboard() {
   const [completedCases, setCompletedCases] = useState([]);
   const [activeCase, setActiveCase] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const activeCases = useMemo(
+    () => allCases.filter((c) => c.status !== "APPROVED"),
+    [allCases]
+  );
+
+  const stats = useMemo(
+    () => ({
+      active: activeCases.length,
+      completed: completedCases.length,
+      underReview: allCases.filter((c) => c.status === "UNDER_REVIEW").length,
+      nextStep: activeCase ? STEP_LABELS[activeCase.status] : "Start a new case",
+    }),
+    [activeCases.length, completedCases.length, allCases, activeCase]
+  );
 
   const loadCases = async () => {
     try {
       const data = await getMyCases();
       setAllCases(data);
-      // Show only completed/approved cases in "My Cases" list
-      const completed = data.filter(c => c.status === "APPROVED");
+      setErrorMessage("");
+
+      const completed = data.filter((c) => c.status === "APPROVED");
       setCompletedCases(completed);
-      
-      // Auto-select the first active (non-completed) case if available for workflow
-      const activeCases = data.filter(c => c.status !== "APPROVED");
-      if (activeCases.length > 0) {
-        // Always show active cases in the workflow panel
+
+      const actives = data.filter((c) => c.status !== "APPROVED");
+      if (actives.length > 0) {
         if (!activeCase || activeCase.status === "APPROVED") {
-          setActiveCase(activeCases[0]);
+          setActiveCase(actives[0]);
         }
       } else if (completed.length > 0 && !activeCase) {
         setActiveCase(completed[0]);
+      } else {
+        setActiveCase(null);
       }
     } catch (err) {
       console.error("Failed to load cases:", err);
-      alert("Failed to load cases. Please check your connection.");
+      setErrorMessage("Unable to load cases. براہِ کرم دوبارہ کوشش کریں۔");
     }
   };
 
   const handleStart = async (divorceType = "TALAQ") => {
+    if (activeCases.length > 0) {
+      setErrorMessage(
+        "براہِ کرم موجودہ کیس مکمل کریں پھر نیا کیس شروع کریں / Complete the current case before starting a new one."
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       const newCase = await startCase(divorceType);
       setActiveCase(newCase);
       await loadCases();
+      setErrorMessage("");
     } catch (err) {
-      alert(err.response?.data?.error || "Failed to start case");
+      const message =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Failed to start case";
+      setErrorMessage(message);
     } finally {
       setLoading(false);
     }
@@ -61,6 +101,47 @@ export default function Dashboard() {
 
 
   return (
+    <div className="space-y-4 sm:space-y-5">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6 space-y-4">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 space-y-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-islamicGreen">
+              My Cases Dashboard / میرا کیس ڈیش بورڈ
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600">
+              Track every step of your Islamic divorce process. / اسلامی طلاق کے تمام مراحل پر نظر رکھیں۔
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+            <StatCard label="Active / جاری" value={stats.active} color="text-emerald-600" />
+            <StatCard label="Completed / مکمل" value={stats.completed} color="text-blue-600" />
+            <StatCard label="Under Review / زیر جائزہ" value={stats.underReview} color="text-amber-600" />
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="flex-1 w-full">
+            <p className="text-sm text-gray-600">
+              Next Step / اگلا مرحلہ:{" "}
+              <span className="font-semibold text-gray-900">{stats.nextStep}</span>
+            </p>
+          </div>
+          <button
+            onClick={() => handleStart("TALAQ")}
+            disabled={loading || activeCases.length > 0}
+            className="w-full sm:w-auto bg-islamicGreen text-white px-5 py-3 rounded-lg font-semibold shadow-md hover:bg-teal-700 disabled:opacity-40 transition-all"
+          >
+            {loading ? "Starting..." : "Start New Case / نیا کیس شروع کریں"}
+          </button>
+        </div>
+
+        {errorMessage && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
+            {errorMessage}
+          </div>
+        )}
+      </div>
+
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       {/* LEFT PANEL */}
       <div className="bg-white p-3 sm:p-4 lg:p-5 rounded-xl shadow-lg border border-gray-100">
@@ -146,6 +227,16 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+    </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, color }) {
+  return (
+    <div className="flex-1 bg-gradient-to-br from-gray-50 to-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm">
+      <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
+      <p className={`text-2xl font-bold ${color}`}>{value}</p>
     </div>
   );
 }

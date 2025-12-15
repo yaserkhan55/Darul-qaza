@@ -1,7 +1,17 @@
 import axios from "axios";
 
+const FALLBACK_API_URL = "https://darul-qaza-backend.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || FALLBACK_API_URL;
+
+if (!import.meta.env.VITE_API_URL) {
+  console.warn(
+    "VITE_API_URL is not set. Falling back to production backend:",
+    FALLBACK_API_URL
+  );
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

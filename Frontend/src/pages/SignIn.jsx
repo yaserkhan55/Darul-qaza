@@ -28,8 +28,8 @@ export default function SignInPage() {
                   socialButtonsPlacement: "top",
                 },
                 elements: {
-                  rootBox: "mx-auto",
-                  card: "shadow-none",
+                  rootBox: "mx-auto w-full",
+                  card: "shadow-none w-full max-w-sm mx-auto border border-gray-100 rounded-2xl",
                   headerTitle: "hidden",
                   headerSubtitle: "hidden",
                   socialButtonsBlockButton:

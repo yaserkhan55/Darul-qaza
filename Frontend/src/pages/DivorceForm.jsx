@@ -104,7 +104,7 @@ export default function DivorceForm({ caseId, onSuccess }) {
               Submitting...
             </span>
           ) : (
-            "Submit Divorce Form"
+            "Submit Divorce Form / خلع فارم جمع کریں"
           )}
         </button>
       </form>

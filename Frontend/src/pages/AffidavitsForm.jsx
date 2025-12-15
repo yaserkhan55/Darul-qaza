@@ -90,7 +90,7 @@ export default function AffidavitsForm({ caseId, onSuccess }) {
               Submitting...
             </span>
           ) : (
-            "Confirm Affidavits"
+            "Confirm Affidavits / حلف ناموں کی تصدیق"
           )}
         </button>
       </form>

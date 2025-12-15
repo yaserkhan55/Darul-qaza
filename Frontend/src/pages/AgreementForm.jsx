@@ -32,16 +32,17 @@ export default function AgreementForm({ caseId, onSuccess }) {
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 sm:p-6 lg:p-8 max-w-2xl mx-auto">
       <div className="mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
-          Divorce Agreement Terms
+          Divorce Agreement Terms / معاہدہ طلاق کی شرائط
         </h2>
         <p className="text-sm sm:text-base text-gray-600">
-          Define the terms of separation as per Islamic law and mutual agreement.
+          Define the terms of separation as per Islamic law and mutual agreement. /
+          اسلامی اصولوں کے مطابق علیحدگی کی شرائط درج کریں۔
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         <Textarea
-          label="Mahr (Dower) Settlement"
+          label="Mahr (Dower) Settlement / مہر کی ادائیگی"
           name="mehr"
           value={form.mehr}
           onChange={handleChange}
@@ -50,7 +51,7 @@ export default function AgreementForm({ caseId, onSuccess }) {
         />
 
         <Textarea
-          label="Iddat Period"
+          label="Iddat Period / عدت کی مدت"
           name="iddat"
           value={form.iddat}
           onChange={handleChange}
@@ -59,7 +60,7 @@ export default function AgreementForm({ caseId, onSuccess }) {
         />
 
         <Textarea
-          label="Child Custody Arrangement"
+          label="Child Custody Arrangement / بچوں کی کفالت"
           name="custody"
           value={form.custody}
           onChange={handleChange}
@@ -67,7 +68,7 @@ export default function AgreementForm({ caseId, onSuccess }) {
         />
 
         <Textarea
-          label="Maintenance (Nafaqah)"
+          label="Maintenance (Nafaqah) / نان و نفقہ"
           name="maintenance"
           value={form.maintenance}
           onChange={handleChange}
@@ -85,7 +86,7 @@ export default function AgreementForm({ caseId, onSuccess }) {
               Submitting...
             </span>
           ) : (
-            "Submit Agreement"
+            "Submit Agreement / معاہدہ جمع کریں"
           )}
         </button>
       </form>
