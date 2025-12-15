@@ -6,14 +6,17 @@ export const getMyCases = async () => {
 };
 
 export const startCase = async (divorceType) => {
+  // Backend now expects { type } but we keep divorceType for backward compatibility
   const res = await api.post("/cases/start", {
-    divorceType,
+    type: divorceType,
   });
   return res.data;
 };
 
 export const saveDivorceForm = async (caseId, formData) => {
-  const res = await api.post(`/cases/${caseId}/form`, formData);
+  // New workflow: save as DRAFT details, then submit case for review
+  await api.post(`/cases/${caseId}/draft`, { details: formData });
+  const res = await api.post(`/cases/${caseId}/submit`);
   return res.data;
 };
 
