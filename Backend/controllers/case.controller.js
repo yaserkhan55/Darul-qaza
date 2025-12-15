@@ -49,14 +49,18 @@ const validateIslamicLogic = (caseData, nextStatus, payload = {}) => {
  */
 export const startCase = async (req, res) => {
   try {
-    const { type, details } = req.body;
-    if (!CASE_TYPES.includes(type)) {
+    const { type, details, divorceType } = req.body;
+    // Support old payload shape { divorceType } as well as new { type }
+    const caseType = type || divorceType;
+
+    if (!CASE_TYPES.includes(caseType)) {
       return res.status(400).json({ message: "Invalid case type" });
     }
+
     const createdBy = req.user?.id || req.body.createdBy || "anonymous";
 
     const newCase = await Case.create({
-      type,
+      type: caseType,
       createdBy,
       status: "DRAFT",
       details,
