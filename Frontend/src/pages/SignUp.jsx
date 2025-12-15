@@ -7,10 +7,10 @@ export default function SignUpPage() {
         <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
           <div className="mb-6 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold text-islamicGreen mb-2">
-              Create Account
+              Create Account / اکاؤنٹ بنائیں
             </h2>
             <p className="text-sm sm:text-base text-gray-600">
-              Join Darul Qaza to start your case
+              Join Darul Qaza to start your case – Prefer Google sign up / گوگل کے ذریعے اکاؤنٹ بنائیں
             </p>
           </div>
           <div className="flex justify-center">
@@ -18,7 +18,12 @@ export default function SignUpPage() {
               routing="path"
               path="/sign-up"
               signInUrl="/sign-in"
+              redirectUrl="/dashboard"
               appearance={{
+                layout: {
+                  socialButtonsVariant: "blockButton",
+                  socialButtonsPlacement: "top",
+                },
                 elements: {
                   rootBox: "mx-auto",
                   card: "shadow-none",

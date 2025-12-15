@@ -48,30 +48,30 @@ export default function DivorceForm({ caseId, onSuccess }) {
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 sm:p-6 lg:p-8 max-w-2xl mx-auto">
         <div className="mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
-            Divorce Application Form
+            Divorce Application Form / خلع/طلاق فارم
           </h2>
           <p className="text-sm sm:text-base text-gray-600">
-            Please fill the details carefully as per Nikahnama.
+            Please fill the details carefully as per Nikahnama. / براہِ کرم نکاح نامہ کے مطابق درست معلومات درج کریں۔
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         <Input
-          label="Husband Name"
+          label="Husband Name / شوہر کا نام"
           name="husbandName"
           value={form.husbandName}
           onChange={handleChange}
         />
 
         <Input
-          label="Wife Name"
+          label="Wife Name / بیوی کا نام"
           name="wifeName"
           value={form.wifeName}
           onChange={handleChange}
         />
 
         <Input
-          label="CNIC Number"
+          label="CNIC Number / شناختی کارڈ نمبر"
           name="cnic"
           placeholder="35201-XXXXXXX-X"
           value={form.cnic}
@@ -79,7 +79,7 @@ export default function DivorceForm({ caseId, onSuccess }) {
         />
 
         <Input
-          label="Marriage Date"
+          label="Marriage Date / نکاح کی تاریخ"
           type="date"
           name="marriageDate"
           value={form.marriageDate}
@@ -87,7 +87,7 @@ export default function DivorceForm({ caseId, onSuccess }) {
         />
 
         <Textarea
-          label="Residential Address"
+          label="Residential Address / رہائشی پتہ"
           name="address"
           value={form.address}
           onChange={handleChange}

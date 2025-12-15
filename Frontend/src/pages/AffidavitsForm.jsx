@@ -38,41 +38,45 @@ export default function AffidavitsForm({ caseId, onSuccess }) {
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 sm:p-6 lg:p-8 max-w-2xl mx-auto">
       <div className="mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
-          Affidavits Confirmation
+          Affidavits Confirmation / حلف ناموں کی تصدیق
         </h2>
         <p className="text-sm sm:text-base text-gray-600">
-          Confirm that all required sworn statements (affidavits) have been submitted and verified.
+          Confirm that all required sworn statements (affidavits) have been submitted and verified. /
+          تصدیق کریں کہ تمام حلف نامے جمع اور جانچ لیے گئے ہیں۔
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         <AffidavitCheckbox
           name="applicantAffidavit"
-          label="Applicant Affidavit"
-          description="Sworn statement from the applicant"
+          label="Applicant Affidavit / درخواست گزار کا حلف نامہ"
+          description="Sworn statement from the applicant / درخواست گزار کا تحریری بیان"
           checked={form.applicantAffidavit}
           onChange={handleChange}
         />
 
         <AffidavitCheckbox
           name="witnessAffidavit"
-          label="Witness Affidavit"
-          description="Sworn statement from witnesses"
+          label="Witness Affidavit / گواہان کے حلف نامے"
+          description="Sworn statement from witnesses / گواہوں کے تحریری بیانات"
           checked={form.witnessAffidavit}
           onChange={handleChange}
         />
 
         <AffidavitCheckbox
           name="supportAffidavit"
-          label="Supporting Affidavit"
-          description="Additional supporting documents and statements"
+          label="Supporting Affidavit / معاون دستاویزات"
+          description="Additional supporting documents and statements / اضافی دستاویزات اور بیانات"
           checked={form.supportAffidavit}
           onChange={handleChange}
         />
 
         <div className="bg-blue-50 border border-blue-200 rounded p-3 sm:p-4 text-xs sm:text-sm text-blue-800">
           <p className="font-medium mb-1">Note:</p>
-          <p>All affidavits must be properly notarized and submitted to the court before proceeding to Qazi review.</p>
+          <p>
+            All affidavits must be properly notarized and submitted to the court before proceeding to Qazi review. /
+            تمام حلف نامے تصدیق شدہ ہو کر قاضی کے جائزے سے پہلے جمع کروائیں۔
+          </p>
         </div>
 
         <button

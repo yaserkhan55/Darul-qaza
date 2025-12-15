@@ -52,8 +52,8 @@ export default function Navbar() {
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-white/95 backdrop-blur-md shadow-lg text-gray-800"
-          : "bg-gradient-to-r from-islamicGreen to-emerald-700 text-white shadow-lg"
+          ? "bg-white/90 backdrop-blur-xl shadow-xl ring-1 ring-gray-200 text-gray-800"
+          : "bg-gradient-to-r from-islamicGreen via-emerald-700 to-emerald-800 text-white shadow-xl"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,21 +80,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-2 lg:gap-4">
-            <button
-              onClick={() => navigate("/")}
-              className={`px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActive("/")
-                  ? scrolled
-                    ? "bg-islamicGreen/20 text-islamicGreen shadow-md"
-                    : "bg-white/20 text-white shadow-md"
-                  : scrolled
-                    ? "hover:bg-gray-100 text-gray-700"
-                    : "hover:bg-white/10 text-white/90 hover:text-white"
-              }`}
-            >
-              Home
-            </button>
+          <nav className="hidden md:flex items-center gap-3 lg:gap-5">
             <SignedIn>
               <button
                 onClick={() => navigate("/dashboard")}
@@ -193,16 +179,6 @@ export default function Navbar() {
           }`}
         >
           <nav className="flex flex-col p-6 space-y-4">
-            <button
-              onClick={() => handleNavClick("/")}
-              className={`text-left px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                isActive("/")
-                  ? "bg-islamicGreen text-white shadow-md"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              Home
-            </button>
             <SignedIn>
               <button
                 onClick={() => handleNavClick("/dashboard")}
