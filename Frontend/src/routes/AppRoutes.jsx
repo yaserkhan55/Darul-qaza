@@ -48,6 +48,15 @@ export default function AppRoutes() {
           </AdminRoute>
         }
       />
+      {/* Alias path so /Qazi also opens the same admin panel */}
+      <Route
+        path="/Qazi"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        }
+      />
     </Routes>
   );
 }

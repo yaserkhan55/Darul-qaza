@@ -253,8 +253,26 @@ export default function Dashboard() {
         </div>
 
         {errorMessage && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
-            {errorMessage}
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <span>{errorMessage}</span>
+            {activeCases.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  // Focus the first active case so user can resume
+                  const firstActive = activeCases[0];
+                  setActiveCase(firstActive);
+                  // Clear message once they choose to resume
+                  setErrorMessage("");
+                  // Optional: scroll down to the case steps area
+                  const el = document.querySelector("#case-steps-section");
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="mt-1 sm:mt-0 inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-islamicGreen text-white hover:bg-teal-700 transition"
+              >
+                {t("dashboard.resumeCurrentCase") || "Resume current case"}
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -320,7 +338,10 @@ export default function Dashboard() {
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="col-span-1 lg:col-span-2 bg-white p-3 sm:p-4 lg:p-6 xl:p-8 rounded-xl shadow-lg border border-gray-100 min-h-[400px]">
+      <div
+        id="case-steps-section"
+        className="col-span-1 lg:col-span-2 bg-white p-3 sm:p-4 lg:p-6 xl:p-8 rounded-xl shadow-lg border border-gray-100 min-h-[400px]"
+      >
         {activeCase ? (
           <CaseSteps caseData={activeCase} onUpdated={loadCases} />
         ) : (

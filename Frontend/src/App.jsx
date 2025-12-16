@@ -1,15 +1,15 @@
 import { useLocation } from "react-router-dom";
-import AppRoutes from "./routes/AppRoutes";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+  import AppRoutes from "./routes/AppRoutes";
+  import Navbar from "./components/Navbar";
+  import Footer from "./components/Footer";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ClerkAuthSetup from "./components/ClerkAuthSetup";
 
-export default function App() {
-  const location = useLocation();
-  const isHomePage = location.pathname === "/";
+  export default function App() {
+    const location = useLocation();
+    const isHomePage = location.pathname === "/";
 
-  return (
+    return (
     <ErrorBoundary>
       {/* Setup Clerk token attachment - only works inside ClerkProvider */}
       <ClerkAuthSetup />
@@ -27,5 +27,5 @@ export default function App() {
         <Footer />
       </div>
     </ErrorBoundary>
-  );
-}
+    );
+  }
