@@ -1,38 +1,32 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useUser, RedirectToSignIn } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
 
 const ALLOWED_ROLES = ["QAZI", "ADMIN"];
 
 export default function AdminRoute({ children }) {
   const { isLoaded, isSignedIn, user } = useUser();
 
-  // Wait for Clerk to finish loading before making any decision
+  // 1) Wait for Clerk to finish loading before ANY redirect
   if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
-        Checking admin access...
+        Checking permissions...
       </div>
     );
   }
 
-  // Not signed in → redirect to Clerk
+  // 2) After load: if not signed in, redirect safely to home
   if (!isSignedIn) {
-    return <RedirectToSignIn />;
+    return <Navigate to="/" replace />;
   }
 
-  // Normalize role from any metadata location (public/unsafe/private)
-  const metaRole =
-    user?.publicMetadata?.role ||
-    user?.unsafeMetadata?.role ||
-    user?.privateMetadata?.role ||
-    "";
-
-  const metaRoles = Array.isArray(metaRole) ? metaRole : [metaRole];
-  const normalizedRoles = metaRoles
+  // 3) Read role ONLY from publicMetadata.role
+  const publicRole = user?.publicMetadata?.role;
+  const rolesArray = Array.isArray(publicRole) ? publicRole : [publicRole];
+  const normalized = rolesArray
     .filter(Boolean)
     .map((r) => r.toString().toUpperCase());
-
-  const allowed = normalizedRoles.some((r) => ALLOWED_ROLES.includes(r));
+  const allowed = normalized.some((r) => ALLOWED_ROLES.includes(r));
 
   // Signed-in but not allowed → go home (no loop)
   if (!allowed) {
