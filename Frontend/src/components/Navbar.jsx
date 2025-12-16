@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useUser, useClerk, SignedIn, SignedOut } from "@clerk/clerk-react";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -85,6 +86,7 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-3 lg:gap-5">
             <LanguageSwitcher />
+            <NotificationBell />
             <SignedIn>
               <button
                 onClick={() => navigate("/dashboard")}
