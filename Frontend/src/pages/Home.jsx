@@ -1,18 +1,42 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { useState, useEffect } from "react";
+import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 import { useTranslation } from "react-i18next";
-
+import { getMyMessages, markMessageRead } from "../api/message.api";
 
 export default function Home() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useUser();
   const [selectedType, setSelectedType] = useState(null);
+  const [latestMessage, setLatestMessage] = useState(null);
+  const [showMessageModal, setShowMessageModal] = useState(false);
 
   const handleStartCase = (divorceType) => {
     // Navigate to dashboard - it will handle case creation
     navigate("/dashboard", { state: { startType: divorceType } });
   };
+
+  // Load latest unread admin/Qazi message and show as popup
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (!user) return;
+      try {
+        const msgs = await getMyMessages(user.id);
+        const unread = (msgs || []).filter((m) => !m.read);
+        if (unread.length > 0) {
+          const latest = unread.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          )[0];
+          setLatestMessage(latest);
+          setShowMessageModal(true);
+        }
+      } catch (err) {
+        console.error("Failed to load messages on home", err);
+      }
+    };
+    loadMessages();
+  }, [user]);
 
   const steps = [
     {
@@ -70,6 +94,54 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-islamicBeige to-white overflow-x-hidden">
+      {showMessageModal && latestMessage && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4 py-8">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 space-y-4 border border-gray-100">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs text-gray-500">
+                  {new Date(latestMessage.createdAt).toLocaleString()}
+                </p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {latestMessage.title}
+                </h3>
+              </div>
+              <button
+                onClick={async () => {
+                  setShowMessageModal(false);
+                  try {
+                    await markMessageRead(latestMessage._id);
+                  } catch (err) {
+                    console.error("Failed to mark message read", err);
+                  }
+                }}
+                className="text-gray-500 hover:text-gray-800"
+                aria-label="Close notification"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              {latestMessage.body}
+            </p>
+            <div className="flex justify-end">
+              <button
+                onClick={async () => {
+                  setShowMessageModal(false);
+                  try {
+                    await markMessageRead(latestMessage._id);
+                  } catch (err) {
+                    console.error("Failed to mark message read", err);
+                  }
+                }}
+                className="bg-islamicGreen text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition"
+              >
+                {t("dashboard.messageModalClose") || "Close"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Islamic Geometric Pattern Background */}
       <div className="absolute inset-0 opacity-5 pointer-events-none overflow-hidden">
         <div

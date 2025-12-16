@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { getAllCases, transitionCase } from "../api/admin.api";
+import { sendAdminMessage } from "../api/message.api";
 import StatusBadge from "../components/StatusBadge";
 
 const FILTERS = [
@@ -78,14 +79,46 @@ export default function AdminDashboard() {
     setActionLoading(true);
     setError("");
     try {
-      await transitionCase(selectedCase._id, {
+      const updatedCase = await transitionCase(selectedCase._id, {
         nextStatus,
         note: note || undefined,
         assignedQazi: user?.id,
       });
+
+      // Send automatic notification to applicant
+      if (selectedCase.createdBy) {
+        let title = "";
+        let body = "";
+        if (nextStatus === "APPROVED") {
+          title = "Your case has been approved";
+          body =
+            "الحمدللہ، your case has been approved by the Qazi. You may now download your certificate from the dashboard once it is available.";
+        } else if (nextStatus === "REJECTED") {
+          title = "Your case requires attention";
+          body =
+            note ||
+            "Your case has been rejected or requires correction. Please review the details and, if allowed, submit a corrected application.";
+        } else {
+          title = "Case update from Dar-ul-Qaza";
+          body = note || "There has been an update to your case status.";
+        }
+
+        try {
+          await sendAdminMessage({
+            caseId: selectedCase._id,
+            recipientId: selectedCase.createdBy,
+            title,
+            body,
+            senderId: user?.id,
+            senderName: user?.fullName || "Dar-ul-Qaza Admin",
+          });
+        } catch (msgErr) {
+          console.error("Failed to send admin message", msgErr);
+        }
+      }
+
       await loadCases();
-      const updated = (await getAllCases()).find((c) => c._id === selectedCase._id);
-      setSelectedCase(updated || null);
+      setSelectedCase(updatedCase || null);
       setRejectReason("");
       setSendBackNote("");
     } catch (err) {
