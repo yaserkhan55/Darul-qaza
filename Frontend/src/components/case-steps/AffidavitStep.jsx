@@ -4,7 +4,7 @@ import { saveAffidavits, transitionCase } from "@/api/case.api";
 const initialUploads = {
   applicant: { url: "", progress: 0 },
   respondent: { url: "", progress: 0 },
-  witness: { url: "", progress: 0 },
+  witnesses: [], // Array for multiple witness affidavits
   nikahnama: { url: "", progress: 0 },
   idProof: { url: "", progress: 0 },
 };
@@ -19,12 +19,19 @@ export default function AffidavitStep({ caseId, onUpdated }) {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const unsignedPreset = import.meta.env.VITE_CLOUDINARY_UNSIGNED_PRESET;
 
-  const allComplete = useMemo(
-    () => Object.values(uploads).every((u) => u.url),
-    [uploads]
-  );
+  const allComplete = useMemo(() => {
+    const required = [
+      uploads.applicant?.url,
+      uploads.respondent?.url,
+      uploads.nikahnama?.url,
+      uploads.idProof?.url,
+    ];
+    const witnessesComplete = uploads.witnesses && uploads.witnesses.length >= 1 && 
+      uploads.witnesses.every((w) => w.url);
+    return required.every(Boolean) && witnessesComplete;
+  }, [uploads]);
 
-  const handleFile = async (key, file) => {
+  const handleFile = async (key, file, witnessIndex = null) => {
     if (!file) return;
     if (!allowedTypes.includes(file.type)) {
       setError("Only PDF, JPG, or PNG files are allowed.");
@@ -41,23 +48,63 @@ export default function AffidavitStep({ caseId, onUpdated }) {
         cloudName,
         uploadPreset: unsignedPreset,
         onProgress: (progress) => {
-          setUploads((prev) => ({
-            ...prev,
-            [key]: { ...prev[key], progress },
-          }));
+          if (key === "witnesses" && witnessIndex !== null) {
+            setUploads((prev) => {
+              const newWitnesses = [...(prev.witnesses || [])];
+              newWitnesses[witnessIndex] = { ...newWitnesses[witnessIndex], progress };
+              return { ...prev, witnesses: newWitnesses };
+            });
+          } else {
+            setUploads((prev) => ({
+              ...prev,
+              [key]: { ...prev[key], progress },
+            }));
+          }
         },
       });
-      setUploads((prev) => ({
-        ...prev,
-        [key]: { url, progress: 100 },
-      }));
+      
+      if (key === "witnesses" && witnessIndex !== null) {
+        setUploads((prev) => {
+          const newWitnesses = [...(prev.witnesses || [])];
+          newWitnesses[witnessIndex] = { url, progress: 100, filename: file.name };
+          return { ...prev, witnesses: newWitnesses };
+        });
+      } else {
+        setUploads((prev) => ({
+          ...prev,
+          [key]: { url, progress: 100, filename: file.name },
+        }));
+      }
     } catch (err) {
       setError("Upload failed. Please try again.");
-      setUploads((prev) => ({
-        ...prev,
-        [key]: { ...prev[key], progress: 0 },
-      }));
+      if (key === "witnesses" && witnessIndex !== null) {
+        setUploads((prev) => {
+          const newWitnesses = [...(prev.witnesses || [])];
+          newWitnesses[witnessIndex] = { ...newWitnesses[witnessIndex], progress: 0 };
+          return { ...prev, witnesses: newWitnesses };
+        });
+      } else {
+        setUploads((prev) => ({
+          ...prev,
+          [key]: { ...prev[key], progress: 0 },
+        }));
+      }
     }
+  };
+
+  const addWitnessSlot = () => {
+    setUploads((prev) => ({
+      ...prev,
+      witnesses: [...(prev.witnesses || []), { url: "", progress: 0 }],
+    }));
+  };
+
+  const removeWitnessSlot = (index) => {
+    setUploads((prev) => {
+      const newWitnesses = [...(prev.witnesses || [])];
+      newWitnesses.splice(index, 1);
+      return { ...prev, witnesses: newWitnesses };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -72,11 +119,12 @@ export default function AffidavitStep({ caseId, onUpdated }) {
       await saveAffidavits(caseId, {
         applicantAffidavit: uploads.applicant.url,
         respondentAffidavit: uploads.respondent.url,
-        witnessAffidavit: uploads.witness.url,
+        witnessAffidavits: uploads.witnesses.map((w) => w.url),
         nikahnama: uploads.nikahnama.url,
         idProof: uploads.idProof.url,
       });
-      await transitionCase(caseId, { nextStatus: "AFFIDAVITS_DONE" });
+      // Transition to UNDER_REVIEW after affidavits are done
+      await transitionCase(caseId, { nextStatus: "UNDER_REVIEW" });
       onUpdated?.();
     } catch (err) {
       setError(err?.response?.data?.message || "Unable to save affidavits. Please try again.");
@@ -89,28 +137,84 @@ export default function AffidavitStep({ caseId, onUpdated }) {
     <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-6">
       <div className="mb-4">
         <h2 className="text-xl font-semibold text-gray-900">Affidavits & Documents</h2>
-        <p className="text-sm text-gray-600">Upload the required affidavits and supporting documents.</p>
+        <p className="text-sm text-gray-600 mb-3">Upload the required affidavits and supporting documents.</p>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+          <strong>Secure Upload:</strong> Documents are securely uploaded and stored via Cloudinary cloud storage. 
+          Your files are encrypted and accessible only to authorized Qazi reviewers.
+        </div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {[
-            { key: "applicant", label: "Applicant affidavit" },
-            { key: "respondent", label: "Respondent affidavit" },
-            { key: "witness", label: "Witness affidavit" },
-            { key: "nikahnama", label: "Nikahnama" },
-            { key: "idProof", label: "ID proof" },
-          ].map((item) => (
-            <div key={item.key} className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">{item.label}</label>
-              <input
-                type="file"
-                accept=".pdf,image/*"
-                onChange={(e) => handleFile(item.key, e.target.files?.[0])}
-                className="block w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-islamicGreen file:text-white hover:file:bg-teal-700"
-              />
-              <Progress status={uploads[item.key]} />
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              { key: "applicant", label: "Applicant Affidavit", required: true },
+              { key: "respondent", label: "Respondent Affidavit", required: true },
+              { key: "nikahnama", label: "Nikahnama (Marriage Certificate)", required: true },
+              { key: "idProof", label: "ID Proof", required: true },
+            ].map((item) => (
+              <div key={item.key} className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-gray-700">
+                  {item.label} {item.required && <span className="text-red-500">*</span>}
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,image/*"
+                  onChange={(e) => handleFile(item.key, e.target.files?.[0])}
+                  className="block w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-islamicGreen file:text-white hover:file:bg-teal-700"
+                />
+                <Progress status={uploads[item.key]} />
+              </div>
+            ))}
+          </div>
+
+          {/* Witness Affidavits - Multiple */}
+          <div className="border-t pt-4">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-medium text-gray-700">
+                Witness Affidavits <span className="text-red-500">*</span> (Minimum 1, recommended 2)
+              </label>
+              <button
+                type="button"
+                onClick={addWitnessSlot}
+                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded"
+              >
+                + Add Witness
+              </button>
             </div>
-          ))}
+            <div className="space-y-3">
+              {(uploads.witnesses || []).map((witness, index) => (
+                <div key={index} className="flex items-start gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept=".pdf,image/*"
+                      onChange={(e) => handleFile("witnesses", e.target.files?.[0], index)}
+                      className="block w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-islamicGreen file:text-white hover:file:bg-teal-700"
+                    />
+                    <Progress status={witness} />
+                  </div>
+                  {(uploads.witnesses || []).length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeWitnessSlot(index)}
+                      className="text-red-600 hover:text-red-800 text-sm px-2"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              {(!uploads.witnesses || uploads.witnesses.length === 0) && (
+                <button
+                  type="button"
+                  onClick={addWitnessSlot}
+                  className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-sm text-gray-600 hover:border-islamicGreen hover:text-islamicGreen"
+                >
+                  + Add First Witness Affidavit
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {error && (

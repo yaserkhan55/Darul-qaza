@@ -19,14 +19,14 @@ export default function CaseSteps({ caseData, onUpdated }) {
       // New workflow: STARTED/DRAFT -> application
       case "STARTED":
       case "DRAFT":
-        return <DivorceForm caseId={caseData._id} onSuccess={onUpdated} />;
+        return <DivorceForm caseId={caseData._id} caseType={caseData.type || caseData.divorceType} onSuccess={onUpdated} />;
 
       case "FORM_COMPLETED":
         return <ResolutionStep caseId={caseData._id} onUpdated={onUpdated} />;
 
       case "RESOLUTION_SUCCESS":
       case "RESOLUTION_FAILED":
-        return <AgreementStep caseId={caseData._id} onUpdated={onUpdated} />;
+        return <AgreementStep caseId={caseData._id} caseType={caseData.type || caseData.divorceType} onUpdated={onUpdated} />;
 
       case "AGREEMENT_DONE":
         return <AffidavitStep caseId={caseData._id} onUpdated={onUpdated} />;

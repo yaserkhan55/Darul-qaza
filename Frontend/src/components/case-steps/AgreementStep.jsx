@@ -1,8 +1,11 @@
-import { useState } from "react";
-import { saveAgreement, transitionCase } from "@/api/case.api";
+import { useState, useEffect } from "react";
+import { saveAgreement, transitionCase, getMyCases } from "@/api/case.api";
 
-export default function AgreementStep({ caseId, onUpdated }) {
-  const [mahr, setMahr] = useState("");
+export default function AgreementStep({ caseId, caseType, onUpdated }) {
+  const [detectedType, setDetectedType] = useState(caseType || null);
+  const [iddat, setIddat] = useState("");
+  const [mahrSettlement, setMahrSettlement] = useState("");
+  const [mahrReturn, setMahrReturn] = useState("");
   const [maintenance, setMaintenance] = useState("");
   const [custody, setCustody] = useState("");
   const [conditions, setConditions] = useState("");
@@ -10,12 +13,42 @@ export default function AgreementStep({ caseId, onUpdated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const fetchCaseType = async () => {
+      if (detectedType) return;
+      try {
+        const cases = await getMyCases();
+        const currentCase = cases.find((c) => c._id === caseId);
+        if (currentCase) {
+          setDetectedType(currentCase.type || currentCase.divorceType);
+        }
+      } catch (err) {
+        console.error("Failed to fetch case type", err);
+      }
+    };
+    fetchCaseType();
+  }, [caseId, detectedType]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!mahr || !maintenance || !custody) {
-      setError("Mahr, maintenance/iddat terms, and custody details are required.");
-      return;
+    
+    if (detectedType === "TALAQ") {
+      if (!mahrSettlement || !iddat) {
+        setError("Mahr settlement and Iddat period are required for Talaq.");
+        return;
+      }
+    } else if (detectedType === "KHULA") {
+      if (!mahrReturn || !iddat) {
+        setError("Mahr return amount and Iddat period are required for Khula.");
+        return;
+      }
+    } else {
+      if (!iddat) {
+        setError("Iddat period is required.");
+        return;
+      }
     }
+
     if (!agreed) {
       setError("Please confirm that both parties agree to the terms.");
       return;
@@ -25,10 +58,13 @@ export default function AgreementStep({ caseId, onUpdated }) {
     setLoading(true);
     try {
       await saveAgreement(caseId, {
-        mahr,
+        iddat,
+        mahrSettlement: detectedType === "TALAQ" ? mahrSettlement : undefined,
+        mahrReturn: detectedType === "KHULA" ? mahrReturn : undefined,
         maintenance,
         custody,
         conditions,
+        divorceType: detectedType,
       });
       await transitionCase(caseId, { nextStatus: "AGREEMENT_DONE" });
       onUpdated?.();
@@ -47,26 +83,67 @@ export default function AgreementStep({ caseId, onUpdated }) {
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {detectedType === "TALAQ" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mahr Settlement <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
+                value={mahrSettlement}
+                onChange={(e) => setMahrSettlement(e.target.value)}
+                placeholder="e.g., 500,000 PKR"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">Mahr settlement terms for Talaq</p>
+            </div>
+          )}
+          
+          {detectedType === "KHULA" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Mahr Return / Compensation <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
+                value={mahrReturn}
+                onChange={(e) => setMahrReturn(e.target.value)}
+                placeholder="e.g., 500,000 PKR"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">Amount to be returned to husband for Khula</p>
+            </div>
+          )}
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mahr amount</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Iddat Period <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-              value={mahr}
-              onChange={(e) => setMahr(e.target.value)}
-              placeholder="e.g., 500,000 PKR"
+              value={iddat}
+              onChange={(e) => setIddat(e.target.value)}
+              placeholder="e.g., 3 months / 90 days"
+              required
             />
+            <p className="text-xs text-gray-500 mt-1">Waiting period as per Islamic law</p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Maintenance / Iddat terms</label>
-            <input
-              type="text"
-              className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-              value={maintenance}
-              onChange={(e) => setMaintenance(e.target.value)}
-              placeholder="Specify iddat duration, maintenance, etc."
-            />
-          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Maintenance (Nafaqah)
+          </label>
+          <input
+            type="text"
+            className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
+            value={maintenance}
+            onChange={(e) => setMaintenance(e.target.value)}
+            placeholder="Monthly maintenance amount during iddat"
+          />
         </div>
 
         <div>

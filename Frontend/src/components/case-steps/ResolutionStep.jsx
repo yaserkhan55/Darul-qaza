@@ -23,7 +23,15 @@ export default function ResolutionStep({ caseId, onUpdated }) {
         outcome,
       });
 
-      const nextStatus = outcome === "SUCCESS" ? "RESOLUTION_SUCCESS" : "RESOLUTION_FAILED";
+      let nextStatus;
+      if (outcome === "SUCCESS") {
+        nextStatus = "RESOLUTION_SUCCESS";
+      } else if (outcome === "NEEDS_MORE_TIME") {
+        // Keep in resolution phase, don't transition yet
+        nextStatus = "FORM_COMPLETED"; // Stay in resolution phase
+      } else {
+        nextStatus = "RESOLUTION_FAILED";
+      }
       await transitionCase(caseId, { nextStatus });
       onUpdated?.();
     } catch (err) {
@@ -37,9 +45,13 @@ export default function ResolutionStep({ caseId, onUpdated }) {
     <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-6">
       <div className="mb-4">
         <h2 className="text-xl font-semibold text-gray-900">Resolution (Sulh)</h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 mb-3">
           Record the reconciliation (Sulh) attempt between the parties.
         </p>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
+          <strong>Islamic Guidance:</strong> Sulh (reconciliation) is strongly encouraged before proceeding further. 
+          The Quran emphasizes reconciliation between spouses as a preferred path.
+        </div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -78,8 +90,9 @@ export default function ResolutionStep({ caseId, onUpdated }) {
               onChange={(e) => setOutcome(e.target.value)}
             >
               <option value="">Select outcome</option>
-              <option value="SUCCESS">Successful</option>
-              <option value="FAILED">Failed</option>
+              <option value="SUCCESS">Success - Reconciliation Achieved</option>
+              <option value="FAILED">Failed - Proceeding with Divorce</option>
+              <option value="NEEDS_MORE_TIME">Needs More Time - Further Mediation Required</option>
             </select>
           </div>
         </div>

@@ -1,9 +1,60 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { saveDivorceForm } from "../api/case.api";
 import SuccessMessage from "../components/SuccessMessage";
+import TalaqForm from "../components/case-steps/TalaqForm";
+import KhulaForm from "../components/case-steps/KhulaForm";
+import { getMyCases } from "../api/case.api";
 
-export default function DivorceForm({ caseId, onSuccess }) {
+export default function DivorceForm({ caseId, caseType, onSuccess }) {
+  const { t } = useTranslation();
+  const [detectedType, setDetectedType] = useState(caseType || null);
+  const [loading, setLoading] = useState(true);
+
+  // If caseType not provided, fetch from API
+  useEffect(() => {
+    const fetchCaseType = async () => {
+      if (detectedType) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const cases = await getMyCases();
+        const currentCase = cases.find((c) => c._id === caseId);
+        if (currentCase) {
+          setDetectedType(currentCase.type || currentCase.divorceType);
+        }
+      } catch (err) {
+        console.error("Failed to fetch case type", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCaseType();
+  }, [caseId, detectedType]);
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8 text-center">
+        <p className="text-gray-600">Loading form...</p>
+      </div>
+    );
+  }
+
+  // Render appropriate form based on type
+  if (detectedType === "TALAQ") {
+    return <TalaqForm caseId={caseId} onSuccess={onSuccess} />;
+  }
+
+  if (detectedType === "KHULA") {
+    return <KhulaForm caseId={caseId} onSuccess={onSuccess} />;
+  }
+
+  // Fallback to generic form if type unknown (legacy support)
+  return <GenericDivorceForm caseId={caseId} onSuccess={onSuccess} />;
+}
+
+function GenericDivorceForm({ caseId, onSuccess }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({
     husbandName: "",
