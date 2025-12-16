@@ -19,9 +19,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     {PUBLISHABLE_KEY ? (
       <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
       </ClerkProvider>
     ) : (
       <BrowserRouter>

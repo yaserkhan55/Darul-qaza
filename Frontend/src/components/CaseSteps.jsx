@@ -1,9 +1,9 @@
 import DivorceForm from "@/pages/DivorceForm";
-import ResolutionForm from "@/pages/ResolutionForm";
-import AgreementForm from "@/pages/AgreementForm";
-import AffidavitsForm from "@/pages/AffidavitsForm";
 import CertificateView from "@/pages/CertificateView";
 import StepProgress from "./StepProgress";
+import ResolutionStep from "./case-steps/ResolutionStep";
+import AgreementStep from "./case-steps/AgreementStep";
+import AffidavitStep from "./case-steps/AffidavitStep";
 
 export default function CaseSteps({ caseData, onUpdated }) {
   if (!caseData) {
@@ -16,37 +16,22 @@ export default function CaseSteps({ caseData, onUpdated }) {
 
   const renderStepForm = () => {
     switch (caseData.status) {
-      // New workflow: DRAFT is the application step
-      case "DRAFT":
-        return (
-          <DivorceForm
-            caseId={caseData._id}
-            onSuccess={onUpdated}
-          />
-        );
-
-      // Legacy statuses (kept for safety if old data exists)
+      // New workflow: STARTED/DRAFT -> application
       case "STARTED":
+      case "DRAFT":
+        return <DivorceForm caseId={caseData._id} onSuccess={onUpdated} />;
+
       case "FORM_COMPLETED":
+        return <ResolutionStep caseId={caseData._id} onUpdated={onUpdated} />;
+
       case "RESOLUTION_SUCCESS":
       case "RESOLUTION_FAILED":
-      case "AGREEMENT_DONE":
-      case "AFFIDAVITS_DONE":
-        return (
-          <div className="text-center py-8 sm:py-12">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 sm:p-8 max-w-md mx-auto">
-              <div className="text-4xl mb-4">✓</div>
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                Case Submitted for Review
-              </h3>
-              <p className="text-sm sm:text-base text-gray-600">
-                Your case has been submitted and is now under Qazi review. 
-                You will be notified once a decision is made.
-              </p>
-            </div>
-          </div>
-        );
+        return <AgreementStep caseId={caseData._id} onUpdated={onUpdated} />;
 
+      case "AGREEMENT_DONE":
+        return <AffidavitStep caseId={caseData._id} onUpdated={onUpdated} />;
+
+      case "AFFIDAVITS_DONE":
       case "UNDER_REVIEW":
         return (
           <div className="text-center py-8 sm:py-12">
@@ -64,9 +49,7 @@ export default function CaseSteps({ caseData, onUpdated }) {
         );
 
       case "APPROVED":
-        return (
-          <CertificateView caseData={caseData} />
-        );
+        return <CertificateView caseData={caseData} />;
 
       default:
         return (

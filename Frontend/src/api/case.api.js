@@ -35,3 +35,10 @@ export const saveAffidavits = async (caseId, affidavitsData) => {
   const res = await api.post(`/cases/${caseId}/affidavits`, affidavitsData);
   return res.data;
 };
+
+// Generic transition handler (shared with admin)
+// payload: { nextStatus, note? }
+export const transitionCase = async (caseId, payload) => {
+  const res = await api.patch(`/cases/${caseId}/transition`, payload);
+  return res.data;
+};
