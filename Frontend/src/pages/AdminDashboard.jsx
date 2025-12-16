@@ -21,6 +21,8 @@ export default function AdminDashboard() {
   const [rejectReason, setRejectReason] = useState("");
   const [sendBackNote, setSendBackNote] = useState("");
   const [error, setError] = useState("");
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authCode, setAuthCode] = useState("");
 
   useEffect(() => {
     loadCases();
@@ -95,6 +97,35 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-islamicBeige to-white p-3 sm:p-4 lg:p-6">
+      {/* Safety confirmation before entering admin controls */}
+      {!authChecked && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 sm:p-7 max-w-md w-full space-y-4">
+            <h2 className="text-xl font-bold text-gray-900">Admin Safety Check</h2>
+            <p className="text-sm text-gray-600">
+              This area is reserved for Qazi / Admin only. Type <span className="font-semibold">"QAZI"</span> to proceed.
+            </p>
+            <input
+              type="text"
+              value={authCode}
+              onChange={(e) => setAuthCode(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-islamicGreen"
+              placeholder='Enter "QAZI" to continue'
+            />
+            <button
+              onClick={() => authCode.trim().toUpperCase() === "QAZI" && setAuthChecked(true)}
+              className="w-full bg-islamicGreen text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-teal-700 transition disabled:opacity-60"
+              disabled={authCode.trim().length === 0}
+            >
+              Continue to Admin Panel
+            </button>
+            <p className="text-[12px] text-gray-500 text-center">
+              Final decisions are issued by qualified Islamic authorities.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         <header className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 flex flex-col gap-3 sm:gap-4">
           <div className="flex items-start sm:items-center justify-between gap-3">

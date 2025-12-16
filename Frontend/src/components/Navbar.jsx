@@ -207,94 +207,82 @@ export default function Navbar() {
             </SignedOut>
           </nav>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`md:hidden p-2 rounded-lg transition-all duration-200 ${
-              scrolled
-                ? "text-gray-700 hover:bg-gray-100"
-                : "text-white hover:bg-white/10"
-            }`}
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? (
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            ) : (
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            )}
-          </button>
+          {/* Mobile Actions */}
+          <div className="md:hidden flex items-center gap-2">
+            <NotificationBell />
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className={`p-2 rounded-lg transition-all duration-200 ${
+                scrolled ? "text-gray-700 hover:bg-gray-100" : "text-white hover:bg-white/10"
+              }`}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden fixed inset-0 top-16 sm:top-20 bg-white/98 backdrop-blur-lg z-40 transform transition-transform duration-300 ease-in-out ${
-            mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`md:hidden fixed inset-0 z-40 ${mobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"}`}
         >
-          <nav className="flex flex-col p-6 space-y-4">
-            <div className="px-4 py-2 flex items-center justify-between">
-              <LanguageSwitcher />
-              <NotificationBell />
-            </div>
-            <SignedIn>
-              <button
-                onClick={() => handleNavClick("/dashboard")}
-                className={`text-left px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                  isActive("/dashboard")
-                    ? "bg-islamicGreen text-white shadow-md"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {t("common.dashboard")}
-              </button>
-              {user && (
-                <div className="px-4 py-3 text-gray-700 text-sm border border-gray-100 rounded-lg bg-gray-50">
-                  <p className="font-semibold text-gray-800">{displayName}</p>
-                  <p className="text-xs text-gray-500">
-                    {user.emailAddresses?.[0]?.emailAddress}
-                  </p>
-                </div>
-              )}
-              <button
-                onClick={handleLogout}
-                className="text-left px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
-              >
-                {t("common.signOut")}
-              </button>
-            </SignedIn>
-            <SignedOut>
-              <button
-                onClick={() => handleNavClick("/sign-in")}
-                className="text-left px-4 py-3 rounded-lg font-medium bg-islamicGreen text-white hover:bg-teal-700 transition-all duration-200"
-              >
-                {t("common.signIn")}
-              </button>
-            </SignedOut>
-          </nav>
+          <div
+            className={`absolute inset-0 bg-black/30 transition-opacity duration-200 ${
+              mobileMenuOpen ? "opacity-100" : "opacity-0"
+            }`}
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div
+            className={`absolute left-4 right-4 top-16 sm:top-20 max-w-sm mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transition-transform duration-300 ${
+              mobileMenuOpen ? "translate-y-0" : "-translate-y-3"
+            }`}
+          >
+            <nav className="flex flex-col p-4 space-y-3 max-h-[70vh] overflow-y-auto">
+              <div className="flex items-center justify-between gap-2">
+                <LanguageSwitcher />
+              </div>
+              <SignedIn>
+                <button
+                  onClick={() => handleNavClick("/dashboard")}
+                  className={`text-left px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                    isActive("/dashboard") ? "bg-islamicGreen text-white shadow-md" : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {t("common.dashboard")}
+                </button>
+                {user && (
+                  <div className="px-4 py-3 text-gray-700 text-sm border border-gray-100 rounded-lg bg-gray-50">
+                    <p className="font-semibold text-gray-800">{displayName}</p>
+                    <p className="text-xs text-gray-500">
+                      {user.emailAddresses?.[0]?.emailAddress}
+                    </p>
+                  </div>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="text-left px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                >
+                  {t("common.signOut")}
+                </button>
+              </SignedIn>
+              <SignedOut>
+                <button
+                  onClick={() => handleNavClick("/sign-in")}
+                  className="text-left px-4 py-3 rounded-lg font-medium bg-islamicGreen text-white hover:bg-teal-700 transition-all duration-200"
+                >
+                  {t("common.signIn")}
+                </button>
+              </SignedOut>
+            </nav>
+          </div>
         </div>
       </div>
     </header>
