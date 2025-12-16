@@ -2,8 +2,10 @@ import Case, { CASE_STATUSES, CASE_TYPES } from "../models/Case.model.js";
 
 // Strict status transitions
 const transitions = {
-  DRAFT: ["SUBMITTED"],
-  SUBMITTED: ["PENDING_REVIEW"],
+  // User workflow
+  DRAFT: ["SUBMITTED", "REJECTED"], // allow Qazi to close incomplete cases
+  SUBMITTED: ["PENDING_REVIEW", "REJECTED"],
+  // Qazi review workflow
   PENDING_REVIEW: ["PENDING_HUSBAND_CONSENT", "ARBITRATION", "APPROVED", "REJECTED"],
   PENDING_HUSBAND_CONSENT: ["ARBITRATION", "APPROVED", "REJECTED"],
   ARBITRATION: ["APPROVED", "REJECTED"],
