@@ -1,16 +1,18 @@
 import { SignUp } from "@clerk/clerk-react";
+import { useTranslation } from "react-i18next";
 
 export default function SignUpPage() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-8 bg-islamicBeige">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
           <div className="mb-6 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold text-islamicGreen mb-2">
-              Create Account / اکاؤنٹ بنائیں
+              {t("signUp.title")}
             </h2>
             <p className="text-sm sm:text-base text-gray-600">
-              Join Darul Qaza to start your case – Prefer Google sign up / گوگل کے ذریعے اکاؤنٹ بنائیں
+              {t("signUp.subtitle")}
             </p>
           </div>
           <div className="flex justify-center">

@@ -1,0 +1,219 @@
+{
+  "common": {
+    "appName": "Darul Qaza",
+    "appNameArabic": "دار القضاء",
+    "dashboard": "Dashboard",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "home": "Home",
+    "contact": "Contact Us",
+    "loading": "Loading...",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "next": "Next",
+    "previous": "Previous",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "continue": "Continue",
+    "back": "Back",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "legalDisclaimer": {
+    "text": "This platform facilitates case submission only. Final decisions are made by qualified Islamic authorities in accordance with Islamic law.",
+    "title": "Important Disclaimer"
+  },
+  "home": {
+    "title": "Start Your Divorce Case",
+    "subtitle": "Begin your journey with a dignified, Shariah-compliant process. Select the type of divorce proceeding that applies to your situation.",
+    "trustTitle": "A Calm, Scholarly Review Process",
+    "trustText": "All cases are reviewed by qualified Islamic scholars and processed according to established Islamic principles.",
+    "understandingTitle": "Understanding Islamic Divorce",
+    "understandingText1": "Dar-ul-Qaza provides a dignified, Shariah-compliant platform for resolving family matters according to Islamic principles. Our process ensures fairness, transparency, and adherence to Islamic law while protecting the rights of all parties involved.",
+    "understandingText2": "The Islamic divorce process is designed to first attempt reconciliation (Sulah) between spouses. If reconciliation is not possible, the process proceeds through carefully defined steps, ensuring all legal and religious requirements are met before a final decision is made by a qualified Qazi (Islamic judge).",
+    "understandingText3": "All cases are handled with the utmost respect, confidentiality, and in accordance with Islamic jurisprudence.",
+    "processTitle": "The Process",
+    "documentsTitle": "Required Documents",
+    "needHelpTitle": "Need Help?",
+    "contactUs": "Contact Us",
+    "contactUsDesc": "For questions about the process or case status",
+    "emailSupport": "Email Support",
+    "selectDivorceType": "Please select a divorce type first",
+    "proceedWith": "Proceed with {{type}}",
+    "startDivorceCase": "Start Divorce Case",
+    "signInToStart": "Sign In to Start",
+    "steps": {
+      "application": {
+        "title": "Application",
+        "description": "Submit your divorce application with required personal and marriage details"
+      },
+      "resolution": {
+        "title": "Sulah (Resolution)",
+        "description": "Islamic reconciliation attempt to resolve differences amicably"
+      },
+      "agreement": {
+        "title": "Agreement",
+        "description": "Define terms of separation including mahr, iddat, custody, and maintenance"
+      },
+      "affidavits": {
+        "title": "Affidavits",
+        "description": "Submit sworn statements from applicant, witnesses, and supporting documents"
+      },
+      "review": {
+        "title": "Qazi Review",
+        "description": "Case reviewed by qualified Islamic judge (Qazi) for Shariah compliance"
+      },
+      "certificate": {
+        "title": "Certificate",
+        "description": "Receive official divorce certificate upon approval"
+      }
+    },
+    "divorceTypes": {
+      "talaq": {
+        "title": "Talaq",
+        "description": "Divorce initiated by the husband according to Islamic law",
+        "details": "The husband pronounces talaq, followed by a waiting period (iddat) and proper procedures."
+      },
+      "khula": {
+        "title": "Khula",
+        "description": "Divorce initiated by the wife with mutual consent",
+        "details": "The wife seeks khula, often involving return of mahr or other agreed terms."
+      }
+    },
+    "documents": {
+      "affidavits": {
+        "title": "Affidavits",
+        "items": {
+          "applicant": "Applicant's sworn statement",
+          "witnesses": "Witness affidavits (2 witnesses)",
+          "supporting": "Supporting documents as required"
+        }
+      },
+      "agreement": {
+        "title": "Agreement Terms",
+        "items": {
+          "mahr": "Mahr (dower) settlement",
+          "iddat": "Iddat period arrangements",
+          "custody": "Child custody and maintenance"
+        }
+      }
+    }
+  },
+  "dashboard": {
+    "title": "My Cases Dashboard",
+    "subtitle": "Track every step of your Islamic divorce process.",
+    "active": "Active",
+    "completed": "Completed",
+    "underReview": "Under Review",
+    "nextStep": "Next Step",
+    "startNewCase": "Start New Case",
+    "starting": "Starting...",
+    "noCasesYet": "No cases yet",
+    "startFirstCase": "Start Your First Case",
+    "noActiveCase": "No Active Case",
+    "noActiveCaseDesc1": "Start your first case to begin the process",
+    "noActiveCaseDesc2": "You have no active cases. Start a new case or view completed cases.",
+    "completedCases": "Completed Cases",
+    "unableToLoad": "Unable to load cases. Please try again.",
+    "completeCurrentCase": "Complete the current case before starting a new one."
+  },
+  "form": {
+    "divorceForm": {
+      "title": "Divorce Application Form",
+      "subtitle": "Please provide accurate information with calm and care. This is a formal Islamic judicial process, not an instant decision.",
+      "steps": {
+        "personal": "Personal Details",
+        "marriage": "Marriage Details",
+        "case": "Case Details",
+        "review": "Review & Submit"
+      },
+      "fields": {
+        "husbandName": "Husband Name",
+        "wifeName": "Wife Name",
+        "cnic": "CNIC Number",
+        "marriageDate": "Marriage Date",
+        "address": "Residential Address"
+      },
+      "reviewTitle": "Review Your Case",
+      "reviewText": "Please carefully review all details below before submitting. This will be sent to qualified Islamic scholars for formal review.",
+      "submitButton": "Submit Case for Scholarly Review",
+      "submitting": "Submitting...",
+      "step": "Step {{current}} of {{total}}"
+    },
+    "resolutionForm": {
+      "title": "Islamic Resolution (Sulh) Attempt",
+      "subtitle": "Record the outcome of the reconciliation attempt between the parties.",
+      "mediatorName": "Mediator Name",
+      "result": "Resolution Result",
+      "resultPlaceholder": "Select result",
+      "resultSuccess": "Success - Reconciliation Achieved",
+      "resultFailed": "Failed - Proceeding with Divorce",
+      "notes": "Notes",
+      "notesPlaceholder": "Details about the resolution attempt...",
+      "submitButton": "Submit Resolution"
+    },
+    "agreementForm": {
+      "title": "Divorce Agreement Terms",
+      "subtitle": "Define the terms of separation as per Islamic law and mutual agreement.",
+      "mehr": "Mahr (Dower) Settlement",
+      "mehrPlaceholder": "Details about mahr payment and settlement...",
+      "iddat": "Iddat Period",
+      "iddatPlaceholder": "Iddat period details and conditions...",
+      "custody": "Child Custody Arrangement",
+      "custodyPlaceholder": "Custody arrangements for children (if applicable)...",
+      "maintenance": "Maintenance (Nafaqah)",
+      "maintenancePlaceholder": "Maintenance terms during iddat and beyond...",
+      "submitButton": "Submit Agreement"
+    },
+    "affidavitsForm": {
+      "title": "Affidavits Confirmation",
+      "subtitle": "Confirm that all required sworn statements (affidavits) have been submitted and verified.",
+      "applicantAffidavit": "Applicant Affidavit",
+      "applicantAffidavitDesc": "Sworn statement from the applicant",
+      "witnessAffidavit": "Witness Affidavit",
+      "witnessAffidavitDesc": "Sworn statement from witnesses",
+      "supportAffidavit": "Supporting Affidavit",
+      "supportAffidavitDesc": "Additional supporting documents and statements",
+      "note": "Note:",
+      "noteText": "All affidavits must be properly notarized and submitted to the court before proceeding to Qazi review.",
+      "submitButton": "Confirm Affidavits"
+    }
+  },
+  "success": {
+    "title": "Success!",
+    "caseSubmitted": "Your divorce application has been submitted for scholarly review. Qualified Islamic authorities will now review your application in detail.",
+    "caseSubmittedFull": "Your case has been submitted for scholarly review. You will be notified of the next steps."
+  },
+  "footer": {
+    "about": "About Dar-ul-Qaza",
+    "aboutText": "A dignified, Shariah-compliant platform for resolving family matters according to Islamic principles with fairness and transparency.",
+    "quickLinks": "Quick Links",
+    "contact": "Contact",
+    "email": "Email: support@darulqaza.org",
+    "phone": "Phone: +92 XXX XXXXXXX",
+    "address": "Address: Islamic Court Complex",
+    "copyright": "© {{year}} Dar-ul-Qaza. All rights reserved.",
+    "serving": "Serving the Muslim community with dignity, care, and respect."
+  },
+  "signIn": {
+    "title": "Sign In",
+    "subtitle": "Access your Darul Qaza account"
+  },
+  "signUp": {
+    "title": "Create Account",
+    "subtitle": "Join Darul Qaza to start your case"
+  },
+  "status": {
+    "draft": "Draft",
+    "submitted": "Submitted",
+    "pendingReview": "Pending Review",
+    "pendingHusbandConsent": "Pending Husband Consent",
+    "arbitration": "Arbitration",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "completed": "Completed"
+  }
+}
+

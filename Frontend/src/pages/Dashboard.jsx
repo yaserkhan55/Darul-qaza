@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getMyCases, startCase } from "../api/case.api";
 import StatusBadge from "../components/StatusBadge";
 import CaseSteps from "../components/CaseSteps";
@@ -17,6 +18,7 @@ const STEP_LABELS = {
 
 export default function Dashboard() {
   const location = useLocation();
+  const { t } = useTranslation();
   const [allCases, setAllCases] = useState([]);
   const [completedCases, setCompletedCases] = useState([]);
   const [activeCase, setActiveCase] = useState(null);
@@ -59,15 +61,13 @@ export default function Dashboard() {
       }
     } catch (err) {
       console.error("Failed to load cases:", err);
-      setErrorMessage("Unable to load cases. براہِ کرم دوبارہ کوشش کریں۔");
+      setErrorMessage(t("dashboard.unableToLoad"));
     }
   };
 
   const handleStart = async (divorceType = "TALAQ") => {
     if (activeCases.length > 0) {
-      setErrorMessage(
-        "براہِ کرم موجودہ کیس مکمل کریں پھر نیا کیس شروع کریں / Complete the current case before starting a new one."
-      );
+      setErrorMessage(t("dashboard.completeCurrentCase"));
       return;
     }
 
@@ -106,29 +106,29 @@ export default function Dashboard() {
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 space-y-3">
             <h1 className="text-2xl sm:text-3xl font-bold text-islamicGreen">
-              My Cases Dashboard / میرا کیس ڈیش بورڈ
+              {t("dashboard.title")}
             </h1>
             <p className="text-sm sm:text-base text-gray-600">
-              Track every step of your Islamic divorce process. / اسلامی طلاق کے تمام مراحل پر نظر رکھیں۔
+              {t("dashboard.subtitle")}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
             <StatCard
-              label="Active / جاری"
+              label={t("dashboard.active")}
               value={stats.active}
               color="text-emerald-700"
               icon="active"
               accent="from-emerald-50 to-white"
             />
             <StatCard
-              label="Completed / مکمل"
+              label={t("dashboard.completed")}
               value={stats.completed}
               color="text-blue-700"
               icon="completed"
               accent="from-blue-50 to-white"
             />
             <StatCard
-              label="Under Review / زیر جائزہ"
+              label={t("dashboard.underReview")}
               value={stats.underReview}
               color="text-amber-700"
               icon="review"
@@ -140,7 +140,7 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="flex-1 w-full">
             <p className="text-sm text-gray-600">
-              Next Step / اگلا مرحلہ:{" "}
+              {t("dashboard.nextStep")}:{" "}
               <span className="font-semibold text-gray-900">{stats.nextStep}</span>
             </p>
           </div>
@@ -149,7 +149,7 @@ export default function Dashboard() {
             disabled={loading || activeCases.length > 0}
             className="w-full sm:w-auto bg-islamicGreen text-white px-5 py-3 rounded-lg font-semibold shadow-md hover:bg-teal-700 disabled:opacity-40 transition-all"
           >
-            {loading ? "Starting..." : "Start New Case / نیا کیس شروع کریں"}
+            {loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
           </button>
         </div>
 
@@ -164,7 +164,7 @@ export default function Dashboard() {
       {/* LEFT PANEL */}
       <div className="bg-white p-3 sm:p-4 lg:p-5 rounded-xl shadow-lg border border-gray-100">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-lg sm:text-xl text-gray-800">Completed Cases</h2>
+          <h2 className="font-semibold text-lg sm:text-xl text-gray-800">{t("dashboard.completedCases")}</h2>
           <span className="text-xs sm:text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
             {completedCases.length}
           </span>
@@ -172,13 +172,13 @@ export default function Dashboard() {
 
         {completedCases.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm text-gray-500 mb-4">No cases yet</p>
+            <p className="text-sm text-gray-500 mb-4">{t("dashboard.noCasesYet")}</p>
             <button
               onClick={() => handleStart("TALAQ")}
               disabled={loading}
               className="w-full bg-islamicGreen text-white py-2.5 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 text-sm font-medium shadow-md hover:shadow-lg"
             >
-              {loading ? "Starting..." : "Start Your First Case"}
+              {loading ? t("dashboard.starting") : t("dashboard.startFirstCase")}
             </button>
           </div>
         ) : (
@@ -214,7 +214,7 @@ export default function Dashboard() {
               disabled={loading}
               className="w-full mt-4 bg-islamicGreen text-white py-2.5 sm:py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 text-sm sm:text-base font-medium shadow-md hover:shadow-lg"
             >
-              {loading ? "Starting..." : "Start New Case"}
+              {loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
             </button>
           </>
         )}
@@ -228,19 +228,19 @@ export default function Dashboard() {
           <div className="text-center py-12 sm:py-16">
             <div className="text-5xl sm:text-6xl mb-4">📋</div>
             <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
-              No Active Case
+              {t("dashboard.noActiveCase")}
             </h3>
             <p className="text-sm sm:text-base text-gray-500 mb-6">
               {allCases.length === 0 
-                ? "Start your first case to begin the process"
-                : "You have no active cases. Start a new case or view completed cases."}
+                ? t("dashboard.noActiveCaseDesc1")
+                : t("dashboard.noActiveCaseDesc2")}
             </p>
             <button
               onClick={() => handleStart("TALAQ")}
               disabled={loading}
               className="bg-islamicGreen text-white px-6 py-2.5 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 text-sm font-medium shadow-md hover:shadow-lg"
             >
-              {loading ? "Starting..." : "Start New Case"}
+              {loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
             </button>
           </div>
         )}

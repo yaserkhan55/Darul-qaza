@@ -1,18 +1,10 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { saveDivorceForm } from "../api/case.api";
 import SuccessMessage from "../components/SuccessMessage";
 
-const DISCLAIMER_TEXT =
-  "This platform facilitates case submission only. Final decisions are made by qualified Islamic authorities in accordance with Islamic law.";
-
-const STEPS = [
-  "Personal Details / ذاتی معلومات",
-  "Marriage Details / نکاح کی معلومات",
-  "Case Details / کیس کی تفصیل",
-  "Review & Submit / نظر ثانی اور جمع کریں",
-];
-
 export default function DivorceForm({ caseId, onSuccess }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     husbandName: "",
     wifeName: "",
@@ -25,12 +17,20 @@ export default function DivorceForm({ caseId, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  const STEPS = [
+    t("form.divorceForm.steps.personal"),
+    t("form.divorceForm.steps.marriage"),
+    t("form.divorceForm.steps.case"),
+    t("form.divorceForm.steps.review"),
+  ];
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const nextStep = () => {
-    if (step < STEPS.length - 1) setStep(step + 1);
+    const stepsLength = STEPS.length;
+    if (step < stepsLength - 1) setStep(step + 1);
   };
 
   const prevStep = () => {
@@ -62,22 +62,21 @@ export default function DivorceForm({ caseId, onSuccess }) {
     <>
       {showSuccess && (
         <SuccessMessage
-          message="Your case has been submitted for scholarly review. Qualified Islamic authorities will now review your application in detail."
+          message={t("success.caseSubmitted")}
           onClose={handleSuccessClose}
         />
       )}
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 sm:p-6 lg:p-8 max-w-2xl mx-auto">
         <div className="mb-6 space-y-2">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-            Divorce Application Form / خلع/طلاق فارم
+            {t("form.divorceForm.title")}
           </h2>
           <p className="text-sm sm:text-base text-gray-600">
-            Please provide accurate information with calm and care. This is a formal Islamic judicial
-            process, not an instant decision. / براہِ کرم سکون اور ذمہ داری کے ساتھ درست معلومات درج کریں۔
+            {t("form.divorceForm.subtitle")}
           </p>
           <div className="mt-4">
             <p className="text-xs sm:text-sm font-medium text-islamicGreen mb-1">
-              Step {step + 1} of {STEPS.length}: {STEPS[step]}
+              {t("form.divorceForm.step", { current: step + 1, total: STEPS.length })}: {STEPS[step]}
             </p>
             <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
               <div
@@ -92,19 +91,19 @@ export default function DivorceForm({ caseId, onSuccess }) {
           {step === 0 && (
             <div className="space-y-4 sm:space-y-5">
               <Input
-                label="Husband Name / شوہر کا نام"
+                label={t("form.divorceForm.fields.husbandName")}
                 name="husbandName"
                 value={form.husbandName}
                 onChange={handleChange}
               />
               <Input
-                label="Wife Name / بیوی کا نام"
+                label={t("form.divorceForm.fields.wifeName")}
                 name="wifeName"
                 value={form.wifeName}
                 onChange={handleChange}
               />
               <Input
-                label="CNIC Number / شناختی کارڈ نمبر"
+                label={t("form.divorceForm.fields.cnic")}
                 name="cnic"
                 placeholder="35201-XXXXXXX-X"
                 value={form.cnic}
@@ -116,7 +115,7 @@ export default function DivorceForm({ caseId, onSuccess }) {
           {step === 1 && (
             <div className="space-y-4 sm:space-y-5">
               <Input
-                label="Marriage Date / نکاح کی تاریخ"
+                label={t("form.divorceForm.fields.marriageDate")}
                 type="date"
                 name="marriageDate"
                 value={form.marriageDate}
@@ -128,7 +127,7 @@ export default function DivorceForm({ caseId, onSuccess }) {
           {step === 2 && (
             <div className="space-y-4 sm:space-y-5">
               <Textarea
-                label="Residential Address / رہائشی پتہ"
+                label={t("form.divorceForm.fields.address")}
                 name="address"
                 value={form.address}
                 onChange={handleChange}
@@ -140,26 +139,24 @@ export default function DivorceForm({ caseId, onSuccess }) {
             <div className="space-y-4 sm:space-y-5">
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm sm:text-base text-gray-700 space-y-2">
                 <h3 className="font-semibold text-gray-800 mb-1">
-                  Review Your Case / اپنے کیس کا جائزہ لیں
+                  {t("form.divorceForm.reviewTitle")}
                 </h3>
                 <p>
-                  Please carefully review all details below before submitting. This will be sent to
-                  qualified Islamic scholars for formal review. / براہِ کرم نیچے دی گئی تمام معلومات غور سے
-                  دیکھیں، پھر ہی کیس جمع کریں۔
+                  {t("form.divorceForm.reviewText")}
                 </p>
               </div>
               <div className="space-y-2 text-sm sm:text-base">
-                <ReviewRow label="Husband Name" value={form.husbandName} />
-                <ReviewRow label="Wife Name" value={form.wifeName} />
-                <ReviewRow label="CNIC" value={form.cnic} />
+                <ReviewRow label={t("form.divorceForm.fields.husbandName")} value={form.husbandName} />
+                <ReviewRow label={t("form.divorceForm.fields.wifeName")} value={form.wifeName} />
+                <ReviewRow label={t("form.divorceForm.fields.cnic")} value={form.cnic} />
                 <ReviewRow
-                  label="Marriage Date"
+                  label={t("form.divorceForm.fields.marriageDate")}
                   value={form.marriageDate ? new Date(form.marriageDate).toLocaleDateString() : ""}
                 />
-                <ReviewRow label="Address" value={form.address} />
+                <ReviewRow label={t("form.divorceForm.fields.address")} value={form.address} />
               </div>
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs sm:text-sm text-amber-800">
-                {DISCLAIMER_TEXT}
+                {t("legalDisclaimer.text")}
               </div>
             </div>
           )}
@@ -171,7 +168,7 @@ export default function DivorceForm({ caseId, onSuccess }) {
               disabled={step === 0}
               className="w-full sm:w-auto px-4 py-2.5 rounded-lg border border-gray-300 text-sm sm:text-base text-gray-700 hover:bg-gray-50 disabled:opacity-40"
             >
-              Previous / پچھلا
+              {t("common.previous")}
             </button>
 
             {!isReviewStep && (
@@ -180,7 +177,7 @@ export default function DivorceForm({ caseId, onSuccess }) {
                 onClick={nextStep}
                 className="w-full sm:w-auto bg-islamicGreen text-white px-5 py-2.5 rounded-lg text-sm sm:text-base font-semibold shadow-md hover:bg-teal-700 transition-all"
               >
-                Next Step / اگلا مرحلہ
+                {t("common.next")}
               </button>
             )}
 
@@ -193,10 +190,10 @@ export default function DivorceForm({ caseId, onSuccess }) {
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="animate-spin">⏳</span>
-                    Submitting...
+                    {t("form.divorceForm.submitting")}
                   </span>
                 ) : (
-                  "Submit Case for Scholarly Review / علماء کے جائزے کیلئے کیس جمع کریں"
+                  t("form.divorceForm.submitButton")
                 )}
               </button>
             )}

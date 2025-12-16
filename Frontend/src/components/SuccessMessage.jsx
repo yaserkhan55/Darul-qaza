@@ -1,4 +1,7 @@
+import { useTranslation } from "react-i18next";
+
 export default function SuccessMessage({ message, onClose }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl p-6 sm:p-8 max-w-md w-full">
@@ -9,18 +12,17 @@ export default function SuccessMessage({ message, onClose }) {
             </svg>
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Case Submitted / کیس جمع ہو گیا
+            {t("success.title")}
           </h3>
           <p className="text-gray-600 mb-4">{message}</p>
           <p className="text-[11px] sm:text-xs text-gray-500 mb-6 leading-relaxed">
-            This platform facilitates case submission only. Final decisions are made by qualified
-            Islamic authorities in accordance with Islamic law.
+            {t("legalDisclaimer.text")}
           </p>
           <button
             onClick={onClose}
             className="bg-islamicGreen text-white px-6 py-2 rounded-lg hover:opacity-90 transition font-medium"
           >
-            Continue
+            {t("common.continue")}
           </button>
         </div>
       </div>

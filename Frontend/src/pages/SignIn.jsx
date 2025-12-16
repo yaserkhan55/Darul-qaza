@@ -1,8 +1,10 @@
 import { SignIn } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export default function SignInPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-8 bg-islamicBeige">
@@ -10,10 +12,10 @@ export default function SignInPage() {
         <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
           <div className="mb-6 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold text-islamicGreen mb-2">
-              Sign In / سائن اِن
+              {t("signIn.title")}
             </h2>
             <p className="text-sm sm:text-base text-gray-600">
-              Access your Darul Qaza account – Prefer Google login / براہِ کرم گوگل کے ذریعے سائن اِن کریں
+              {t("signIn.subtitle")}
             </p>
           </div>
           <div className="flex justify-center">

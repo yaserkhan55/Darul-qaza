@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser, useClerk, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useUser();
   const { signOut } = useClerk();
+  const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -81,6 +84,7 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-3 lg:gap-5">
+            <LanguageSwitcher />
             <SignedIn>
               <button
                 onClick={() => navigate("/dashboard")}
@@ -94,7 +98,7 @@ export default function Navbar() {
                       : "hover:bg-white/10 text-white/90 hover:text-white"
                 }`}
               >
-                Dashboard
+                {t("common.dashboard")}
               </button>
               {user && (
                 <span
@@ -113,7 +117,7 @@ export default function Navbar() {
                     : "bg-white/10 hover:bg-white/20 text-white hover:shadow-md"
                 }`}
               >
-                Sign Out
+                {t("common.signOut")}
               </button>
             </SignedIn>
             <SignedOut>
@@ -125,7 +129,7 @@ export default function Navbar() {
                     : "bg-white/10 hover:bg-white/20 text-white hover:shadow-md"
                 }`}
               >
-                Sign In
+                {t("common.signIn")}
               </button>
             </SignedOut>
           </nav>
@@ -179,6 +183,9 @@ export default function Navbar() {
           }`}
         >
           <nav className="flex flex-col p-6 space-y-4">
+            <div className="px-4 py-2">
+              <LanguageSwitcher />
+            </div>
             <SignedIn>
               <button
                 onClick={() => handleNavClick("/dashboard")}
@@ -188,7 +195,7 @@ export default function Navbar() {
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
-                Dashboard
+                {t("common.dashboard")}
               </button>
               {user && (
                 <div className="px-4 py-3 text-gray-700 text-sm">
@@ -199,7 +206,7 @@ export default function Navbar() {
                 onClick={handleLogout}
                 className="text-left px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
               >
-                Sign Out
+                {t("common.signOut")}
               </button>
             </SignedIn>
             <SignedOut>
@@ -207,7 +214,7 @@ export default function Navbar() {
                 onClick={() => handleNavClick("/sign-in")}
                 className="text-left px-4 py-3 rounded-lg font-medium bg-islamicGreen text-white hover:bg-teal-700 transition-all duration-200"
               >
-                Sign In
+                {t("common.signIn")}
               </button>
             </SignedOut>
           </nav>

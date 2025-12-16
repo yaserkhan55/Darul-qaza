@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export default function Footer() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -10,23 +12,22 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
           {/* About */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">About Dar-ul-Qaza</h3>
+            <h3 className="text-lg font-semibold mb-4">{t("footer.about")}</h3>
             <p className="text-sm text-teal-100 leading-relaxed">
-              A dignified, Shariah-compliant platform for resolving family matters 
-              according to Islamic principles with fairness and transparency.
+              {t("footer.aboutText")}
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+            <h3 className="text-lg font-semibold mb-4">{t("footer.quickLinks")}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <button
                   onClick={() => navigate("/")}
                   className="text-teal-100 hover:text-white transition-colors"
                 >
-                  Home
+                  {t("common.home")}
                 </button>
               </li>
               <li>
@@ -34,12 +35,12 @@ export default function Footer() {
                   onClick={() => navigate("/dashboard")}
                   className="text-teal-100 hover:text-white transition-colors"
                 >
-                  Dashboard
+                  {t("common.dashboard")}
                 </button>
               </li>
               <li>
                 <a href="#contact" className="text-teal-100 hover:text-white transition-colors">
-                  Contact Us
+                  {t("common.contact")}
                 </a>
               </li>
             </ul>
@@ -47,25 +48,24 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Contact</h3>
+            <h3 className="text-lg font-semibold mb-4">{t("footer.contact")}</h3>
             <ul className="space-y-2 text-sm text-teal-100">
-              <li>Email: support@darulqaza.org</li>
-              <li>Phone: +92 XXX XXXXXXX</li>
-              <li>Address: Islamic Court Complex</li>
+              <li>{t("footer.email")}</li>
+              <li>{t("footer.phone")}</li>
+              <li>{t("footer.address")}</li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-teal-600 pt-6 text-center space-y-2">
           <p className="text-xs sm:text-sm text-teal-100 max-w-3xl mx-auto">
-            This platform facilitates case submission only. Final decisions are made by qualified
-            Islamic authorities in accordance with Islamic law.
+            {t("legalDisclaimer.text")}
           </p>
           <p className="text-sm text-teal-100">
-            © {currentYear} Dar-ul-Qaza. All rights reserved.
+            {t("footer.copyright", { year: currentYear })}
           </p>
           <p className="text-xs text-teal-200">
-            Serving the Muslim community with dignity, care, and respect.
+            {t("footer.serving")}
           </p>
         </div>
       </div>

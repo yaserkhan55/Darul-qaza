@@ -1,9 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { useTranslation } from "react-i18next";
+
 
 export default function Home() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [selectedType, setSelectedType] = useState(null);
 
   const handleStartCase = (divorceType) => {
@@ -14,38 +17,38 @@ export default function Home() {
   const steps = [
     {
       number: 1,
-      title: "Application",
-      description: "Submit your divorce application with required personal and marriage details",
+      title: t("home.steps.application.title"),
+      description: t("home.steps.application.description"),
       icon: "📝",
     },
     {
       number: 2,
-      title: "Sulah (Resolution)",
-      description: "Islamic reconciliation attempt to resolve differences amicably",
+      title: t("home.steps.resolution.title"),
+      description: t("home.steps.resolution.description"),
       icon: "🤝",
     },
     {
       number: 3,
-      title: "Agreement",
-      description: "Define terms of separation including mahr, iddat, custody, and maintenance",
+      title: t("home.steps.agreement.title"),
+      description: t("home.steps.agreement.description"),
       icon: "📋",
     },
     {
       number: 4,
-      title: "Affidavits",
-      description: "Submit sworn statements from applicant, witnesses, and supporting documents",
+      title: t("home.steps.affidavits.title"),
+      description: t("home.steps.affidavits.description"),
       icon: "📜",
     },
     {
       number: 5,
-      title: "Qazi Review",
-      description: "Case reviewed by qualified Islamic judge (Qazi) for Shariah compliance",
+      title: t("home.steps.review.title"),
+      description: t("home.steps.review.description"),
       icon: "⚖️",
     },
     {
       number: 6,
-      title: "Certificate",
-      description: "Receive official divorce certificate upon approval",
+      title: t("home.steps.certificate.title"),
+      description: t("home.steps.certificate.description"),
       icon: "✅",
     },
   ];
@@ -53,15 +56,15 @@ export default function Home() {
   const divorceTypes = [
     {
       type: "TALAQ",
-      title: "Talaq",
-      description: "Divorce initiated by the husband according to Islamic law",
-      details: "The husband pronounces talaq, followed by a waiting period (iddat) and proper procedures.",
+      title: t("home.divorceTypes.talaq.title"),
+      description: t("home.divorceTypes.talaq.description"),
+      details: t("home.divorceTypes.talaq.details"),
     },
     {
       type: "KHULA",
-      title: "Khula",
-      description: "Divorce initiated by the wife with mutual consent",
-      details: "The wife seeks khula, often involving return of mahr or other agreed terms.",
+      title: t("home.divorceTypes.khula.title"),
+      description: t("home.divorceTypes.khula.description"),
+      details: t("home.divorceTypes.khula.details"),
     },
   ];
 
@@ -88,10 +91,10 @@ export default function Home() {
             <div className="relative z-10">
               <div className="text-center mb-6 sm:mb-8">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-islamicGreen mb-4 animate-slide-up">
-                  Start Your Divorce Case
+                  {t("home.title")}
                 </h1>
                 <p className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto">
-                  Begin your journey with a dignified, Shariah-compliant process. Select the type of divorce proceeding that applies to your situation.
+                  {t("home.subtitle")}
                 </p>
               </div>
 
@@ -126,7 +129,7 @@ export default function Home() {
                       if (selectedType) {
                         handleStartCase(selectedType);
                       } else {
-                        alert("Please select a divorce type first");
+                        alert(t("home.selectDivorceType"));
                       }
                     }}
                     className={`relative bg-islamicGreen hover:bg-teal-700 text-white font-bold py-4 px-10 sm:px-12 rounded-lg shadow-xl transition-all duration-300 text-base sm:text-lg transform hover:scale-105 active:scale-95 ${
@@ -139,8 +142,8 @@ export default function Home() {
                     }}
                   >
                     {selectedType
-                      ? `Proceed with ${divorceTypes.find((t) => t.type === selectedType)?.title}`
-                      : "Start Divorce Case"}
+                      ? t("home.proceedWith", { type: divorceTypes.find((dt) => dt.type === selectedType)?.title })
+                      : t("home.startDivorceCase")}
                     {!selectedType && (
                       <span className="absolute -top-1 -right-1 flex h-4 w-4">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-islamicGold opacity-75"></span>
@@ -157,7 +160,7 @@ export default function Home() {
                       boxShadow: "0 10px 25px -5px rgba(15, 118, 110, 0.5)",
                     }}
                   >
-                    Sign In to Start
+                    {t("home.signInToStart")}
                   </button>
                 </SignedOut>
               </div>
@@ -170,12 +173,10 @@ export default function Home() {
           <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 border border-emerald-100">
             <div className="max-w-3xl mx-auto text-center space-y-3">
               <h2 className="text-xl sm:text-2xl font-semibold text-islamicGreen">
-                A Calm, Scholarly Review Process
+                {t("home.trustTitle")}
               </h2>
               <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                All cases are reviewed by qualified Islamic scholars and processed according to
-                established Islamic principles. /
-                تمام کیسز مستند اسلامی علما کے زیرِ نگرانی اور معروف فقہی اصولوں کے مطابق نمٹائے جاتے ہیں۔
+                {t("home.trustText")}
               </p>
             </div>
           </div>
@@ -185,25 +186,17 @@ export default function Home() {
         <section className="mb-12 sm:mb-16">
           <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 border border-teal-100">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-islamicGreen mb-4 sm:mb-6 text-center">
-              Understanding Islamic Divorce
+              {t("home.understandingTitle")}
             </h2>
             <div className="prose prose-lg max-w-none text-gray-700 space-y-4 text-sm sm:text-base">
               <p>
-                Dar-ul-Qaza provides a dignified, Shariah-compliant platform for
-                resolving family matters according to Islamic principles. Our
-                process ensures fairness, transparency, and adherence to Islamic
-                law while protecting the rights of all parties involved.
+                {t("home.understandingText1")}
               </p>
               <p>
-                The Islamic divorce process is designed to first attempt
-                reconciliation (Sulah) between spouses. If reconciliation is not
-                possible, the process proceeds through carefully defined steps,
-                ensuring all legal and religious requirements are met before a
-                final decision is made by a qualified Qazi (Islamic judge).
+                {t("home.understandingText2")}
               </p>
               <p className="text-islamicGreen font-medium">
-                All cases are handled with the utmost respect, confidentiality,
-                and in accordance with Islamic jurisprudence.
+                {t("home.understandingText3")}
               </p>
             </div>
           </div>
@@ -213,7 +206,7 @@ export default function Home() {
         <section className="mb-12 sm:mb-16">
           <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 border border-teal-100">
             <h2 className="text-2xl sm:text-3xl font-semibold text-islamicGreen mb-8 text-center">
-              The Process
+              {t("home.processTitle")}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {steps.map((step, index) => (
@@ -252,44 +245,44 @@ export default function Home() {
         <section className="mb-12 sm:mb-16">
           <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 border border-teal-100">
             <h2 className="text-2xl sm:text-3xl font-semibold text-islamicGreen mb-6 text-center">
-              Required Documents
+              {t("home.documentsTitle")}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-teal-50 rounded-lg p-6 border border-teal-100">
                 <h3 className="text-lg font-semibold text-islamicGreen mb-3">
-                  Affidavits
+                  {t("home.documents.affidavits.title")}
                 </h3>
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li className="flex items-start gap-2">
                     <span className="text-islamicGreen mt-1">•</span>
-                    <span>Applicant's sworn statement</span>
+                    <span>{t("home.documents.affidavits.items.applicant")}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-islamicGreen mt-1">•</span>
-                    <span>Witness affidavits (2 witnesses)</span>
+                    <span>{t("home.documents.affidavits.items.witnesses")}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-islamicGreen mt-1">•</span>
-                    <span>Supporting documents as required</span>
+                    <span>{t("home.documents.affidavits.items.supporting")}</span>
                   </li>
                 </ul>
               </div>
               <div className="bg-teal-50 rounded-lg p-6 border border-teal-100">
                 <h3 className="text-lg font-semibold text-islamicGreen mb-3">
-                  Agreement Terms
+                  {t("home.documents.agreement.title")}
                 </h3>
                 <ul className="space-y-2 text-sm text-gray-700">
                   <li className="flex items-start gap-2">
                     <span className="text-islamicGreen mt-1">•</span>
-                    <span>Mahr (dower) settlement</span>
+                    <span>{t("home.documents.agreement.items.mahr")}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-islamicGreen mt-1">•</span>
-                    <span>Iddat period arrangements</span>
+                    <span>{t("home.documents.agreement.items.iddat")}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-islamicGreen mt-1">•</span>
-                    <span>Child custody and maintenance</span>
+                    <span>{t("home.documents.agreement.items.custody")}</span>
                   </li>
                 </ul>
               </div>
@@ -301,19 +294,19 @@ export default function Home() {
         <section id="contact" className="mb-12">
           <div className="bg-gradient-to-r from-islamicGreen to-teal-700 rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 text-white">
             <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-center">
-              Need Help?
+              {t("home.needHelpTitle")}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
               <div className="text-center">
                 <div className="text-3xl mb-3">📞</div>
-                <h3 className="font-semibold mb-2">Contact Us</h3>
+                <h3 className="font-semibold mb-2">{t("home.contactUs")}</h3>
                 <p className="text-sm text-teal-100">
-                  For questions about the process or case status
+                  {t("home.contactUsDesc")}
                 </p>
               </div>
               <div className="text-center">
                 <div className="text-3xl mb-3">📧</div>
-                <h3 className="font-semibold mb-2">Email Support</h3>
+                <h3 className="font-semibold mb-2">{t("home.emailSupport")}</h3>
                 <p className="text-sm text-teal-100">support@darulqaza.org</p>
               </div>
             </div>
