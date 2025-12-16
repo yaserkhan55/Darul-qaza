@@ -3,6 +3,7 @@ import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import Home from "../pages/Home";
 import Dashboard from "../pages/Dashboard";
 import AdminDashboard from "../pages/AdminDashboard";
+import AdminRoute from "../components/AdminRoute";
 import SignInPage from "../pages/SignIn";
 import SignUpPage from "../pages/SignUp";
 
@@ -42,14 +43,9 @@ export default function AppRoutes() {
       <Route
         path="/admin"
         element={
-          <>
-            <SignedIn>
-              <AdminDashboard />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
         }
       />
     </Routes>
