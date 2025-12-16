@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useUser } from "@clerk/clerk-react";
 import { getMyCases, startCase } from "../api/case.api";
+import { getMyMessages, markMessageRead } from "../api/message.api";
 import StatusBadge from "../components/StatusBadge";
 import CaseSteps from "../components/CaseSteps";
 
@@ -18,12 +20,15 @@ const STEP_LABELS = {
 
 export default function Dashboard() {
   const location = useLocation();
+  const { user } = useUser();
   const { t } = useTranslation();
   const [allCases, setAllCases] = useState([]);
   const [completedCases, setCompletedCases] = useState([]);
   const [activeCase, setActiveCase] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [latestMessage, setLatestMessage] = useState(null);
+  const [showMessageModal, setShowMessageModal] = useState(false);
 
   const activeCases = useMemo(
     () => allCases.filter((c) => c.status !== "APPROVED"),
@@ -35,9 +40,9 @@ export default function Dashboard() {
       active: activeCases.length,
       completed: completedCases.length,
       underReview: allCases.filter((c) => c.status === "UNDER_REVIEW").length,
-      nextStep: activeCase ? STEP_LABELS[activeCase.status] : "Start a new case",
+      nextStep: activeCase ? STEP_LABELS[activeCase.status] : t("dashboard.startNewCase"),
     }),
-    [activeCases.length, completedCases.length, allCases, activeCase]
+    [activeCases.length, completedCases.length, allCases, activeCase, t]
   );
 
   const loadCases = async () => {
@@ -73,7 +78,7 @@ export default function Dashboard() {
 
     setLoading(true);
     try {
-      const newCase = await startCase(divorceType);
+      const newCase = await startCase(divorceType, user?.id);
       setActiveCase(newCase);
       await loadCases();
       setErrorMessage("");
@@ -99,9 +104,103 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Load latest unread message for popup
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (!user) return;
+      try {
+        const msgs = await getMyMessages(user.id);
+        const unread = (msgs || []).filter((m) => !m.read);
+        if (unread.length > 0) {
+          // Show the most recent unread
+          const latest = unread.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          )[0];
+          setLatestMessage(latest);
+          setShowMessageModal(true);
+        }
+      } catch (err) {
+        console.error("Failed to load messages", err);
+      }
+    };
+    loadMessages();
+  }, [user]);
+
 
   return (
     <div className="space-y-4 sm:space-y-5">
+        {showMessageModal && latestMessage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8">
+            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs text-gray-500">
+                    {new Date(latestMessage.createdAt).toLocaleString()}
+                  </p>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {latestMessage.title}
+                  </h3>
+                </div>
+                <button
+                  onClick={async () => {
+                    setShowMessageModal(false);
+                    try {
+                      await markMessageRead(latestMessage._id);
+                    } catch (err) {
+                      console.error("mark read failed", err);
+                    }
+                  }}
+                  className="text-gray-500 hover:text-gray-800"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {latestMessage.body}
+              </p>
+              <div className="flex justify-end">
+                <button
+                  onClick={async () => {
+                    setShowMessageModal(false);
+                    try {
+                      await markMessageRead(latestMessage._id);
+                    } catch (err) {
+                      console.error("mark read failed", err);
+                    }
+                  }}
+                  className="bg-islamicGreen text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition"
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      {/* Greeting card */}
+      {user && (
+        <div className="bg-gradient-to-r from-islamicGreen/90 to-emerald-700 text-white rounded-xl shadow-lg p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/15 flex items-center justify-center text-lg font-bold">
+              {(user.firstName || user.fullName || "U")[0]}
+            </div>
+            <div>
+              <p className="text-sm sm:text-base font-semibold">
+                {t("dashboard.greeting", { name: user.firstName || user.fullName || "" })}
+              </p>
+              <p className="text-xs sm:text-sm text-emerald-100">
+                {t("dashboard.greetingSubtitle")}
+              </p>
+            </div>
+          </div>
+          <div className="sm:ml-auto text-xs sm:text-sm text-emerald-100">
+            {t("dashboard.nextStep")}:{" "}
+            <span className="font-semibold text-white">{stats.nextStep}</span>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 space-y-3">

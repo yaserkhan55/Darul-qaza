@@ -117,7 +117,9 @@
     "noActiveCaseDesc2": "You have no active cases. Start a new case or view completed cases.",
     "completedCases": "Completed Cases",
     "unableToLoad": "Unable to load cases. Please try again.",
-    "completeCurrentCase": "Complete the current case before starting a new one."
+    "completeCurrentCase": "Complete the current case before starting a new one.",
+    "greeting": "Assalamu Alaikum, {{name}}",
+    "greetingSubtitle": "Your Dar-ul-Qaza dashboard provides a calm, step-by-step view of your case."
   },
   "form": {
     "divorceForm": {

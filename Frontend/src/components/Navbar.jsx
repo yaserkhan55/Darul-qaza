@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser, useClerk, SignedIn, SignedOut } from "@clerk/clerk-react";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import NotificationBell from "./NotificationBell";
+import { getMyMessages } from "../api/message.api";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -13,6 +14,37 @@ export default function Navbar() {
   const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const displayName = useMemo(() => {
+    if (!user) return "";
+    return user.fullName || user.firstName || user.emailAddresses[0]?.emailAddress || "";
+  }, [user]);
+
+  const initials = useMemo(() => {
+    if (!displayName) return "";
+    const parts = displayName.split(" ").filter(Boolean);
+    return (parts[0]?.[0] || "").concat(parts[1]?.[0] || "").toUpperCase();
+  }, [displayName]);
+
+  // Load unread count for dashboard badge
+  useEffect(() => {
+    const loadUnread = async () => {
+      if (!user) {
+        setUnreadCount(0);
+        return;
+      }
+      try {
+        const msgs = await getMyMessages(user.id);
+        const unread = (msgs || []).filter((m) => !m.read).length;
+        setUnreadCount(unread);
+      } catch (err) {
+        console.error("Failed to load unread count", err);
+      }
+    };
+    loadUnread();
+  }, [user]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -72,9 +104,9 @@ export default function Navbar() {
                 scrolled ? "text-islamicGreen" : "text-white"
               }`}
             >
-              <span className="text-2xl sm:text-3xl lg:text-4xl">دار القضاء</span>
+              <span className="text-3xl sm:text-4xl lg:text-[38px] leading-none">دار القضاء</span>
               <span
-                className={`text-sm sm:text-base lg:text-lg ${
+                className={`text-sm sm:text-base lg:text-lg font-semibold ${
                   scrolled ? "text-islamicGreen" : "text-islamicGold"
                 }`}
               >
@@ -90,37 +122,76 @@ export default function Navbar() {
             <SignedIn>
               <button
                 onClick={() => navigate("/dashboard")}
-                className={`px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`relative px-4 lg:px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 shadow-sm border ${
                   isActive("/dashboard")
                     ? scrolled
-                      ? "bg-islamicGreen/20 text-islamicGreen shadow-md"
-                      : "bg-white/20 text-white shadow-md"
+                      ? "bg-islamicGreen text-white border-islamicGreen shadow-md"
+                      : "bg-white text-islamicGreen border-white shadow-md"
                     : scrolled
-                      ? "hover:bg-gray-100 text-gray-700"
-                      : "hover:bg-white/10 text-white/90 hover:text-white"
+                      ? "bg-white/90 text-gray-800 border-gray-200 hover:shadow"
+                      : "bg-white/15 text-white border-white/30 hover:bg-white/25"
                 }`}
               >
-                {t("common.dashboard")}
+                <span>{t("common.dashboard")}</span>
+                {unreadCount > 0 && (
+                  <span className="ml-2 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-red-600 text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
               </button>
               {user && (
-                <span
-                  className={`px-3 lg:px-4 py-2 text-sm ${
-                    scrolled ? "text-gray-700" : "text-white/90"
-                  }`}
-                >
-                  {user.firstName || user.emailAddresses[0]?.emailAddress}
-                </span>
+                <div className="relative">
+                  <button
+                    onClick={() => setProfileOpen((p) => !p)}
+                    className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border ${
+                      scrolled
+                        ? "bg-white text-gray-800 border-gray-200 hover:shadow"
+                        : "bg-white/10 text-white border-white/20 hover:bg-white/20"
+                    }`}
+                    aria-label="User profile"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-islamicGreen to-emerald-700 flex items-center justify-center text-white font-bold shadow-inner">
+                      {initials || "U"}
+                    </div>
+                    <span className="hidden lg:inline-block max-w-[140px] truncate">
+                      {displayName}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 ${profileOpen ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {profileOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-800 truncate">{displayName}</p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {user.emailAddresses?.[0]?.emailAddress}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setProfileOpen(false);
+                          navigate("/dashboard");
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50"
+                      >
+                        {t("common.dashboard")}
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        {t("common.signOut")}
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
-              <button
-                onClick={handleLogout}
-                className={`px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  scrolled
-                    ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                    : "bg-white/10 hover:bg-white/20 text-white hover:shadow-md"
-                }`}
-              >
-                {t("common.signOut")}
-              </button>
             </SignedIn>
             <SignedOut>
               <button
@@ -185,8 +256,9 @@ export default function Navbar() {
           }`}
         >
           <nav className="flex flex-col p-6 space-y-4">
-            <div className="px-4 py-2">
+            <div className="px-4 py-2 flex items-center justify-between">
               <LanguageSwitcher />
+              <NotificationBell />
             </div>
             <SignedIn>
               <button
@@ -200,8 +272,11 @@ export default function Navbar() {
                 {t("common.dashboard")}
               </button>
               {user && (
-                <div className="px-4 py-3 text-gray-700 text-sm">
-                  {user.firstName || user.emailAddresses[0]?.emailAddress}
+                <div className="px-4 py-3 text-gray-700 text-sm border border-gray-100 rounded-lg bg-gray-50">
+                  <p className="font-semibold text-gray-800">{displayName}</p>
+                  <p className="text-xs text-gray-500">
+                    {user.emailAddresses?.[0]?.emailAddress}
+                  </p>
                 </div>
               )}
               <button

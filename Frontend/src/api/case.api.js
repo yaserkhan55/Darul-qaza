@@ -5,10 +5,11 @@ export const getMyCases = async () => {
   return res.data;
 };
 
-export const startCase = async (divorceType) => {
-  // Backend now expects { type } but we keep divorceType for backward compatibility
+export const startCase = async (divorceType, createdBy) => {
+  // Backend accepts { type, createdBy }
   const res = await api.post("/cases/start", {
     type: divorceType,
+    createdBy,
   });
   return res.data;
 };
