@@ -4,6 +4,7 @@ import env from "./config/env.js";
 
 import authRoutes from "./routes/auth.Routes.js";
 import caseRoutes from "./routes/case.Routes.js";
+import messageRoutes from "./routes/message.Routes.js";
 
 const app = express();
 
@@ -41,5 +42,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/cases", caseRoutes);
+app.use("/api/messages", messageRoutes);
 
 export default app;
