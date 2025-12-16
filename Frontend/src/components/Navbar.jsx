@@ -211,11 +211,11 @@ export default function Navbar() {
           <div className="md:hidden flex items-center gap-2">
             <NotificationBell />
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => setMobileMenuOpen((v) => !v)}
               className={`p-2 rounded-lg transition-all duration-200 ${
                 scrolled ? "text-gray-700 hover:bg-gray-100" : "text-white hover:bg-white/10"
               }`}
-              aria-label="Toggle menu"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {mobileMenuOpen ? (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,17 +232,20 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden fixed inset-0 z-40 ${mobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"}`}
+          className={`md:hidden fixed inset-0 z-40 transition-opacity duration-200 ${
+            mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
         >
           <div
             className={`absolute inset-0 bg-black/30 transition-opacity duration-200 ${
               mobileMenuOpen ? "opacity-100" : "opacity-0"
             }`}
             onClick={() => setMobileMenuOpen(false)}
+            role="presentation"
           />
           <div
-            className={`absolute left-4 right-4 top-16 sm:top-20 max-w-sm mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 transition-transform duration-300 ${
-              mobileMenuOpen ? "translate-y-0" : "-translate-y-3"
+            className={`absolute left-4 right-4 top-16 sm:top-20 max-w-sm mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 transition-transform duration-300 transition-opacity ${
+              mobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-3 opacity-0"
             }`}
           >
             <nav className="flex flex-col p-4 space-y-3 max-h-[70vh] overflow-y-auto">
