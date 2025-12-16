@@ -7,7 +7,7 @@ const languages = [
   { code: "ur", label: "اردو", flag: "🇵🇰" },
 ];
 
-export default function LanguageSwitcher() {
+export default function LanguageSwitcher({ mode = "dark" }) {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -38,7 +38,11 @@ export default function LanguageSwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-sm text-white"
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border backdrop-blur-sm ${
+          mode === "dark"
+            ? "bg-white/10 hover:bg-white/20 border-white/20 text-white"
+            : "bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-800"
+        }`}
         aria-label="Change language"
         aria-expanded={isOpen}
       >

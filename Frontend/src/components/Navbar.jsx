@@ -241,13 +241,13 @@ export default function Navbar() {
             onClick={() => setMobileMenuOpen(false)}
           />
           <div
-            className={`absolute left-4 right-4 top-16 sm:top-20 max-w-sm mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transition-transform duration-300 ${
+            className={`absolute left-4 right-4 top-16 sm:top-20 max-w-sm mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 transition-transform duration-300 ${
               mobileMenuOpen ? "translate-y-0" : "-translate-y-3"
             }`}
           >
             <nav className="flex flex-col p-4 space-y-3 max-h-[70vh] overflow-y-auto">
               <div className="flex items-center justify-between gap-2">
-                <LanguageSwitcher />
+                <LanguageSwitcher mode="light" />
               </div>
               <SignedIn>
                 <button

@@ -21,13 +21,18 @@ export default function AdminRoute({ children }) {
   }
 
   // Normalize role from any metadata location (public/unsafe/private)
-  const role =
-    (user?.publicMetadata?.role ||
-      user?.unsafeMetadata?.role ||
-      user?.privateMetadata?.role ||
-      "")?.toString()?.toUpperCase();
+  const metaRole =
+    user?.publicMetadata?.role ||
+    user?.unsafeMetadata?.role ||
+    user?.privateMetadata?.role ||
+    "";
 
-  const allowed = ALLOWED_ROLES.includes(role);
+  const metaRoles = Array.isArray(metaRole) ? metaRole : [metaRole];
+  const normalizedRoles = metaRoles
+    .filter(Boolean)
+    .map((r) => r.toString().toUpperCase());
+
+  const allowed = normalizedRoles.some((r) => ALLOWED_ROLES.includes(r));
 
   // Signed-in but not allowed → go home (no loop)
   if (!allowed) {
