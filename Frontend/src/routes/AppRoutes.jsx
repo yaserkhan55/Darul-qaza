@@ -3,7 +3,6 @@ import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import Home from "../pages/Home";
 import Dashboard from "../pages/Dashboard";
 import AdminDashboard from "../pages/AdminDashboard";
-import AdminRoute from "../components/AdminRoute";
 import SignInPage from "../pages/SignIn";
 import SignUpPage from "../pages/SignUp";
 
@@ -43,18 +42,28 @@ export default function AppRoutes() {
       <Route
         path="/admin"
         element={
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
+          <>
+            <SignedIn>
+              <AdminDashboard />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
         }
       />
       {/* Alias path so /Qazi also opens the same admin panel */}
       <Route
         path="/Qazi"
         element={
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
+          <>
+            <SignedIn>
+              <AdminDashboard />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
         }
       />
     </Routes>
