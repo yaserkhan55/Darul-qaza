@@ -40,7 +40,7 @@ export default function Dashboard() {
       active: activeCases.length,
       completed: completedCases.length,
       underReview: allCases.filter((c) => c.status === "UNDER_REVIEW").length,
-      nextStep: activeCase ? STEP_LABELS[activeCase.status] : t("dashboard.startNewCase"),
+      nextStep: activeCase ? STEP_LABELS[activeCase.status] || activeCase.status : t("dashboard.startNewCase"),
     }),
     [activeCases.length, completedCases.length, allCases, activeCase, t]
   );
@@ -56,17 +56,20 @@ export default function Dashboard() {
 
       const actives = data.filter((c) => c.status !== "APPROVED");
       if (actives.length > 0) {
-        if (!activeCase || activeCase.status === "APPROVED") {
-          setActiveCase(actives[0]);
-        }
-      } else if (completed.length > 0 && !activeCase) {
+        // Always prefer the latest active case from fresh data
+        setActiveCase(actives[0]);
+      } else if (completed.length > 0) {
+        // Fall back to the most recent completed case
         setActiveCase(completed[0]);
       } else {
         setActiveCase(null);
       }
+
+      return data;
     } catch (err) {
       console.error("Failed to load cases:", err);
       setErrorMessage(t("dashboard.unableToLoad"));
+      return [];
     }
   };
 
@@ -258,13 +261,18 @@ export default function Dashboard() {
             {activeCases.length > 0 && (
               <button
                 type="button"
-                onClick={() => {
-                  // Focus the first active case so user can resume
-                  const firstActive = activeCases[0];
-                  setActiveCase(firstActive);
+                onClick={async () => {
+                  // Explicitly reload latest case data before resuming
+                  const freshCases = await loadCases();
+                  const freshActives = freshCases.filter((c) => c.status !== "APPROVED");
+                  if (freshActives.length > 0) {
+                    setActiveCase(freshActives[0]);
+                  }
+
                   // Clear message once they choose to resume
                   setErrorMessage("");
-                  // Optional: scroll down to the case steps area
+
+                  // Scroll down to the case steps area (do not rely on scroll for logic)
                   const el = document.querySelector("#case-steps-section");
                   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}

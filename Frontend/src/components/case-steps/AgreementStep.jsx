@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { saveAgreement, transitionCase, getMyCases } from "@/api/case.api";
 
-export default function AgreementStep({ caseId, caseType, onUpdated }) {
-  const [detectedType, setDetectedType] = useState(caseType || null);
+export default function AgreementStep({ caseData, caseId, caseType, onUpdated }) {
+  const [detectedType, setDetectedType] = useState(caseType || caseData?.type || caseData?.divorceType || null);
   const [iddat, setIddat] = useState("");
   const [mahrSettlement, setMahrSettlement] = useState("");
   const [mahrReturn, setMahrReturn] = useState("");
@@ -15,7 +15,7 @@ export default function AgreementStep({ caseId, caseType, onUpdated }) {
 
   useEffect(() => {
     const fetchCaseType = async () => {
-      if (detectedType) return;
+      if (detectedType || !caseId) return;
       try {
         const cases = await getMyCases();
         const currentCase = cases.find((c) => c._id === caseId);
@@ -28,6 +28,8 @@ export default function AgreementStep({ caseId, caseType, onUpdated }) {
     };
     fetchCaseType();
   }, [caseId, detectedType]);
+
+  const effectiveCaseId = caseData?._id || caseId;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,7 +59,7 @@ export default function AgreementStep({ caseId, caseType, onUpdated }) {
     setError("");
     setLoading(true);
     try {
-      await saveAgreement(caseId, {
+      await saveAgreement(effectiveCaseId, {
         iddat,
         mahrSettlement: detectedType === "TALAQ" ? mahrSettlement : undefined,
         mahrReturn: detectedType === "KHULA" ? mahrReturn : undefined,
@@ -66,7 +68,7 @@ export default function AgreementStep({ caseId, caseType, onUpdated }) {
         conditions,
         divorceType: detectedType,
       });
-      await transitionCase(caseId, { nextStatus: "AGREEMENT_DONE" });
+      await transitionCase(effectiveCaseId, { nextStatus: "AGREEMENT_DONE" });
       onUpdated?.();
     } catch (err) {
       setError(err?.response?.data?.message || "Unable to save agreement. Please try again.");

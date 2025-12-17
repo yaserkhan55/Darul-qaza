@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { saveDivorceForm, transitionCase } from "../../api/case.api";
 import SuccessMessage from "../SuccessMessage";
 
-export default function KhulaForm({ caseId, onSuccess }) {
+export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({
     wifeName: "",
@@ -21,6 +21,8 @@ export default function KhulaForm({ caseId, onSuccess }) {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+
+  const effectiveCaseId = caseData?._id || caseId;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,12 +50,12 @@ export default function KhulaForm({ caseId, onSuccess }) {
 
     setLoading(true);
     try {
-      await saveDivorceForm(caseId, {
+      await saveDivorceForm(effectiveCaseId, {
         ...form,
         divorceType: "KHULA",
       });
       // Transition to FORM_COMPLETED
-      await transitionCase(caseId, { nextStatus: "FORM_COMPLETED" });
+      await transitionCase(effectiveCaseId, { nextStatus: "FORM_COMPLETED" });
       setShowSuccess(true);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to submit form. Please try again.");
@@ -64,7 +66,11 @@ export default function KhulaForm({ caseId, onSuccess }) {
 
   const handleSuccessClose = () => {
     setShowSuccess(false);
-    onSuccess?.();
+    if (onUpdated) {
+      onUpdated();
+    } else {
+      onSuccess?.();
+    }
   };
 
   return (

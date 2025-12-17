@@ -62,10 +62,39 @@ export default function AdminDashboard() {
   const documentList = [
     { key: "applicantAffidavit", label: "Applicant affidavit" },
     { key: "respondentAffidavit", label: "Respondent affidavit" },
-    { key: "witnessAffidavit", label: "Witness affidavit" },
+    { key: "witnessAffidavits", label: "Witness affidavit" },
     { key: "nikahnama", label: "Nikahnama" },
     { key: "idProof", label: "ID proof" },
-  ].map((d) => ({ ...d, url: pickDoc(d.key) })).filter((d) => d.url);
+  ]
+    .flatMap((d) => {
+      const value = pickDoc(d.key);
+      if (!value) return [];
+
+      if (Array.isArray(value)) {
+        return value
+          .filter(Boolean)
+          .map((v, idx) => ({
+            key: `${d.key}-${idx + 1}`,
+            label: `${d.label} #${idx + 1}`,
+            value: v,
+          }));
+      }
+
+      return [{ key: d.key, label: d.label, value }];
+    })
+    .map((d) => {
+      const raw = d.value;
+      const url = typeof raw === "string" ? raw : raw?.url;
+      const filename =
+        (typeof raw === "object" && raw?.filename) || url?.split("/").pop();
+      const uploadedAt =
+        typeof raw === "object" && raw?.uploadedAt
+          ? new Date(raw.uploadedAt)
+          : null;
+
+      return { ...d, url, filename, uploadedAt };
+    })
+    .filter((d) => d.url);
 
   const handleSelect = (c) => {
     setSelectedCase(c);
@@ -288,7 +317,13 @@ export default function AdminDashboard() {
                   ) : (
                     <div className="space-y-2">
                       {documentList.map((doc) => (
-                        <DocRow key={doc.key} label={doc.label} url={doc.url} />
+                        <DocRow
+                          key={doc.key}
+                          label={doc.label}
+                          url={doc.url}
+                          filename={doc.filename}
+                          uploadedAt={doc.uploadedAt}
+                        />
                       ))}
                     </div>
                   )}
@@ -384,8 +419,8 @@ function InfoRow({ label, value }) {
   );
 }
 
-function DocRow({ label, url }) {
-  const name = url?.split("/").pop();
+function DocRow({ label, url, filename, uploadedAt }) {
+  const name = filename || url?.split("/").pop();
   const isPdf = url?.toLowerCase().endsWith(".pdf");
   return (
     <a
@@ -396,7 +431,10 @@ function DocRow({ label, url }) {
     >
       <span>{label}</span>
       <span className="truncate ml-2 text-gray-600">{name || url}</span>
-      <span className="ml-2 text-[11px] text-gray-500">{isPdf ? "PDF" : "Image/Doc"}</span>
+      <span className="ml-2 text-[11px] text-gray-500">
+        {isPdf ? "PDF" : "Image/Doc"}
+        {uploadedAt && ` · ${uploadedAt.toLocaleDateString()}`}
+      </span>
     </a>
   );
 }

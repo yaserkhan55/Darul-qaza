@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { saveResolution, transitionCase } from "@/api/case.api";
 
-export default function ResolutionStep({ caseId, onUpdated }) {
+export default function ResolutionStep({ caseData, caseId, onUpdated }) {
   const [description, setDescription] = useState("");
   const [attemptDate, setAttemptDate] = useState("");
   const [outcome, setOutcome] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const effectiveCaseId = caseData?._id || caseId;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,7 +19,7 @@ export default function ResolutionStep({ caseId, onUpdated }) {
     setError("");
     setLoading(true);
     try {
-      await saveResolution(caseId, {
+      await saveResolution(effectiveCaseId, {
         description,
         attemptDate,
         outcome,
@@ -32,7 +34,7 @@ export default function ResolutionStep({ caseId, onUpdated }) {
       } else {
         nextStatus = "RESOLUTION_FAILED";
       }
-      await transitionCase(caseId, { nextStatus });
+      await transitionCase(effectiveCaseId, { nextStatus });
       onUpdated?.();
     } catch (err) {
       setError(err?.response?.data?.message || "Unable to save resolution. Please try again.");

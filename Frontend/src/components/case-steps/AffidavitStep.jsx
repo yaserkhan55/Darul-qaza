@@ -2,19 +2,21 @@ import { useMemo, useState } from "react";
 import { saveAffidavits, transitionCase } from "@/api/case.api";
 
 const initialUploads = {
-  applicant: { url: "", progress: 0 },
-  respondent: { url: "", progress: 0 },
+  applicant: { url: "", progress: 0, filename: "", uploadedAt: null },
+  respondent: { url: "", progress: 0, filename: "", uploadedAt: null },
   witnesses: [], // Array for multiple witness affidavits
-  nikahnama: { url: "", progress: 0 },
-  idProof: { url: "", progress: 0 },
+  nikahnama: { url: "", progress: 0, filename: "", uploadedAt: null },
+  idProof: { url: "", progress: 0, filename: "", uploadedAt: null },
 };
 
 const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
 
-export default function AffidavitStep({ caseId, onUpdated }) {
+export default function AffidavitStep({ caseData, caseId, onUpdated }) {
   const [uploads, setUploads] = useState(initialUploads);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const effectiveCaseId = caseData?._id || caseId;
 
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const unsignedPreset = import.meta.env.VITE_CLOUDINARY_UNSIGNED_PRESET;
@@ -43,6 +45,7 @@ export default function AffidavitStep({ caseId, onUpdated }) {
     }
     setError("");
     try {
+      const uploadedAt = new Date().toISOString();
       const url = await uploadToCloudinary({
         file,
         cloudName,
@@ -66,13 +69,13 @@ export default function AffidavitStep({ caseId, onUpdated }) {
       if (key === "witnesses" && witnessIndex !== null) {
         setUploads((prev) => {
           const newWitnesses = [...(prev.witnesses || [])];
-          newWitnesses[witnessIndex] = { url, progress: 100, filename: file.name };
+          newWitnesses[witnessIndex] = { url, progress: 100, filename: file.name, uploadedAt };
           return { ...prev, witnesses: newWitnesses };
         });
       } else {
         setUploads((prev) => ({
           ...prev,
-          [key]: { url, progress: 100, filename: file.name },
+          [key]: { url, progress: 100, filename: file.name, uploadedAt },
         }));
       }
     } catch (err) {
@@ -116,15 +119,16 @@ export default function AffidavitStep({ caseId, onUpdated }) {
     setError("");
     setLoading(true);
     try {
-      await saveAffidavits(caseId, {
-        applicantAffidavit: uploads.applicant.url,
-        respondentAffidavit: uploads.respondent.url,
-        witnessAffidavits: uploads.witnesses.map((w) => w.url),
-        nikahnama: uploads.nikahnama.url,
-        idProof: uploads.idProof.url,
+      // Persist full metadata so it can be displayed in dashboard/admin
+      await saveAffidavits(effectiveCaseId, {
+        applicantAffidavit: uploads.applicant,
+        respondentAffidavit: uploads.respondent,
+        witnessAffidavits: uploads.witnesses,
+        nikahnama: uploads.nikahnama,
+        idProof: uploads.idProof,
       });
       // Transition to UNDER_REVIEW after affidavits are done
-      await transitionCase(caseId, { nextStatus: "UNDER_REVIEW" });
+      await transitionCase(effectiveCaseId, { nextStatus: "UNDER_REVIEW" });
       onUpdated?.();
     } catch (err) {
       setError(err?.response?.data?.message || "Unable to save affidavits. Please try again.");
