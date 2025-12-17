@@ -1,14 +1,23 @@
 import Case, { CASE_STATUSES, CASE_TYPES } from "../models/Case.model.js";
 
 // Strict status transitions
+// This combines the original status machine with the user-facing stepper workflow.
 const transitions = {
-  // User workflow
+  // User / frontend stepper workflow
+  STARTED: ["FORM_COMPLETED"],
+  FORM_COMPLETED: ["FORM_COMPLETED", "RESOLUTION_SUCCESS", "RESOLUTION_FAILED"],
+  RESOLUTION_SUCCESS: ["AGREEMENT_DONE"],
+  RESOLUTION_FAILED: ["AGREEMENT_DONE"],
+  AGREEMENT_DONE: ["AFFIDAVITS_DONE"],
+  AFFIDAVITS_DONE: ["UNDER_REVIEW"],
+  UNDER_REVIEW: ["APPROVED", "REJECTED", "FORM_COMPLETED"],
+
+  // Legacy / admin workflow (kept for backward compatibility)
   DRAFT: ["SUBMITTED", "REJECTED"], // allow Qazi to close incomplete cases
   SUBMITTED: ["PENDING_REVIEW", "REJECTED"],
-  // Qazi review workflow
-  PENDING_REVIEW: ["PENDING_HUSBAND_CONSENT", "ARBITRATION", "APPROVED", "REJECTED"],
+  PENDING_REVIEW: ["PENDING_HUSBAND_CONSENT", "ARBITRATION", "APPROVED", "REJECTED", "FORM_COMPLETED"],
   PENDING_HUSBAND_CONSENT: ["ARBITRATION", "APPROVED", "REJECTED"],
-  ARBITRATION: ["APPROVED", "REJECTED"],
+  ARBITRATION: ["APPROVED", "REJECTED", "FORM_COMPLETED"],
   APPROVED: ["COMPLETED"],
   REJECTED: [],
   COMPLETED: [],
