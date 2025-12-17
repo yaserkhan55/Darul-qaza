@@ -6,10 +6,10 @@ const transitions = {
   // User / frontend stepper workflow
   STARTED: ["FORM_COMPLETED"],
   FORM_COMPLETED: ["FORM_COMPLETED", "RESOLUTION_SUCCESS", "RESOLUTION_FAILED"],
-  RESOLUTION_SUCCESS: ["AGREEMENT_DONE"],
-  RESOLUTION_FAILED: ["AGREEMENT_DONE"],
-  AGREEMENT_DONE: ["AFFIDAVITS_DONE"],
-  AFFIDAVITS_DONE: ["UNDER_REVIEW"],
+  RESOLUTION_SUCCESS: ["AGREEMENT_DONE", "APPROVED", "REJECTED"],
+  RESOLUTION_FAILED: ["AGREEMENT_DONE", "APPROVED", "REJECTED"],
+  AGREEMENT_DONE: ["AFFIDAVITS_DONE", "UNDER_REVIEW", "APPROVED", "REJECTED", "FORM_COMPLETED"],
+  AFFIDAVITS_DONE: ["UNDER_REVIEW", "APPROVED", "REJECTED", "FORM_COMPLETED"],
   UNDER_REVIEW: ["APPROVED", "REJECTED", "FORM_COMPLETED"],
 
   // Legacy / admin workflow (kept for backward compatibility)
@@ -149,9 +149,12 @@ export const transitionCase = async (req, res) => {
       return res.status(400).json({ message: "Invalid status" });
 
     if (!canTransition(caseData.status, nextStatus)) {
-      return res
-        .status(400)
-        .json({ message: `Cannot move from ${caseData.status} to ${nextStatus}` });
+      return res.status(400).json({
+        message: `Cannot move from ${caseData.status} to ${nextStatus}`,
+        from: caseData.status,
+        to: nextStatus,
+        allowed: transitions[caseData.status] || [],
+      });
     }
 
     validateIslamicLogic(caseData, nextStatus, { consentDocument, talaqCount });
