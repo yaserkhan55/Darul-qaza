@@ -23,7 +23,13 @@ const transitions = {
   COMPLETED: [],
 };
 
-const canTransition = (from, to) => (transitions[from] || []).includes(to);
+const ADMIN_OVERRIDE_TARGETS = ["APPROVED", "REJECTED", "FORM_COMPLETED"];
+
+const canTransition = (from, to) => {
+  // Always allow admin-critical targets to avoid blocking approvals/rejections/send-backs
+  if (ADMIN_OVERRIDE_TARGETS.includes(to)) return true;
+  return (transitions[from] || []).includes(to);
+};
 
 const addHistory = (caseData, status, changedBy, note) => {
   caseData.history.push({
