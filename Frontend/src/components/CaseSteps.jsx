@@ -19,7 +19,6 @@ export default function CaseSteps({ caseData, onUpdated }) {
 
   // Map any backend/internal statuses into the strict frontend flow
   const STATUS_ADAPTER = {
-    // Legacy / backend-only states → closest user-facing step
     DRAFT: "STARTED",
     SUBMITTED: "FORM_COMPLETED",
     PENDING_REVIEW: "UNDER_REVIEW",
@@ -31,15 +30,21 @@ export default function CaseSteps({ caseData, onUpdated }) {
   const effectiveStatus = STATUS_ADAPTER[rawStatus] || rawStatus;
   const caseType = caseData.type || caseData.divorceType || "TALAQ";
 
+  // 🔑 IMPORTANT FIX:
+  // Normalize status so forms work correctly when backend sends DRAFT
+  const normalizedCaseData =
+    rawStatus === "DRAFT"
+      ? { ...caseData, status: "STARTED" }
+      : caseData;
+
   const renderStepComponent = () => {
     switch (effectiveStatus) {
       // STARTED → TalaqForm OR KhulaForm
       case "STARTED":
-      case "DRAFT":
         return caseType === "KHULA" ? (
-          <KhulaForm caseData={caseData} onUpdated={onUpdated} />
+          <KhulaForm caseData={normalizedCaseData} onUpdated={onUpdated} />
         ) : (
-          <TalaqForm caseData={caseData} onUpdated={onUpdated} />
+          <TalaqForm caseData={normalizedCaseData} onUpdated={onUpdated} />
         );
 
       // FORM_COMPLETED → ResolutionStep
@@ -50,10 +55,7 @@ export default function CaseSteps({ caseData, onUpdated }) {
       case "RESOLUTION_SUCCESS":
       case "RESOLUTION_FAILED":
         return (
-          <AgreementStep
-            caseData={caseData}
-            onUpdated={onUpdated}
-          />
+          <AgreementStep caseData={caseData} onUpdated={onUpdated} />
         );
 
       // AGREEMENT_DONE → AffidavitUploadStep
@@ -74,9 +76,7 @@ export default function CaseSteps({ caseData, onUpdated }) {
         return <RejectionReasonView caseData={caseData} />;
 
       default:
-        return (
-          <UnexpectedStatusNotice rawStatus={rawStatus} />
-        );
+        return <UnexpectedStatusNotice rawStatus={rawStatus} />;
     }
   };
 
@@ -171,7 +171,9 @@ function DocumentsSection({ caseData }) {
     const pushDoc = (key, label, value) => {
       if (!value) return;
       if (Array.isArray(value)) {
-        value.forEach((v, idx) => pushDoc(`${key}-${idx + 1}`, `${label} #${idx + 1}`, v));
+        value.forEach((v, idx) =>
+          pushDoc(`${key}-${idx + 1}`, `${label} #${idx + 1}`, v)
+        );
         return;
       }
       const url = typeof value === "string" ? value : value.url;
