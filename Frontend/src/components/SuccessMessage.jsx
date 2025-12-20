@@ -19,11 +19,12 @@ export default function SuccessMessage({ message, onClose }) {
             {t("legalDisclaimer.text")}
           </p>
           <button
-            onClick={onClose}
-            className="bg-islamicGreen text-white px-6 py-2 rounded-lg hover:opacity-90 transition font-medium"
-          >
-            {t("common.continue")}
-          </button>
+  onClick={onClose}
+  className="bg-islamicGreen text-white px-6 py-2 rounded-lg hover:opacity-90 transition font-medium"
+>
+  {t("dashboard.messageModalClose")}
+</button>
+
         </div>
       </div>
     </div>
