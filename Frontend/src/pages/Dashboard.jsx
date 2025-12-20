@@ -74,11 +74,6 @@ export default function Dashboard() {
   };
 
   const handleStart = async (divorceType = "TALAQ") => {
-    if (activeCases.length > 0) {
-      setErrorMessage(t("dashboard.completeCurrentCase"));
-      return;
-    }
-
     setLoading(true);
     try {
       const newCase = await startCase(divorceType, user?.id);
@@ -95,6 +90,7 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     // Check if user came from Home page with a selected type
@@ -364,12 +360,12 @@ export default function Dashboard() {
                 : t("dashboard.noActiveCaseDesc2")}
             </p>
             <button
-              onClick={() => handleStart("TALAQ")}
-              disabled={loading}
-              className="bg-islamicGreen text-white px-6 py-2.5 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 text-sm font-medium shadow-md hover:shadow-lg"
-            >
-              {loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
-            </button>
+  onClick={() => handleStart("TALAQ")}
+  disabled={loading}
+  className="w-full sm:w-auto bg-islamicGreen ..."
+>
+{loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
+</button>
           </div>
         )}
       </div>
