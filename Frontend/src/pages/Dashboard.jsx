@@ -45,7 +45,7 @@ export default function Dashboard() {
     [activeCases.length, completedCases.length, allCases, activeCase, t]
   );
 
-  const loadCases = async () => {
+  const loadCases = async (shouldUpdateActive = true) => {
     try {
       const data = await getMyCases();
       setAllCases(data);
@@ -54,15 +54,17 @@ export default function Dashboard() {
       const completed = data.filter((c) => c.status === "APPROVED");
       setCompletedCases(completed);
 
-      const actives = data.filter((c) => c.status !== "APPROVED");
-      if (actives.length > 0) {
-        // Always prefer the latest active case from fresh data
-        setActiveCase(actives[0]);
-      } else if (completed.length > 0) {
-        // Fall back to the most recent completed case
-        setActiveCase(completed[0]);
-      } else {
-        setActiveCase(null);
+      if (shouldUpdateActive) {
+        const actives = data.filter((c) => c.status !== "APPROVED");
+        if (actives.length > 0) {
+          // Always prefer the latest active case from fresh data
+          setActiveCase(actives[0]);
+        } else if (completed.length > 0) {
+          // Fall back to the most recent completed case
+          setActiveCase(completed[0]);
+        } else {
+          setActiveCase(null);
+        }
       }
 
       return data;
@@ -77,8 +79,14 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const newCase = await startCase(divorceType, user?.id);
+
+      // Update local state immediately to ensure UI feels responsive
+      setAllCases((prev) => [newCase, ...prev]);
       setActiveCase(newCase);
-      await loadCases();
+
+      // Refresh data in background without overriding the user's current selection
+      await loadCases(false);
+
       setErrorMessage("");
     } catch (err) {
       const message =
@@ -90,7 +98,7 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
-  
+
 
   useEffect(() => {
     // Check if user came from Home page with a selected type
@@ -98,7 +106,7 @@ export default function Dashboard() {
     if (startType) {
       handleStart(startType);
     } else {
-      loadCases();
+      loadCases(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -128,54 +136,54 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-5">
-        {showMessageModal && latestMessage && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8">
-            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 space-y-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs text-gray-500">
-                    {new Date(latestMessage.createdAt).toLocaleString()}
-                  </p>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {latestMessage.title}
-                  </h3>
-                </div>
-                <button
-                  onClick={async () => {
-                    setShowMessageModal(false);
-                    try {
-                      await markMessageRead(latestMessage._id);
-                    } catch (err) {
-                      console.error("mark read failed", err);
-                    }
-                  }}
-                  className="text-gray-500 hover:text-gray-800"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
+      {showMessageModal && latestMessage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs text-gray-500">
+                  {new Date(latestMessage.createdAt).toLocaleString()}
+                </p>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {latestMessage.title}
+                </h3>
               </div>
-              <p className="text-sm text-gray-700 leading-relaxed">
-                {latestMessage.body}
-              </p>
-              <div className="flex justify-end">
-                <button
-                  onClick={async () => {
-                    setShowMessageModal(false);
-                    try {
-                      await markMessageRead(latestMessage._id);
-                    } catch (err) {
-                      console.error("mark read failed", err);
-                    }
-                  }}
-                  className="bg-islamicGreen text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition"
-                >
-                  Got it
-                </button>
-              </div>
+              <button
+                onClick={async () => {
+                  setShowMessageModal(false);
+                  try {
+                    await markMessageRead(latestMessage._id);
+                  } catch (err) {
+                    console.error("mark read failed", err);
+                  }
+                }}
+                className="text-gray-500 hover:text-gray-800"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              {latestMessage.body}
+            </p>
+            <div className="flex justify-end">
+              <button
+                onClick={async () => {
+                  setShowMessageModal(false);
+                  try {
+                    await markMessageRead(latestMessage._id);
+                  } catch (err) {
+                    console.error("mark read failed", err);
+                  }
+                }}
+                className="bg-islamicGreen text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition"
+              >
+                Got it
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
       {/* Greeting card */}
       {user && (
@@ -281,95 +289,94 @@ export default function Dashboard() {
         )}
       </div>
 
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-      {/* LEFT PANEL */}
-      <div className="bg-white p-3 sm:p-4 lg:p-5 rounded-xl shadow-lg border border-gray-100">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-lg sm:text-xl text-gray-800">{t("dashboard.completedCases")}</h2>
-          <span className="text-xs sm:text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-            {completedCases.length}
-          </span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        {/* LEFT PANEL */}
+        <div className="bg-white p-3 sm:p-4 lg:p-5 rounded-xl shadow-lg border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-lg sm:text-xl text-gray-800">{t("dashboard.completedCases")}</h2>
+            <span className="text-xs sm:text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+              {completedCases.length}
+            </span>
+          </div>
+
+          {completedCases.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-gray-500 mb-4">{t("dashboard.noCasesYet")}</p>
+              <button
+                onClick={() => handleStart("TALAQ")}
+                disabled={loading}
+                className="w-full bg-islamicGreen text-white py-2.5 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 text-sm font-medium shadow-md hover:shadow-lg"
+              >
+                {loading ? t("dashboard.starting") : t("dashboard.startFirstCase")}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2 max-h-[50vh] lg:max-h-[65vh] overflow-y-auto pr-2">
+                {completedCases.map((c) => (
+                  <div
+                    key={c._id}
+                    onClick={() => setActiveCase(c)}
+                    className={`p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${activeCase?._id === c._id
+                        ? "bg-teal-50 border-islamicGreen shadow-md"
+                        : "border-gray-200 hover:border-teal-300 hover:bg-gray-50 hover:shadow-sm"
+                      }`}
+                  >
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1">
+                        <span className="font-semibold text-sm sm:text-base text-gray-800 block mb-1">
+                          {c.divorceType}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(c.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <StatusBadge status={c.status} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => handleStart("TALAQ")}
+                disabled={loading}
+                className="w-full mt-4 bg-islamicGreen text-white py-2.5 sm:py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 text-sm sm:text-base font-medium shadow-md hover:shadow-lg"
+              >
+                {loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
+              </button>
+            </>
+          )}
         </div>
 
-        {completedCases.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-sm text-gray-500 mb-4">{t("dashboard.noCasesYet")}</p>
-            <button
-              onClick={() => handleStart("TALAQ")}
-              disabled={loading}
-              className="w-full bg-islamicGreen text-white py-2.5 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 text-sm font-medium shadow-md hover:shadow-lg"
-            >
-              {loading ? t("dashboard.starting") : t("dashboard.startFirstCase")}
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="space-y-2 max-h-[50vh] lg:max-h-[65vh] overflow-y-auto pr-2">
-              {completedCases.map((c) => (
-                <div
-                  key={c._id}
-                  onClick={() => setActiveCase(c)}
-                  className={`p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                    activeCase?._id === c._id
-                      ? "bg-teal-50 border-islamicGreen shadow-md"
-                      : "border-gray-200 hover:border-teal-300 hover:bg-gray-50 hover:shadow-sm"
-                  }`}
-                >
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="flex-1">
-                      <span className="font-semibold text-sm sm:text-base text-gray-800 block mb-1">
-                        {c.divorceType}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(c.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <StatusBadge status={c.status} />
-                  </div>
-                </div>
-              ))}
+        {/* RIGHT PANEL */}
+        <div
+          id="case-steps-section"
+          className="col-span-1 lg:col-span-2 bg-white p-3 sm:p-4 lg:p-6 xl:p-8 rounded-xl shadow-lg border border-gray-100 min-h-[400px]"
+        >
+          {activeCase ? (
+            <CaseSteps caseData={activeCase} onUpdated={loadCases} />
+          ) : (
+            <div className="text-center py-12 sm:py-16">
+              <div className="text-5xl sm:text-6xl mb-4">📋</div>
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
+                {t("dashboard.noActiveCase")}
+              </h3>
+              <p className="text-sm sm:text-base text-gray-500 mb-6">
+                {allCases.length === 0
+                  ? t("dashboard.noActiveCaseDesc1")
+                  : t("dashboard.noActiveCaseDesc2")}
+              </p>
+              <button
+                onClick={() => handleStart("TALAQ")}
+                disabled={loading}
+                className="w-full sm:w-auto bg-islamicGreen ..."
+              >
+                {loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
+              </button>
             </div>
-
-            <button
-              onClick={() => handleStart("TALAQ")}
-              disabled={loading}
-              className="w-full mt-4 bg-islamicGreen text-white py-2.5 sm:py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 text-sm sm:text-base font-medium shadow-md hover:shadow-lg"
-            >
-              {loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
-            </button>
-          </>
-        )}
+          )}
+        </div>
       </div>
-
-      {/* RIGHT PANEL */}
-      <div
-        id="case-steps-section"
-        className="col-span-1 lg:col-span-2 bg-white p-3 sm:p-4 lg:p-6 xl:p-8 rounded-xl shadow-lg border border-gray-100 min-h-[400px]"
-      >
-        {activeCase ? (
-          <CaseSteps caseData={activeCase} onUpdated={loadCases} />
-        ) : (
-          <div className="text-center py-12 sm:py-16">
-            <div className="text-5xl sm:text-6xl mb-4">📋</div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
-              {t("dashboard.noActiveCase")}
-            </h3>
-            <p className="text-sm sm:text-base text-gray-500 mb-6">
-              {allCases.length === 0 
-                ? t("dashboard.noActiveCaseDesc1")
-                : t("dashboard.noActiveCaseDesc2")}
-            </p>
-            <button
-  onClick={() => handleStart("TALAQ")}
-  disabled={loading}
-  className="w-full sm:w-auto bg-islamicGreen ..."
->
-{loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
-</button>
-          </div>
-        )}
-      </div>
-    </div>
     </div>
   );
 }
