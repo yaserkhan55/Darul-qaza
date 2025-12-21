@@ -6,6 +6,8 @@ import DraftStatus from "../DraftStatus";
 
 export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
   const { t } = useTranslation();
+  const effectiveCaseId = caseData?._id || caseId;
+
   const [form, setForm] = useState({
     husbandName: "",
     husbandCnic: "",
@@ -54,8 +56,6 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
-  const effectiveCaseId = caseData?._id || caseId;
 
 
   // ... (keep state) ...

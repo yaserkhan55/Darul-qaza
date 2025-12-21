@@ -1,13 +1,15 @@
 import axios from "axios";
 
-const FALLBACK_API_URL = "https://darul-qaza-backend.onrender.com/api";
-const API_BASE_URL = import.meta.env.VITE_API_URL || FALLBACK_API_URL;
+const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
-if (!import.meta.env.VITE_API_URL) {
-  console.warn(
-    "VITE_API_URL is not set. Falling back to production backend:",
-    FALLBACK_API_URL
-  );
+// Force localhost API if running locally to avoid hitting production (Render) causing CORS/Auth mismatch
+// This overrides .env VITE_API_URL if we are on localhost
+const API_BASE_URL = isLocal
+  ? "http://localhost:5000/api"
+  : (import.meta.env.VITE_API_URL || "https://darul-qaza-backend.onrender.com/api");
+
+if (isLocal) {
+  console.log("🔧 Localhost detected: Forcing API to http://localhost:5000/api");
 }
 
 const api = axios.create({

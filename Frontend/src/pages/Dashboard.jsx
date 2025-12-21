@@ -77,19 +77,26 @@ export default function Dashboard() {
     }
   };
 
+
+
   const handleStart = async (divorceType = "TALAQ") => {
     setLoading(true);
     try {
-      const newCase = await startCase(divorceType, user?.id);
+      const resultCase = await startCase(divorceType, user?.id);
 
-      // Update local state immediately to ensure UI feels responsive
-      setAllCases((prev) => [newCase, ...prev]);
-      setActiveCase(newCase);
+      // If backend returned an existing case (200), or a new one (201)
+      // We check if it's already in our list to avoid duplicates
+      setAllCases((prev) => {
+        const exists = prev.find(c => c._id === resultCase._id);
+        if (exists) return prev; // Don't add if already there
+        return [resultCase, ...prev]; // Add if new
+      });
 
-      // Refresh data in background without overriding the user's current selection
-      await loadCases(false);
-
+      setActiveCase(resultCase);
       setErrorMessage("");
+
+      // Optional: Refresh background
+      loadCases(false);
     } catch (err) {
       const message =
         err.response?.data?.error ||
