@@ -3,24 +3,18 @@ import { v4 as uuidv4 } from "uuid";
 
 export const CASE_TYPES = ["TALAQ", "KHULA"];
 export const CASE_STATUSES = [
-  // Original workflow statuses
-  "DRAFT",
-  "SUBMITTED",
-  "PENDING_REVIEW",
-  "PENDING_HUSBAND_CONSENT",
-  "ARBITRATION",
-  "APPROVED",
-  "REJECTED",
-  "COMPLETED",
-
-  // Frontend stepper workflow statuses
+  "CREATED", // Initial draft state
   "STARTED",
-  "FORM_COMPLETED",
+  "DRAFT",
+  "FORM_COMPLETED", // Submitted
   "RESOLUTION_SUCCESS",
   "RESOLUTION_FAILED",
   "AGREEMENT_DONE",
   "AFFIDAVITS_DONE",
   "UNDER_REVIEW",
+  "APPROVED",
+  "REJECTED",
+  "COMPLETED",
 ];
 
 const historyEntrySchema = new mongoose.Schema(

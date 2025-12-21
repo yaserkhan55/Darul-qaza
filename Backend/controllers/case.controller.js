@@ -1,23 +1,30 @@
 import Case, { CASE_STATUSES, CASE_TYPES } from "../models/Case.model.js";
 
-// Strict status transitions
-// This combines the original status machine with the user-facing stepper workflow.
+// CASE_FLOW (Single Source of Truth)
+const CASE_FLOW = {
+  CREATED: "FORM",
+  STARTED: "FORM",
+  DRAFT: "FORM",
+  FORM_COMPLETED: "RESOLUTION",
+  RESOLUTION_SUCCESS: "AGREEMENT",
+  RESOLUTION_FAILED: "AGREEMENT", // Fallback flow
+  AGREEMENT_DONE: "AFFIDAVITS",
+  AFFIDAVITS_DONE: "REVIEW",
+  UNDER_REVIEW: "REVIEW",
+  APPROVED: "CERTIFICATE",
+};
+
+// Strict State Transitions
 const transitions = {
-  // User / frontend stepper workflow
-  STARTED: ["FORM_COMPLETED"],
-  FORM_COMPLETED: ["FORM_COMPLETED", "RESOLUTION_SUCCESS", "RESOLUTION_FAILED"],
+  CREATED: ["STARTED", "DRAFT", "FORM_COMPLETED"],
+  STARTED: ["DRAFT", "FORM_COMPLETED"],
+  DRAFT: ["STARTED", "FORM_COMPLETED", "REJECTED"], // Removed SUBMITTED/DRAFT
+  FORM_COMPLETED: ["RESOLUTION_SUCCESS", "RESOLUTION_FAILED", "REJECTED"],
   RESOLUTION_SUCCESS: ["AGREEMENT_DONE", "APPROVED", "REJECTED"],
   RESOLUTION_FAILED: ["AGREEMENT_DONE", "APPROVED", "REJECTED"],
-  AGREEMENT_DONE: ["AFFIDAVITS_DONE", "UNDER_REVIEW", "APPROVED", "REJECTED", "FORM_COMPLETED"],
-  AFFIDAVITS_DONE: ["UNDER_REVIEW", "APPROVED", "REJECTED", "FORM_COMPLETED"],
-  UNDER_REVIEW: ["APPROVED", "REJECTED", "FORM_COMPLETED"],
-
-  // Legacy / admin workflow (kept for backward compatibility)
-  DRAFT: ["SUBMITTED", "REJECTED"], // allow Qazi to close incomplete cases
-  SUBMITTED: ["PENDING_REVIEW", "REJECTED"],
-  PENDING_REVIEW: ["PENDING_HUSBAND_CONSENT", "ARBITRATION", "APPROVED", "REJECTED", "FORM_COMPLETED"],
-  PENDING_HUSBAND_CONSENT: ["ARBITRATION", "APPROVED", "REJECTED"],
-  ARBITRATION: ["APPROVED", "REJECTED", "FORM_COMPLETED"],
+  AGREEMENT_DONE: ["AFFIDAVITS_DONE", "UNDER_REVIEW", "APPROVED", "REJECTED"],
+  AFFIDAVITS_DONE: ["UNDER_REVIEW", "APPROVED", "REJECTED", "FORM_COMPLETED"], // Can go back to form
+  UNDER_REVIEW: ["APPROVED", "REJECTED", "FORM_COMPLETED"], // Reviewer can send back
   APPROVED: ["COMPLETED"],
   REJECTED: [],
   COMPLETED: [],
@@ -46,43 +53,44 @@ const validateIslamicLogic = (caseData, nextStatus, payload = {}) => {
     if (count && (count < 1 || count > 3)) {
       throw new Error("Talaq count must be between 1 and 3.");
     }
-    if (count === 3 && nextStatus === "SUBMITTED") {
-      throw new Error("Instant triple talaq submission is not allowed.");
-    }
-  }
-
-  if (caseData.type === "KHULA") {
-    if (nextStatus === "APPROVED") {
-      const hasConsent = payload.consentDocument || caseData.details?.consentDocument;
-      if (!hasConsent && caseData.status !== "ARBITRATION") {
-        throw new Error("Khula approval requires husband consent or arbitration first.");
-      }
-    }
   }
 };
 
 /**
  * START CASE (create DRAFT)
+ * Single Active Case Rule Enforced
  */
 export const startCase = async (req, res) => {
   try {
     const { type, details, divorceType } = req.body;
-    // Support old payload shape { divorceType } as well as new { type }
     const caseType = type || divorceType;
+    const createdBy = req.user?.id || req.body.createdBy || "anonymous";
 
     if (!CASE_TYPES.includes(caseType)) {
       return res.status(400).json({ message: "Invalid case type" });
     }
 
-    const createdBy = req.user?.id || req.body.createdBy || "anonymous";
+    // 1. Single Active Case Rule
+    const existingCase = await Case.findOne({
+      createdBy,
+      status: { $nin: ["COMPLETED", "REJECTED"] }
+    });
+
+    if (existingCase) {
+      return res.status(400).json({
+        code: "ACTIVE_CASE_EXISTS",
+        message: "Please complete your current case first",
+        caseId: existingCase._id
+      });
+    }
 
     const newCase = await Case.create({
       type: caseType,
       createdBy,
-      status: "DRAFT",
+      status: "CREATED",
       details,
       history: [
-        { status: "DRAFT", changedBy: createdBy, timestamp: new Date(), note: "Case created" },
+        { status: "CREATED", changedBy: createdBy, timestamp: new Date(), note: "Case created" },
       ],
     });
 
@@ -93,16 +101,28 @@ export const startCase = async (req, res) => {
 };
 
 /**
- * SAVE DRAFT DETAILS
+ * SAVE DRAFT DETAILS (Auto-save)
  */
 export const saveDraft = async (req, res) => {
   try {
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
-    if (caseData.status !== "DRAFT")
-      return res.status(400).json({ message: "Can only edit while DRAFT" });
 
+    // Allow editing in DRAFT, CREATED, STARTED, or even FORM_COMPLETED if just fixing before review? 
+    // Ideally just DRAFT/STARTED for pure draft logic.
+    const allowEdit = ["CREATED", "STARTED", "DRAFT", "FORM_COMPLETED"].includes(caseData.status);
+
+    if (!allowEdit)
+      return res.status(400).json({ message: "Cannot edit case in this status" });
+
+    // Update details deeply? Or merge? Mongoose mixed type usually needs careful updates.
+    // For now simple top-level merge is safe for this schema.
     caseData.details = { ...caseData.details, ...req.body.details };
+    // Don't auto-update status to DRAFT if it's already stricter, but if CREATED, maybe move to DRAFT?
+    if (caseData.status === "CREATED") {
+      caseData.status = "DRAFT";
+    }
+
     await caseData.save();
     res.json(caseData);
   } catch (err) {
@@ -111,29 +131,23 @@ export const saveDraft = async (req, res) => {
 };
 
 /**
- * SUBMIT CASE (DRAFT -> SUBMITTED -> PENDING_REVIEW)
+ * SUBMIT CASE (DRAFT -> FORM_COMPLETED)
  */
 export const submitCase = async (req, res) => {
   try {
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
-    if (caseData.status !== "DRAFT")
-      return res.status(400).json({ message: "Only DRAFT cases can be submitted" });
 
-    validateIslamicLogic(caseData, "SUBMITTED", caseData.details);
+    validateIslamicLogic(caseData, "FORM_COMPLETED", caseData.details);
 
-    if (!canTransition(caseData.status, "SUBMITTED")) {
+    const nextStatus = "FORM_COMPLETED";
+
+    if (!canTransition(caseData.status, nextStatus)) {
       return res.status(400).json({ message: "Invalid transition" });
     }
 
-    caseData.status = "SUBMITTED";
-    addHistory(caseData, "SUBMITTED", req.user?.id || "user", "User submitted case");
-
-    // Auto move to pending review
-    if (canTransition("SUBMITTED", "PENDING_REVIEW")) {
-      caseData.status = "PENDING_REVIEW";
-      addHistory(caseData, "PENDING_REVIEW", "system", "Queued for review");
-    }
+    caseData.status = nextStatus;
+    addHistory(caseData, nextStatus, req.user?.id || "user", "User submitted case form");
 
     await caseData.save();
     res.json(caseData);
@@ -143,7 +157,7 @@ export const submitCase = async (req, res) => {
 };
 
 /**
- * ADMIN / QAZI: Transition case
+ * ADMIN / QAZI / SYSTEM: Transition case
  */
 export const transitionCase = async (req, res) => {
   try {
@@ -152,7 +166,7 @@ export const transitionCase = async (req, res) => {
 
     if (!caseData) return res.status(404).json({ message: "Case not found" });
     if (!CASE_STATUSES.includes(nextStatus))
-      return res.status(400).json({ message: "Invalid status" });
+      return res.status(400).json({ message: "Invalid status value" });
 
     if (!canTransition(caseData.status, nextStatus)) {
       return res.status(400).json({
@@ -171,10 +185,6 @@ export const transitionCase = async (req, res) => {
 
     caseData.status = nextStatus;
     addHistory(caseData, nextStatus, req.user?.id || "admin", note || "");
-
-    if (nextStatus === "COMPLETED" && caseData.history.every((h) => h.status !== "APPROVED")) {
-      return res.status(400).json({ message: "Case must be APPROVED before COMPLETED." });
-    }
 
     await caseData.save();
     res.json(caseData);
@@ -212,5 +222,18 @@ export const getAllCases = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+/**
+ * GET DRAFT (for resuming)
+ */
+export const getDraft = async (req, res) => {
+  try {
+    const caseData = await Case.findById(req.params.id);
+    if (!caseData) return res.status(404).json({ message: "Case not found" });
+    res.json(caseData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
 
 
