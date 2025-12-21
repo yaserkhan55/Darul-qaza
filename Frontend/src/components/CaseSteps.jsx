@@ -19,6 +19,7 @@ export default function CaseSteps({ caseData, onUpdated }) {
 
   // Map any backend/internal statuses into the strict frontend flow
   const STATUS_ADAPTER = {
+    CREATED: "STARTED",
     DRAFT: "STARTED",
     SUBMITTED: "FORM_COMPLETED",
     PENDING_REVIEW: "UNDER_REVIEW",
@@ -31,9 +32,9 @@ export default function CaseSteps({ caseData, onUpdated }) {
   const caseType = caseData.type || caseData.divorceType || "TALAQ";
 
   // 🔑 IMPORTANT FIX:
-  // Normalize status so forms work correctly when backend sends DRAFT
+  // Normalize status so forms work correctly when backend sends DRAFT or CREATED
   const normalizedCaseData =
-    rawStatus === "DRAFT"
+    rawStatus === "DRAFT" || rawStatus === "CREATED"
       ? { ...caseData, status: "STARTED" }
       : caseData;
 
