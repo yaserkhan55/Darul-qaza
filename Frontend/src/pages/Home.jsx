@@ -4,6 +4,8 @@ import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 import { useTranslation } from "react-i18next";
 import { getMyMessages, markMessageRead } from "../api/message.api";
 
+import { FileText, Handshake, ScrollText, FileSignature, Gavel, BadgeCheck } from "lucide-react";
+
 export default function Home() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -19,6 +21,7 @@ export default function Home() {
 
   // Load latest unread admin/Qazi message and show as popup
   useEffect(() => {
+    // ... (keep existing effect logic)
     const loadMessages = async () => {
       if (!user) return;
       try {
@@ -43,37 +46,37 @@ export default function Home() {
       number: 1,
       title: t("home.steps.application.title"),
       description: t("home.steps.application.description"),
-      icon: "📝",
+      icon: <FileText className="w-8 h-8 text-islamicGreen" />,
     },
     {
       number: 2,
       title: t("home.steps.resolution.title"),
       description: t("home.steps.resolution.description"),
-      icon: "🤝",
+      icon: <Handshake className="w-8 h-8 text-islamicGreen" />,
     },
     {
       number: 3,
       title: t("home.steps.agreement.title"),
       description: t("home.steps.agreement.description"),
-      icon: "📋",
+      icon: <ScrollText className="w-8 h-8 text-islamicGreen" />,
     },
     {
       number: 4,
       title: t("home.steps.affidavits.title"),
       description: t("home.steps.affidavits.description"),
-      icon: "📜",
+      icon: <FileSignature className="w-8 h-8 text-islamicGreen" />,
     },
     {
       number: 5,
       title: t("home.steps.review.title"),
       description: t("home.steps.review.description"),
-      icon: "⚖️",
+      icon: <Gavel className="w-8 h-8 text-islamicGreen" />,
     },
     {
       number: 6,
       title: t("home.steps.certificate.title"),
       description: t("home.steps.certificate.description"),
-      icon: "✅",
+      icon: <BadgeCheck className="w-8 h-8 text-islamicGreen" />,
     },
   ];
 
@@ -159,7 +162,7 @@ export default function Home() {
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-islamicGreen/5 rounded-full blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-40 h-40 bg-islamicGold/5 rounded-full blur-3xl"></div>
-            
+
             <div className="relative z-10">
               <div className="text-center mb-6 sm:mb-8">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-islamicGreen mb-4 animate-slide-up">
@@ -174,11 +177,10 @@ export default function Home() {
                 {divorceTypes.map((item) => (
                   <div
                     key={item.type}
-                    className={`border-2 rounded-xl p-5 sm:p-6 cursor-pointer transition-all duration-300 transform ${
-                      selectedType === item.type
+                    className={`border-2 rounded-xl p-5 sm:p-6 cursor-pointer transition-all duration-300 transform ${selectedType === item.type
                         ? "border-islamicGreen bg-teal-50 shadow-lg scale-105"
                         : "border-gray-200 hover:border-teal-300 hover:shadow-md hover:scale-102"
-                    }`}
+                      }`}
                     onClick={() => setSelectedType(item.type)}
                   >
                     <h3 className="text-lg sm:text-xl font-semibold text-islamicGreen mb-2">
@@ -204,9 +206,8 @@ export default function Home() {
                         alert(t("home.selectDivorceType"));
                       }
                     }}
-                    className={`relative bg-islamicGreen hover:bg-teal-700 text-white font-bold py-4 px-10 sm:px-12 rounded-lg shadow-xl transition-all duration-300 text-base sm:text-lg transform hover:scale-105 active:scale-95 ${
-                      !selectedType ? "animate-pulse" : ""
-                    }`}
+                    className={`relative bg-islamicGreen hover:bg-teal-700 text-white font-bold py-4 px-10 sm:px-12 rounded-lg shadow-xl transition-all duration-300 text-base sm:text-lg transform hover:scale-105 active:scale-95 ${!selectedType ? "animate-pulse" : ""
+                      }`}
                     style={{
                       boxShadow: !selectedType
                         ? "0 0 30px rgba(15, 118, 110, 0.7)"
