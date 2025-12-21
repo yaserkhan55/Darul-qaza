@@ -365,7 +365,6 @@ export default function Dashboard() {
           {activeCase ? (
             <div className="animate-fade-in">
               <CaseSteps caseData={activeCase} onUpdated={loadCases} />
-              <CaseTimeline currentStatus={activeCase.status} />
             </div>
           ) : (
             <div className="text-center py-12 sm:py-16 animate-fade-in">

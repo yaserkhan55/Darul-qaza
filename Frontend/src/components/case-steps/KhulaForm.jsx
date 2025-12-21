@@ -61,22 +61,33 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
     e.preventDefault();
     setError("");
 
-    if (
-      !form.wifeName ||
-      !form.wifeCnic ||
-      !form.husbandName ||
-      !form.nikahDate ||
-      !form.nikahPlace ||
-      !form.reasonForKhula ||
-      !form.compensationAmount ||
-      !form.husbandConsent
-    ) {
-      setError(t("form.errors.required")); // "Please fill all required fields marked with *."
+    // 1. Required Fields Check
+    const requiredFields = [
+      "wifeName", "wifeCnic", "husbandName", "nikahDate", "nikahPlace",
+      "reasonForKhula", "compensationAmount", "husbandConsent",
+      "witness1Name", "witness1Id", "witness2Name", "witness2Id"
+    ];
+
+    const missing = requiredFields.filter(field => !form[field]?.trim());
+    if (missing.length > 0) {
+      setError(t("form.errors.required"));
       return;
     }
 
-    if (!form.witness1Name || !form.witness2Name) {
-      setError(t("form.errors.witnesses")); // "Two witnesses are required..."
+    // 2. CNIC Validation
+    const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
+    if (!cnicRegex.test(form.wifeCnic)) {
+      setError("Invalid Wife CNIC format (e.g. 12345-1234567-1)");
+      return;
+    }
+    if (form.husbandCnic && !cnicRegex.test(form.husbandCnic)) {
+      setError("Invalid Husband CNIC format (e.g. 12345-1234567-1)");
+      return;
+    }
+
+    // 3. Date Validation
+    if (new Date(form.nikahDate) > new Date()) {
+      setError("Marriage date cannot be in the future");
       return;
     }
 

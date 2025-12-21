@@ -64,30 +64,38 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
     e.preventDefault();
     setError("");
 
-    if (
-      !form.husbandName ||
-      !form.husbandCnic ||
-      !form.wifeName ||
-      !form.nikahDate ||
-      !form.nikahPlace ||
-      !form.mahrAmount
-    ) {
-      setError(t("form.errors.required")); // "Please fill all required details marked with *."
-      return;
-    }
+    // 1. Required Fields Check
+    const requiredFields = [
+      "husbandName", "husbandCnic", "wifeName", "nikahDate", "nikahPlace", "mahrAmount",
+      "talaqIntention", "witness1Name", "witness1Id", "witness2Name", "witness2Id"
+    ];
 
-    if (!form.witness1Name || !form.witness2Name) {
-      setError(t("form.errors.witnesses")); // "Two witnesses are required..."
-      return;
-    }
-
+    // Check if intentional confirmation is checked
     if (!intentConfirmed) {
-      setError(t("form.errors.required")); // Reusing generic required message for simplicity
+      setError(t("form.errors.required"));
       return;
     }
 
-    if (!form.talaqIntention.trim()) {
+    const missing = requiredFields.filter(field => !form[field]?.trim());
+    if (missing.length > 0) {
       setError(t("form.errors.required"));
+      return;
+    }
+
+    // 2. CNIC Validation (Format: 12345-1234567-1)
+    const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
+    if (!cnicRegex.test(form.husbandCnic)) {
+      setError("Invalid Husband CNIC format (e.g. 12345-1234567-1)");
+      return;
+    }
+    if (form.wifeCnic && !cnicRegex.test(form.wifeCnic)) {
+      setError("Invalid Wife CNIC format (e.g. 12345-1234567-1)");
+      return;
+    }
+
+    // 3. Date Validation (No future dates)
+    if (new Date(form.nikahDate) > new Date()) {
+      setError("Marriage date cannot be in the future");
       return;
     }
 
