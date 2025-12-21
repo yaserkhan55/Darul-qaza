@@ -59,6 +59,23 @@ const validateIslamicLogic = (caseData, nextStatus, payload = {}) => {
   }
 };
 
+const validateRequiredFields = (type, details) => {
+  const common = ["nikahDate", "nikahPlace", "witness1Name", "witness1Id", "witness2Name", "witness2Id"];
+  let specific = [];
+
+  if (type === "TALAQ") {
+    specific = ["husbandName", "husbandCnic", "wifeName", "mahrAmount", "talaqIntention"];
+  } else if (type === "KHULA") {
+    specific = ["wifeName", "wifeCnic", "husbandName", "reasonForKhula", "compensationAmount", "husbandConsent"];
+  }
+
+  const missing = [...common, ...specific].filter(field => !details[field] || (typeof details[field] === 'string' && !details[field].trim()));
+
+  if (missing.length > 0) {
+    throw new Error(`Missing required fields: ${missing.join(", ")}`);
+  }
+};
+
 /**
  * START CASE (create DRAFT)
  * Single Active Case Rule Enforced
@@ -139,6 +156,7 @@ export const submitCase = async (req, res) => {
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
     validateIslamicLogic(caseData, "FORM_COMPLETED", caseData.details);
+    validateRequiredFields(caseData.type, caseData.details);
 
     const nextStatus = "FORM_COMPLETED";
 
