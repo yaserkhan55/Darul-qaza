@@ -48,7 +48,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
       } finally {
         setSaving(false);
       }
-    }, 2000); // Debounce 2s
+    }, 20000); // Auto-save every 20 seconds
 
     return () => clearTimeout(timer);
   }, [form, effectiveCaseId, showSuccess, caseData.status]);

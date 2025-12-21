@@ -46,7 +46,7 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
       } finally {
         setSaving(false);
       }
-    }, 2000);
+    }, 20000); // Auto-save every 20 seconds
 
     return () => clearTimeout(timer);
   }, [form, effectiveCaseId, showSuccess, caseData.status]);

@@ -97,12 +97,20 @@ export default function Dashboard() {
 
       // Optional: Refresh background
       loadCases(false);
+      setErrorMessage("");
     } catch (err) {
-      const message =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        "Failed to start case";
-      setErrorMessage(message);
+      if (err.response?.data?.code === "ACTIVE_CASE_EXISTS" || err.response?.data?.caseId) {
+        // Show the specific error message as requested
+        setErrorMessage(err.response?.data?.message || "Please complete your current case first");
+        // Also ensure we load the active case so they can see it
+        await loadCases(true);
+      } else {
+        const message =
+          err.response?.data?.error ||
+          err.response?.data?.message ||
+          "Failed to start case";
+        setErrorMessage(message);
+      }
     } finally {
       setLoading(false);
     }
