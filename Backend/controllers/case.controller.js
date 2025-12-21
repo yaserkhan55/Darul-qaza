@@ -8,14 +8,12 @@ const CASE_FLOW = {
   CREATED: "FORM",
   STARTED: "FORM",
   DRAFT: "FORM",
-  FORM_COMPLETED: "RESOLUTION",
-  RESOLUTION_SUCCESS: "AGREEMENT",
-  RESOLUTION_FAILED: "AGREEMENT", // Fallback flow
   AGREEMENT_DONE: "AFFIDAVITS",
   AFFIDAVITS_DONE: "REVIEW",
   UNDER_REVIEW: "REVIEW",
   APPROVED: "CERTIFICATE",
 };
+import { createNotification } from "./notification.controller.js";
 
 // Strict State Transitions
 const transitions = {
@@ -97,8 +95,12 @@ export const startCase = async (req, res) => {
     });
 
     if (existingCase) {
-      console.log("Resuming existing case for user:", createdBy);
-      return res.status(200).json(existingCase);
+      console.log("Blocking duplicate case creation for user:", createdBy);
+      return res.status(400).json({
+        code: "ACTIVE_CASE_EXISTS",
+        message: "Please complete your current case first",
+        caseId: existingCase._id
+      });
     }
 
     const newCase = await Case.create({
@@ -110,6 +112,8 @@ export const startCase = async (req, res) => {
         { status: "CREATED", changedBy: createdBy, timestamp: new Date(), note: "Case created" },
       ],
     });
+
+    createNotification(createdBy, `New ${caseType} case started.`, "INFO", newCase._id);
 
     res.status(201).json(newCase);
   } catch (err) {
@@ -168,6 +172,8 @@ export const submitCase = async (req, res) => {
     addHistory(caseData, nextStatus, getUserId(req), "User submitted case form");
 
     await caseData.save();
+    createNotification(getUserId(req), "Case submitted for review.", "SUCCESS", caseData._id);
+
     res.json(caseData);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -205,6 +211,13 @@ export const transitionCase = async (req, res) => {
     addHistory(caseData, nextStatus, getUserId(req), note || "");
 
     await caseData.save();
+
+    if (nextStatus === "APPROVED") {
+      createNotification(caseData.createdBy, "Your case has been APPROVED.", "SUCCESS", caseData._id);
+    } else if (nextStatus === "REJECTED") {
+      createNotification(caseData.createdBy, "Your case has been REJECTED.", "ERROR", caseData._id);
+    }
+
     res.json(caseData);
   } catch (err) {
     res.status(500).json({ error: err.message });
