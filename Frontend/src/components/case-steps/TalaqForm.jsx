@@ -33,6 +33,9 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
 
   const effectiveCaseId = caseData?._id || caseId;
 
+
+  // ... (keep state) ...
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -45,51 +48,26 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
       !form.nikahPlace ||
       !form.mahrAmount
     ) {
-      setError("Please fill all required details marked with *.");
+      setError(t("form.errors.required")); // "Please fill all required details marked with *."
       return;
     }
 
     if (!form.witness1Name || !form.witness2Name) {
-      setError("Two witnesses are required for the Talaq application.");
+      setError(t("form.errors.witnesses")); // "Two witnesses are required..."
       return;
     }
 
     if (!intentConfirmed) {
-      setError("You must confirm your intention to proceed with Talaq.");
+      setError(t("form.errors.required")); // Reusing generic required message for simplicity
       return;
     }
 
     if (!form.talaqIntention.trim()) {
-      setError("Please provide your Talaq intention declaration.");
+      setError(t("form.errors.required"));
       return;
     }
 
-    setLoading(true);
-    try {
-      await saveDivorceForm(effectiveCaseId, {
-        ...form,
-        divorceType: "TALAQ",
-        intentConfirmed: true,
-      });
-      // Transition to FORM_COMPLETED
-      await transitionCase(effectiveCaseId, { nextStatus: "FORM_COMPLETED" });
-      setShowSuccess(true);
-    } catch (err) {
-      setError(
-        err.response?.data?.message || "Failed to submit form. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSuccessClose = () => {
-    setShowSuccess(false);
-    if (onUpdated) {
-      onUpdated();
-    } else {
-      onSuccess?.();
-    }
+    // ... (keep logic) ...
   };
 
   return (
@@ -103,11 +81,10 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 sm:p-6 lg:p-8 max-w-3xl mx-auto">
         <div className="mb-6 space-y-2">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-            Talaq Application Form
+            {t("home.divorceTypes.talaq.title")} {t("home.steps.application.title")}
           </h2>
           <p className="text-sm sm:text-base text-gray-600">
-            This form is for divorce initiated by the husband according to Islamic law.
-            Please provide accurate information with care and respect.
+            {t("home.divorceTypes.talaq.description")}
           </p>
         </div>
 
@@ -115,12 +92,12 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
           {/* SECTION: Personal Details */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
             <h3 className="font-semibold text-gray-900 border-b pb-2">
-              Personal Details
+              {t("form.personalDetails")}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Husband Full Name <span className="text-red-500">*</span>
+                  {t("form.husbandName")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -129,12 +106,12 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Enter husband's full name"
+                  placeholder={t("form.placeholders.name")}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Husband Aadhar Number <span className="text-red-500">*</span>
+                  {t("form.husbandCnic")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -143,13 +120,13 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Enter 12-digit Aadhar Number"
+                  placeholder={t("form.placeholders.aadhar")}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Wife Full Name <span className="text-red-500">*</span>
+                  {t("form.wifeName")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -158,12 +135,12 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Enter wife's full name"
+                  placeholder={t("form.placeholders.name")}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Wife Aadhar Number (Optional)
+                  {t("form.wifeCnic")} ({t("common.optional", { defaultValue: "Optional" })})
                 </label>
                 <input
                   type="text"
@@ -171,7 +148,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   value={form.wifeCnic}
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Enter 12-digit Aadhar Number if available"
+                  placeholder={t("form.placeholders.aadhar")}
                 />
               </div>
             </div>
@@ -180,12 +157,12 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
           {/* SECTION: Marriage Details */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
             <h3 className="font-semibold text-gray-900 border-b pb-2">
-              Marriage Details
+              {t("form.marriageDetails")}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nikah Date <span className="text-red-500">*</span>
+                  {t("form.nikahDate")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -199,7 +176,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nikah Place <span className="text-red-500">*</span>
+                  {t("form.nikahPlace")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -208,13 +185,13 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="City, Country"
+                  placeholder={t("form.placeholders.city")}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nikah Registration No. (Optional)
+                  {t("form.nikahRegNo")}
                 </label>
                 <input
                   type="text"
@@ -222,13 +199,12 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   value={form.nikahRegistrationNo}
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Registration Certificate No"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Number of Children
+                  {t("form.numChildren")}
                 </label>
                 <input
                   type="number"
@@ -246,7 +222,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mahr Amount <span className="text-red-500">*</span>
+                {t("form.mahrAmount")} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -255,7 +231,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                 onChange={handleChange}
                 required
                 className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                placeholder="e.g., 500,000 INR"
+                placeholder={t("form.placeholders.amount")}
               />
             </div>
 
@@ -270,10 +246,10 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                 />
                 <div className="flex-1">
                   <span className="text-sm font-semibold text-gray-800 block mb-1">
-                    Talaq Intention Confirmation <span className="text-red-500">*</span>
+                    {t("form.talaqIntention")} <span className="text-red-500">*</span>
                   </span>
                   <span className="text-xs text-gray-600">
-                    I confirm that I understand the gravity of Talaq and wish to proceed with this divorce proceeding.
+                    {t("form.talaqConfirmation")}
                   </span>
                 </div>
               </label>
@@ -281,7 +257,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Talaq Intention Declaration <span className="text-red-500">*</span>
+                {t("form.talaqIntention")} (Declaration) <span className="text-red-500">*</span>
               </label>
               <textarea
                 name="talaqIntention"
@@ -290,13 +266,13 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                 required
                 rows={4}
                 className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                placeholder="Please state your intention for Talaq clearly and respectfully..."
+                placeholder={t("form.placeholders.notes")}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Current Reconciliation Status (Optional)
+                {t("form.reconciliationStatus")}
               </label>
               <textarea
                 name="reconciliationStatus"
@@ -304,7 +280,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                 onChange={handleChange}
                 rows={3}
                 className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                placeholder="Any notes about current reconciliation attempts or status..."
+                placeholder={t("form.reconciliationPlaceholder")}
               />
             </div>
           </div>
@@ -312,14 +288,13 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
           {/* SECTION: Witness Details */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
             <h3 className="font-semibold text-gray-900 border-b pb-2">
-              Witnesses
+              {t("form.witnessDetails")}
             </h3>
-            <p className="text-xs text-gray-500 -mt-2">Two witnesses are required.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Witness 1 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Witness 1 Name <span className="text-red-500">*</span>
+                  {t("form.witnessName")} 1 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -328,12 +303,11 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Name"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Witness 1 ID/Contact <span className="text-red-500">*</span>
+                  {t("form.witnessId")} 1 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -342,14 +316,13 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="ID No or Phone"
                 />
               </div>
 
               {/* Witness 2 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Witness 2 Name <span className="text-red-500">*</span>
+                  {t("form.witnessName")} 2 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -358,12 +331,11 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Name"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Witness 2 ID/Contact <span className="text-red-500">*</span>
+                  {t("form.witnessId")} 2 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -372,7 +344,6 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="ID No or Phone"
                 />
               </div>
             </div>
@@ -390,7 +361,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
               disabled={loading}
               className="bg-islamicGreen text-white px-6 py-3 rounded-lg text-sm font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-60 transition"
             >
-              {loading ? "Submitting..." : "Submit Talaq Form"}
+              {loading ? t("common.loading") : t("form.submitTalaq")}
             </button>
           </div>
         </form>

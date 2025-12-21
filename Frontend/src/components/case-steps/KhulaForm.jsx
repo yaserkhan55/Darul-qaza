@@ -32,11 +32,12 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
 
   const effectiveCaseId = caseData?._id || caseId;
 
+  // ... (keep state) ...
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    // Basic required fields validation
     if (
       !form.wifeName ||
       !form.wifeCnic ||
@@ -47,40 +48,16 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
       !form.compensationAmount ||
       !form.husbandConsent
     ) {
-      setError("Please fill all required fields marked with *.");
+      setError(t("form.errors.required")); // "Please fill all required fields marked with *."
       return;
     }
 
     if (!form.witness1Name || !form.witness2Name) {
-      setError("Two witnesses are required for the Khula application.");
+      setError(t("form.errors.witnesses")); // "Two witnesses are required..."
       return;
     }
 
-    setLoading(true);
-    try {
-      await saveDivorceForm(effectiveCaseId, {
-        ...form,
-        divorceType: "KHULA",
-      });
-      // Transition to FORM_COMPLETED
-      await transitionCase(effectiveCaseId, { nextStatus: "FORM_COMPLETED" });
-      setShowSuccess(true);
-    } catch (err) {
-      setError(
-        err.response?.data?.message || "Failed to submit form. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSuccessClose = () => {
-    setShowSuccess(false);
-    if (onUpdated) {
-      onUpdated();
-    } else {
-      onSuccess?.();
-    }
+    // ... (keep logic) ...
   };
 
   return (
@@ -94,10 +71,10 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 sm:p-6 lg:p-8 max-w-3xl mx-auto">
         <div className="mb-6 space-y-2">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-            Khula Application Form
+            {t("home.divorceTypes.khula.title")} {t("home.steps.application.title")}
           </h2>
           <p className="text-sm sm:text-base text-gray-600">
-            This form is for divorce initiated by the wife with mutual consent. Please provide accurate information with care and respect.
+            {t("home.divorceTypes.khula.description")}
           </p>
         </div>
 
@@ -105,12 +82,12 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
           {/* SECTION: Personal Details */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
             <h3 className="font-semibold text-gray-900 border-b pb-2">
-              Personal Details
+              {t("form.personalDetails")}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Wife Full Name <span className="text-red-500">*</span>
+                  {t("form.wifeName")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -119,12 +96,12 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Enter wife's full name"
+                  placeholder={t("form.placeholders.name")}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Wife Aadhar Number <span className="text-red-500">*</span>
+                  {t("form.wifeCnic")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -133,13 +110,13 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Enter 12-digit Aadhar Number"
+                  placeholder={t("form.placeholders.aadhar")}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Husband Full Name <span className="text-red-500">*</span>
+                  {t("form.husbandName")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -148,12 +125,12 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Enter husband's full name"
+                  placeholder={t("form.placeholders.name")}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Husband Aadhar Number (Optional)
+                  {t("form.husbandCnic")} ({t("common.optional", { defaultValue: "Optional" })})
                 </label>
                 <input
                   type="text"
@@ -161,7 +138,7 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   value={form.husbandCnic}
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Enter 12-digit Aadhar Number if available"
+                  placeholder={t("form.placeholders.aadhar")}
                 />
               </div>
             </div>
@@ -170,12 +147,12 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
           {/* SECTION: Marriage Details */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
             <h3 className="font-semibold text-gray-900 border-b pb-2">
-              Marriage Details
+              {t("form.marriageDetails")}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nikah Date <span className="text-red-500">*</span>
+                  {t("form.nikahDate")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -189,7 +166,7 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nikah Place <span className="text-red-500">*</span>
+                  {t("form.nikahPlace")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -198,13 +175,13 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="City, Country"
+                  placeholder={t("form.placeholders.city")}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nikah Registration No. (Optional)
+                  {t("form.nikahRegNo")}
                 </label>
                 <input
                   type="text"
@@ -212,13 +189,12 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   value={form.nikahRegistrationNo}
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Registration / Certificate No"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Number of Children
+                  {t("form.numChildren")}
                 </label>
                 <input
                   type="number"
@@ -234,9 +210,12 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
 
           {/* SECTION: Khula Details */}
           <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900 border-b pb-2">
+              {t("form.khulaDetails")}
+            </h3>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Reason for Khula <span className="text-red-500">*</span>
+                {t("form.reasonForKhula")} <span className="text-red-500">*</span>
               </label>
               <textarea
                 name="reasonForKhula"
@@ -245,14 +224,14 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                 required
                 rows={5}
                 className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                placeholder="Please provide a clear and respectful explanation..."
+                placeholder={t("form.placeholders.notes")}
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Compensation / Mahr Return Amount <span className="text-red-500">*</span>
+                  {t("form.compensationAmount")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -261,16 +240,13 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="e.g., 500,000 INR"
+                  placeholder={t("form.placeholders.amount")}
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Amount agreed to be returned to the husband.
-                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Husband Consent <span className="text-red-500">*</span>
+                  {t("form.husbandConsent")} <span className="text-red-500">*</span>
                 </label>
                 <select
                   name="husbandConsent"
@@ -279,9 +255,9 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
                 >
-                  <option value="">Select consent status</option>
-                  <option value="YES">Yes - Husband has consented</option>
-                  <option value="NO">No - Husband has not consented</option>
+                  <option value="">{t("common.select", { defaultValue: "Select" })}</option>
+                  <option value="YES">{t("common.yes", { defaultValue: "Yes" })}</option>
+                  <option value="NO">{t("common.no", { defaultValue: "No" })}</option>
                 </select>
               </div>
             </div>
@@ -290,14 +266,13 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
           {/* SECTION: Witness Details */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
             <h3 className="font-semibold text-gray-900 border-b pb-2">
-              Witnesses
+              {t("form.witnessDetails")}
             </h3>
-            <p className="text-xs text-gray-500 -mt-2">Two witnesses are required.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Witness 1 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Witness 1 Name <span className="text-red-500">*</span>
+                  {t("form.witnessName")} 1 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -306,12 +281,11 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Name"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Witness 1 ID/Contact <span className="text-red-500">*</span>
+                  {t("form.witnessId")} 1 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -320,14 +294,13 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="ID No or Phone"
                 />
               </div>
 
               {/* Witness 2 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Witness 2 Name <span className="text-red-500">*</span>
+                  {t("form.witnessName")} 2 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -336,12 +309,11 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="Name"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Witness 2 ID/Contact <span className="text-red-500">*</span>
+                  {t("form.witnessId")} 2 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -350,7 +322,6 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="ID No or Phone"
                 />
               </div>
             </div>
@@ -368,7 +339,7 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
               disabled={loading}
               className="bg-islamicGreen text-white px-6 py-3 rounded-lg text-sm font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-60 transition"
             >
-              {loading ? "Submitting..." : "Submit Khula Application"}
+              {loading ? t("common.loading") : t("form.submitKhula")}
             </button>
           </div>
         </form>

@@ -3,15 +3,11 @@ import { useUser } from "@clerk/clerk-react";
 import { getAllCases, transitionCase } from "../api/admin.api";
 import { sendAdminMessage } from "../api/message.api";
 import StatusBadge from "../components/StatusBadge";
+import { useTranslation } from "react-i18next";
 
-const FILTERS = [
-  { value: "ALL", label: "All" },
-  { value: "UNDER_REVIEW", label: "Under Review" },
-  { value: "APPROVED", label: "Approved" },
-  { value: "REJECTED", label: "Rejected" },
-];
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const { user } = useUser();
   const [cases, setCases] = useState([]);
   const [selectedCase, setSelectedCase] = useState(null);
@@ -41,6 +37,15 @@ export default function AdminDashboard() {
     }
   };
 
+
+
+  const filters = useMemo(() => [
+    { value: "ALL", label: t("admin.filters.all") },
+    { value: "UNDER_REVIEW", label: t("admin.filters.underReview") },
+    { value: "APPROVED", label: t("admin.filters.approved") },
+    { value: "REJECTED", label: t("admin.filters.rejected") },
+  ], [t]);
+
   const filteredCases = useMemo(() => {
     return (cases || []).filter((c) => {
       const matchesFilter = filter === "ALL" || c.status === filter;
@@ -59,12 +64,14 @@ export default function AdminDashboard() {
     selectedCase?.details?.affidavits?.[key] ||
     selectedCase?.details?.[key];
 
+
+
   const documentList = [
-    { key: "applicantAffidavit", label: "Applicant affidavit" },
-    { key: "respondentAffidavit", label: "Respondent affidavit" },
-    { key: "witnessAffidavits", label: "Witness affidavit" },
-    { key: "nikahnama", label: "Nikahnama" },
-    { key: "idProof", label: "ID proof" },
+    { key: "applicantAffidavit", label: t("documents.labels.applicant") },
+    { key: "respondentAffidavit", label: t("documents.labels.respondent") },
+    { key: "witnessAffidavits", label: t("documents.labels.witness") },
+    { key: "nikahnama", label: t("documents.labels.nikahnama") },
+    { key: "idProof", label: t("documents.labels.idProof") },
   ]
     .flatMap((d) => {
       const value = pickDoc(d.key);
@@ -119,17 +126,14 @@ export default function AdminDashboard() {
         let title = "";
         let body = "";
         if (nextStatus === "APPROVED") {
-          title = "Your case has been approved";
-          body =
-            "الحمدللہ، your case has been approved by the Qazi. You may now download your certificate from the dashboard once it is available.";
+          title = t("admin.notifications.approved.title");
+          body = t("admin.notifications.approved.body");
         } else if (nextStatus === "REJECTED") {
-          title = "Your case requires attention";
-          body =
-            note ||
-            "Your case has been rejected or requires correction. Please review the details and, if allowed, submit a corrected application.";
+          title = t("admin.notifications.rejected.title");
+          body = note || t("admin.notifications.rejected.body");
         } else {
-          title = "Case update from Dar-ul-Qaza";
-          body = note || "There has been an update to your case status.";
+          title = t("admin.notifications.update.title");
+          body = note || t("admin.notifications.update.body");
         }
 
         try {
@@ -163,26 +167,26 @@ export default function AdminDashboard() {
       {!authChecked && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 sm:p-7 max-w-md w-full space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">Admin Safety Check</h2>
+            <h2 className="text-xl font-bold text-gray-900">{t("admin.safety.title")}</h2>
             <p className="text-sm text-gray-600">
-              This area is reserved for Qazi / Admin only. Type <span className="font-semibold">"QAZI"</span> to proceed.
+              {t("admin.safety.description")}
             </p>
             <input
               type="text"
               value={authCode}
               onChange={(e) => setAuthCode(e.target.value)}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-islamicGreen"
-              placeholder='Enter "QAZI" to continue'
+              placeholder={t("admin.safety.placeholder")}
             />
             <button
               onClick={() => authCode.trim().toUpperCase() === "QAZI" && setAuthChecked(true)}
               className="w-full bg-islamicGreen text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-teal-700 transition disabled:opacity-60"
               disabled={authCode.trim().length === 0}
             >
-              Continue to Admin Panel
+              {t("admin.safety.button")}
             </button>
             <p className="text-[12px] text-gray-500 text-center">
-              Final decisions are issued by qualified Islamic authorities.
+              {t("admin.disclaimer")}
             </p>
           </div>
         </div>
@@ -192,8 +196,8 @@ export default function AdminDashboard() {
         <header className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 flex flex-col gap-3 sm:gap-4">
           <div className="flex items-start sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-islamicGreen">Qazi Admin Panel</h1>
-              <p className="text-sm text-gray-600">Review, verify, and issue formal decisions.</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-islamicGreen">{t("admin.header.title")}</h1>
+              <p className="text-sm text-gray-600">{t("admin.header.subtitle")}</p>
             </div>
             {user && (
               <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 max-w-xs">
@@ -202,13 +206,13 @@ export default function AdminDashboard() {
             )}
           </div>
           <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
-            {FILTERS.map((f) => (
+            {filters.map((f) => (
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value)}
                 className={`px-3 py-2 rounded-full border transition ${filter === f.value
-                    ? "bg-islamicGreen text-white border-islamicGreen shadow-sm"
-                    : "bg-white text-gray-700 border-gray-200 hover:border-islamicGreen/50"
+                  ? "bg-islamicGreen text-white border-islamicGreen shadow-sm"
+                  : "bg-white text-gray-700 border-gray-200 hover:border-islamicGreen/50"
                   }`}
               >
                 {f.label}
@@ -218,7 +222,7 @@ export default function AdminDashboard() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by ID, type, user..."
+              placeholder={t("admin.searchPlaceholder")}
               className="flex-1 min-w-[160px] px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-islamicGreen"
             />
           </div>
@@ -249,7 +253,7 @@ export default function AdminDashboard() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="text-xs text-gray-500">Case ID</p>
+                        <p className="text-xs text-gray-500">{t("admin.caseId")}</p>
                         <p className="font-mono text-xs break-all">{(c.caseId || c._id || "").toString()}</p>
                       </div>
                       <StatusBadge status={c.status} />
@@ -283,11 +287,11 @@ export default function AdminDashboard() {
                 </div>
 
                 <section className="pt-2 border-t space-y-2">
-                  <h4 className="text-sm font-semibold text-gray-800">Applicant Information</h4>
-                  <InfoRow label="Husband" value={selectedCase.details?.husbandName} />
-                  <InfoRow label="Wife" value={selectedCase.details?.wifeName} />
-                  <InfoRow label="Aadhar Number" value={selectedCase.details?.cnic || selectedCase.details?.wifeCnic || selectedCase.details?.husbandCnic} />
-                  <InfoRow label="Address" value={selectedCase.details?.address} />
+                  <h4 className="text-sm font-semibold text-gray-800">{t("form.personalDetails")}</h4>
+                  <InfoRow label={t("form.husbandName")} value={selectedCase.details?.husbandName} />
+                  <InfoRow label={t("form.wifeName")} value={selectedCase.details?.wifeName} />
+                  <InfoRow label={t("form.aadharNumber")} value={selectedCase.details?.cnic || selectedCase.details?.wifeCnic || selectedCase.details?.husbandCnic} />
+                  <InfoRow label={t("admin.details.address")} value={selectedCase.details?.address} />
                 </section>
 
                 <section className="pt-2 border-t space-y-2">
@@ -298,8 +302,8 @@ export default function AdminDashboard() {
                 </section>
 
                 <section className="pt-2 border-t space-y-2">
-                  <h4 className="text-sm font-semibold text-gray-800">Agreement</h4>
-                  <InfoRow label="Mahr" value={selectedCase.details?.mahr} />
+                  <h4 className="text-sm font-semibold text-gray-800">{t("admin.details.agreement")}</h4>
+                  <InfoRow label={t("form.mahrAmount")} value={selectedCase.details?.mahr} />
                   <InfoRow label="Maintenance / Iddat" value={selectedCase.details?.maintenance || selectedCase.details?.iddat} />
                   <InfoRow label="Custody" value={selectedCase.details?.custody} />
                   <InfoRow label="Conditions" value={selectedCase.details?.conditions} />
@@ -307,11 +311,11 @@ export default function AdminDashboard() {
 
                 <section className="pt-2 border-t space-y-2">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-semibold text-gray-800">Documents (Cloudinary)</h4>
-                    <span className="text-[11px] text-gray-500">View only</span>
+                    <h4 className="text-sm font-semibold text-gray-800">{t("documents.title")}</h4>
+                    <span className="text-[11px] text-gray-500">{t("admin.documents.viewOnly")}</span>
                   </div>
                   {documentList.length === 0 ? (
-                    <p className="text-xs text-gray-500">No documents uploaded.</p>
+                    <p className="text-xs text-gray-500">{t("admin.documents.noDocs")}</p>
                   ) : (
                     <div className="space-y-2">
                       {documentList.map((doc) => (
@@ -326,7 +330,7 @@ export default function AdminDashboard() {
                     </div>
                   )}
                   <div className="text-[11px] text-gray-500 bg-amber-50 border border-amber-200 rounded-lg p-2">
-                    Documents are uploaded by applicants to Cloudinary (unsigned). We only read the stored secure_url. If a link opens, Cloudinary is working; if it fails, check credentials/preset.
+                    {t("admin.documents.note")}
                   </div>
                 </section>
 
@@ -349,20 +353,20 @@ export default function AdminDashboard() {
                 </section>
 
                 <section className="pt-2 border-t space-y-3">
-                  <h4 className="text-sm font-semibold text-gray-800">Qazi Actions</h4>
+                  <h4 className="text-sm font-semibold text-gray-800">{t("admin.actions.title")}</h4>
                   <div className="flex flex-col gap-2">
                     <button
                       onClick={() => doTransition("APPROVED")}
                       disabled={actionLoading}
                       className="w-full bg-islamicGreen text-white py-2 rounded-lg text-sm font-semibold hover:bg-teal-700 disabled:opacity-60"
                     >
-                      {actionLoading ? "Working..." : "Approve (lock case)"}
+                      {actionLoading ? t("common.loading") : t("admin.actions.approve")}
                     </button>
                     <div className="space-y-2">
                       <textarea
                         value={rejectReason}
                         onChange={(e) => setRejectReason(e.target.value)}
-                        placeholder="Reason for rejection (required)"
+                        placeholder={t("admin.actions.rejectReason")}
                         rows="3"
                         className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                       />
@@ -371,14 +375,14 @@ export default function AdminDashboard() {
                         disabled={actionLoading || !rejectReason.trim()}
                         className="w-full bg-red-500 text-white py-2 rounded-lg text-sm font-semibold hover:bg-red-600 disabled:opacity-60"
                       >
-                        {actionLoading ? "Working..." : "Reject with reason"}
+                        {actionLoading ? t("common.loading") : t("admin.actions.reject")}
                       </button>
                     </div>
                     <div className="space-y-2">
                       <textarea
                         value={sendBackNote}
                         onChange={(e) => setSendBackNote(e.target.value)}
-                        placeholder="Notes for correction (will be visible to applicant)"
+                        placeholder={t("admin.actions.correctionNote")}
                         rows="2"
                         className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                       />
@@ -387,14 +391,14 @@ export default function AdminDashboard() {
                         disabled={actionLoading}
                         className="w-full bg-amber-500 text-white py-2 rounded-lg text-sm font-semibold hover:bg-amber-600 disabled:opacity-60"
                       >
-                        {actionLoading ? "Working..." : "Send back for correction"}
+                        {actionLoading ? t("common.loading") : t("admin.actions.sendBack")}
                       </button>
                     </div>
                   </div>
                 </section>
 
                 <p className="text-[12px] text-gray-500 pt-2 border-t">
-                  Final decisions are issued by qualified Islamic authorities.
+                  {t("admin.disclaimer")}
                 </p>
               </>
             ) : (

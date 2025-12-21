@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { saveAffidavits, transitionCase } from "@/api/case.api";
 
 const initialUploads = {
@@ -21,6 +22,8 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const unsignedPreset = import.meta.env.VITE_CLOUDINARY_UNSIGNED_PRESET;
 
+  const { t } = useTranslation();
+
   const allComplete = useMemo(() => {
     const required = [
       uploads.applicant?.url,
@@ -28,7 +31,7 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
       uploads.nikahnama?.url,
       uploads.idProof?.url,
     ];
-    const witnessesComplete = uploads.witnesses && uploads.witnesses.length >= 1 && 
+    const witnessesComplete = uploads.witnesses && uploads.witnesses.length >= 1 &&
       uploads.witnesses.every((w) => w.url);
     return required.every(Boolean) && witnessesComplete;
   }, [uploads]);
@@ -36,7 +39,7 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
   const handleFile = async (key, file, witnessIndex = null) => {
     if (!file) return;
     if (!allowedTypes.includes(file.type)) {
-      setError("Only PDF, JPG, or PNG files are allowed.");
+      setError(t("form.errors.fileType"));
       return;
     }
     if (!cloudName || !unsignedPreset) {
@@ -65,7 +68,7 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
           }
         },
       });
-      
+
       if (key === "witnesses" && witnessIndex !== null) {
         setUploads((prev) => {
           const newWitnesses = [...(prev.witnesses || [])];
@@ -79,7 +82,7 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
         }));
       }
     } catch (err) {
-      setError("Upload failed. Please try again.");
+      setError(t("form.errors.uploadFailed"));
       if (key === "witnesses" && witnessIndex !== null) {
         setUploads((prev) => {
           const newWitnesses = [...(prev.witnesses || [])];
@@ -140,21 +143,20 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-6">
       <div className="mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Affidavits & Documents</h2>
-        <p className="text-sm text-gray-600 mb-3">Upload the required affidavits and supporting documents.</p>
+        <h2 className="text-xl font-semibold text-gray-900">{t("home.steps.affidavits.title")}</h2>
+        <p className="text-sm text-gray-600 mb-3">{t("home.steps.affidavits.description")}</p>
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-          <strong>Secure Upload:</strong> Documents are securely uploaded and stored via Cloudinary cloud storage. 
-          Your files are encrypted and accessible only to authorized Qazi reviewers.
+          <strong>{t("documents.title")}:</strong> {t("documents.secureNote")}
         </div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
-              { key: "applicant", label: "Applicant Affidavit", required: true },
-              { key: "respondent", label: "Respondent Affidavit", required: true },
-              { key: "nikahnama", label: "Nikahnama (Marriage Certificate)", required: true },
-              { key: "idProof", label: "ID Proof", required: true },
+              { key: "applicant", label: t("documents.labels.applicant"), required: true },
+              { key: "respondent", label: t("documents.labels.respondent"), required: true },
+              { key: "nikahnama", label: t("documents.labels.nikahnama"), required: true },
+              { key: "idProof", label: t("documents.labels.idProof"), required: true },
             ].map((item) => (
               <div key={item.key} className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-gray-700">
@@ -175,14 +177,14 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
           <div className="border-t pt-4">
             <div className="flex items-center justify-between mb-3">
               <label className="text-sm font-medium text-gray-700">
-                Witness Affidavits <span className="text-red-500">*</span> (Minimum 1, recommended 2)
+                {t("documents.labels.witness")} <span className="text-red-500">*</span> ({t("form.errors.witnesses")})
               </label>
               <button
                 type="button"
                 onClick={addWitnessSlot}
                 className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded"
               >
-                + Add Witness
+                + {t("documents.buttons.addWitness")}
               </button>
             </div>
             <div className="space-y-3">
@@ -203,7 +205,7 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
                       onClick={() => removeWitnessSlot(index)}
                       className="text-red-600 hover:text-red-800 text-sm px-2"
                     >
-                      Remove
+                      {t("common.delete", { defaultValue: "Remove" })}
                     </button>
                   )}
                 </div>
@@ -214,7 +216,7 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
                   onClick={addWitnessSlot}
                   className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-sm text-gray-600 hover:border-islamicGreen hover:text-islamicGreen"
                 >
-                  + Add First Witness Affidavit
+                  + {t("documents.buttons.addWitness")}
                 </button>
               )}
             </div>
@@ -233,7 +235,7 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
             disabled={loading}
             className="bg-islamicGreen text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-60 transition"
           >
-            {loading ? "Saving..." : "Submit Affidavits"}
+            {loading ? t("common.loading") : t("documents.buttons.submit")}
           </button>
         </div>
       </form>

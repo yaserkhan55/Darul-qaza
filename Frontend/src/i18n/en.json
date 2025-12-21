@@ -123,27 +123,43 @@
     "greetingSubtitle": "Your Dar-ul-Qaza dashboard provides a calm, step-by-step view of your case."
   },
   "form": {
-    "divorceForm": {
-      "title": "Divorce Application Form",
-      "subtitle": "Please provide accurate information with calm and care. This is a formal Islamic judicial process, not an instant decision.",
-      "steps": {
-        "personal": "Personal Details",
-        "marriage": "Marriage Details",
-        "case": "Case Details",
-        "review": "Review & Submit"
-      },
-      "fields": {
-        "husbandName": "Husband Name",
-        "wifeName": "Wife Name",
-        "cnic": "Aadhar Number",
-        "marriageDate": "Marriage Date",
-        "address": "Residential Address"
-      },
-      "reviewTitle": "Review Your Case",
-      "reviewText": "Please carefully review all details below before submitting. This will be sent to qualified Islamic scholars for formal review.",
-      "submitButton": "Submit Case for Scholarly Review",
-      "submitting": "Submitting...",
-      "step": "Step {{current}} of {{total}}"
+    "personalDetails": "Personal Details",
+    "marriageDetails": "Marriage Details",
+    "talaqDetails": "Talaq & Mahr Details",
+    "khulaDetails": "Khula Details",
+    "witnessDetails": "Witness Details",
+    "husbandName": "Husband Name",
+    "husbandCnic": "Aadhar Number",
+    "wifeName": "Wife Name",
+    "wifeCnic": "Aadhar Number",
+    "nikahDate": "Marriage Date",
+    "nikahPlace": "Marriage Place",
+    "nikahRegNo": "Nikah Registration No. (Optional)",
+    "numChildren": "No. of Children",
+    "mahrAmount": "Mahr Amount",
+    "compensationAmount": "Compensation / Mahr Return",
+    "talaqIntention": "Intention of Talaq (Declaration)",
+    "reasonForKhula": "Reason for Khula",
+    "husbandConsent": "Is Husband Consenting?",
+    "witnessName": "Witness Name",
+    "witnessId": "Witness ID/Contact",
+    "submitTalaq": "Submit Talaq Form",
+    "submitKhula": "Submit Khula Application",
+    "talaqConfirmation": "I confirm that I understand the gravity of Talaq and wish to proceed with this divorce proceeding.",
+    "reconciliationStatus": "Current Reconciliation Status (Optional)",
+    "reconciliationPlaceholder": "Any notes about current reconciliation attempts or status...",
+    "placeholders": {
+      "name": "Enter full name",
+      "aadhar": "12-digit Aadhar Number",
+      "city": "City, Country",
+      "amount": "Example: 50,000 INR",
+      "notes": "Enter details here..."
+    },
+    "errors": {
+      "required": "This field is required.",
+      "witnesses": "Two witnesses are required.",
+      "fileType": "Only PDF, JPG, or PNG files are allowed.",
+      "uploadFailed": "Upload failed. Please try again."
     },
     "resolutionForm": {
       "title": "Islamic Resolution (Sulh) Attempt",
@@ -217,6 +233,57 @@
     "approved": "Approved",
     "rejected": "Rejected",
     "completed": "Completed"
+  },
+  "admin": {
+    "header": {
+      "title": "Qazi Admin Panel",
+      "subtitle": "Review, verify, and issue formal decisions."
+    },
+    "filters": {
+      "all": "All",
+      "underReview": "Under Review",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "searchPlaceholder": "Search by ID, type, user...",
+    "safety": {
+      "title": "Admin Safety Check",
+      "description": "This area is reserved for Qazi / Admin only. Type \"QAZI\" to proceed.",
+      "placeholder": "Enter \"QAZI\" to continue",
+      "button": "Continue to Admin Panel"
+    },
+    "disclaimer": "Final decisions are issued by qualified Islamic authorities.",
+    "caseId": "Case ID",
+    "details": {
+      "address": "Address",
+      "agreement": "Agreement"
+    },
+    "documents": {
+      "viewOnly": "View only",
+      "noDocs": "No documents uploaded.",
+      "note": "Documents are uploaded by applicants to Cloudinary (unsigned). We only read the stored secure_url. If a link opens, Cloudinary is working; if it fails, check credentials/preset."
+    },
+    "actions": {
+      "title": "Qazi Actions",
+      "approve": "Approve (lock case)",
+      "rejectReason": "Reason for rejection (required)",
+      "reject": "Reject with reason",
+      "correctionNote": "Notes for correction (will be visible to applicant)",
+      "sendBack": "Send back for correction"
+    },
+    "notifications": {
+      "approved": {
+        "title": "Your case has been approved",
+        "body": "الحمدللہ، your case has been approved by the Qazi. You may now download your certificate from the dashboard once it is available."
+      },
+      "rejected": {
+        "title": "Your case requires attention",
+        "body": "Your case has been rejected or requires correction. Please review the details and, if allowed, submit a corrected application."
+      },
+      "update": {
+        "title": "Case update from Dar-ul-Qaza",
+        "body": "There has been an update to your case status."
+      }
+    }
   }
 }
-
