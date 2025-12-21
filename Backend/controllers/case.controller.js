@@ -1,5 +1,8 @@
 import Case, { CASE_STATUSES, CASE_TYPES } from "../models/Case.model.js";
 
+// Helper to get user ID from either Clerk (req.auth.userId) or Legacy (req.user.id)
+const getUserId = (req) => req.auth?.userId || req.user?.id || req.body.createdBy || "anonymous";
+
 // CASE_FLOW (Single Source of Truth)
 const CASE_FLOW = {
   CREATED: "FORM",
@@ -64,7 +67,7 @@ export const startCase = async (req, res) => {
   try {
     const { type, details, divorceType } = req.body;
     const caseType = type || divorceType;
-    const createdBy = req.user?.id || req.body.createdBy || "anonymous";
+    const createdBy = getUserId(req);
 
     if (!CASE_TYPES.includes(caseType)) {
       return res.status(400).json({ message: "Invalid case type" });
@@ -147,7 +150,7 @@ export const submitCase = async (req, res) => {
     }
 
     caseData.status = nextStatus;
-    addHistory(caseData, nextStatus, req.user?.id || "user", "User submitted case form");
+    addHistory(caseData, nextStatus, getUserId(req), "User submitted case form");
 
     await caseData.save();
     res.json(caseData);
@@ -184,7 +187,7 @@ export const transitionCase = async (req, res) => {
     if (assignedQazi) caseData.assignedQazi = assignedQazi;
 
     caseData.status = nextStatus;
-    addHistory(caseData, nextStatus, req.user?.id || "admin", note || "");
+    addHistory(caseData, nextStatus, getUserId(req), note || "");
 
     await caseData.save();
     res.json(caseData);
@@ -198,7 +201,7 @@ export const transitionCase = async (req, res) => {
  */
 export const getMyCases = async (req, res) => {
   try {
-    const createdBy = req.user?.id || req.query.userId || "anonymous";
+    const createdBy = getUserId(req);
     const cases = await Case.find({ createdBy }).sort({ createdAt: -1 });
     res.json(cases);
   } catch (err) {

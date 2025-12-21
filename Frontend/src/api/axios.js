@@ -25,7 +25,7 @@ export const attachClerkToken = (getToken) => {
   if (interceptorId !== null) {
     api.interceptors.request.eject(interceptorId);
   }
-  
+
   // Add new interceptor
   interceptorId = api.interceptors.request.use(
     async (config) => {
@@ -33,6 +33,9 @@ export const attachClerkToken = (getToken) => {
         const token = await getToken();
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
+          // console.log("Attaching token:", token.substring(0, 10) + "...");
+        } else {
+          console.warn("No token available from Clerk");
         }
       } catch (error) {
         console.error("Error getting Clerk token:", error);

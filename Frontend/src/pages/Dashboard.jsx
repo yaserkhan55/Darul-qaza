@@ -7,6 +7,7 @@ import { getMyMessages, markMessageRead } from "../api/message.api";
 import StatusBadge from "../components/StatusBadge";
 import CaseSteps from "../components/CaseSteps";
 import CaseTimeline from "../components/CaseTimeline";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const STEP_LABELS = {
   STARTED: "Divorce Form / خلع فارم",
@@ -355,12 +356,12 @@ export default function Dashboard() {
           className="col-span-1 lg:col-span-2 bg-white p-3 sm:p-4 lg:p-6 xl:p-8 rounded-xl shadow-lg border border-gray-100 min-h-[400px]"
         >
           {activeCase ? (
-            <>
+            <div className="animate-fade-in">
               <CaseSteps caseData={activeCase} onUpdated={loadCases} />
               <CaseTimeline currentStatus={activeCase.status} />
-            </>
+            </div>
           ) : (
-            <div className="text-center py-12 sm:py-16">
+            <div className="text-center py-12 sm:py-16 animate-fade-in">
               <div className="text-5xl sm:text-6xl mb-4">📋</div>
               <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
                 {t("dashboard.noActiveCase")}
@@ -370,13 +371,18 @@ export default function Dashboard() {
                   ? t("dashboard.noActiveCaseDesc1")
                   : t("dashboard.noActiveCaseDesc2")}
               </p>
-              <button
-                onClick={() => handleStart("TALAQ")}
-                disabled={loading}
-                className="w-full sm:w-auto bg-islamicGreen ..."
-              >
-                {loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
-              </button>
+
+              {loading ? (
+                <LoadingSpinner text={t("dashboard.starting")} />
+              ) : (
+                <button
+                  onClick={() => handleStart("TALAQ")}
+                  disabled={loading}
+                  className="w-full sm:w-auto bg-islamicGreen text-white px-8 py-3 rounded-lg font-semibold shadow-md hover:bg-teal-700 hover:shadow-lg transition-all transform hover:-translate-y-0.5"
+                >
+                  {t("dashboard.startNewCase")}
+                </button>
+              )}
             </div>
           )}
         </div>

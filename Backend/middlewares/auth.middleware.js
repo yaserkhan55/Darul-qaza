@@ -1,17 +1,18 @@
-import jwt from "jsonwebtoken";
-import env from "../config/env.js";
+import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
 
-export const protect = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-
-  if (!token)
-    return res.status(401).json({ message: "Not authorized" });
-
-  try {
-    const decoded = jwt.verify(token, env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res.status(401).json({ message: "Invalid token" });
+// Use Clerk's middleware to verify the token
+// This populates req.auth with the user claims
+export const protect = ClerkExpressRequireAuth({
+  // Optional: Handle errors custom way, but default is 401
+  onError: (err, req, res) => {
+    console.error("Clerk Auth Error:", err);
+    res.status(401).json({ message: "Unauthenticated", error: err.message });
   }
-};
+});
+
+/* 
+// LEGACY LOCAL JWT - DEPRECATED for Clerk
+// export const protect = (req, res, next) => {
+//   ...
+// };
+*/

@@ -14,8 +14,13 @@ export const startCase = async (divorceType, createdBy) => {
   return res.data;
 };
 
+// New workflow: save as DRAFT details, then submit case for review
+export const saveDraft = async (caseId, payload) => {
+  const res = await api.post(`/cases/${caseId}/draft`, payload);
+  return res.data;
+};
+
 export const saveDivorceForm = async (caseId, formData) => {
-  // New workflow: save as DRAFT details, then submit case for review
   await api.post(`/cases/${caseId}/draft`, { details: formData });
   const res = await api.post(`/cases/${caseId}/submit`);
   return res.data;
