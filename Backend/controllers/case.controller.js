@@ -80,11 +80,8 @@ export const startCase = async (req, res) => {
     });
 
     if (existingCase) {
-      return res.status(400).json({
-        code: "ACTIVE_CASE_EXISTS",
-        message: "Please complete your current case first",
-        caseId: existingCase._id
-      });
+      console.log("Resuming existing case for user:", createdBy);
+      return res.status(200).json(existingCase);
     }
 
     const newCase = await Case.create({
