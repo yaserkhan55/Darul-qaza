@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { saveDivorceForm, transitionCase } from "../../api/case.api";
+import { saveDivorceForm, transitionCase, saveDraft } from "../../api/case.api";
 import SuccessMessage from "../SuccessMessage";
+import DraftStatus from "../DraftStatus";
 
 export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
   const { t } = useTranslation();
@@ -26,6 +27,29 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState(caseData?.updatedAt);
+
+  // Auto-save effect
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      // Don't auto-save if empty or submitted
+      if (Object.values(form).every(x => !x) || showSuccess) return;
+      if (caseData.status !== "DRAFT" && caseData.status !== "STARTED" && caseData.status !== "CREATED") return;
+
+      setSaving(true);
+      try {
+        await saveDraft(effectiveCaseId, { details: form });
+        setLastSaved(new Date().toISOString());
+      } catch (err) {
+        console.error("Auto-save failed", err);
+      } finally {
+        setSaving(false);
+      }
+    }, 2000); // Debounce 2s
+
+    return () => clearTimeout(timer);
+  }, [form, effectiveCaseId, showSuccess, caseData.status]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -86,6 +110,10 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
           <p className="text-sm sm:text-base text-gray-600">
             {t("home.divorceTypes.talaq.description")}
           </p>
+        </div>
+
+        <div className="flex justify-end mb-4">
+          <DraftStatus lastSaved={lastSaved} isSaving={saving} />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

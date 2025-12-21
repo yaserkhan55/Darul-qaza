@@ -6,6 +6,7 @@ import { getMyCases, startCase } from "../api/case.api";
 import { getMyMessages, markMessageRead } from "../api/message.api";
 import StatusBadge from "../components/StatusBadge";
 import CaseSteps from "../components/CaseSteps";
+import CaseTimeline from "../components/CaseTimeline";
 
 const STEP_LABELS = {
   STARTED: "Divorce Form / خلع فارم",
@@ -318,8 +319,8 @@ export default function Dashboard() {
                     key={c._id}
                     onClick={() => setActiveCase(c)}
                     className={`p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${activeCase?._id === c._id
-                        ? "bg-teal-50 border-islamicGreen shadow-md"
-                        : "border-gray-200 hover:border-teal-300 hover:bg-gray-50 hover:shadow-sm"
+                      ? "bg-teal-50 border-islamicGreen shadow-md"
+                      : "border-gray-200 hover:border-teal-300 hover:bg-gray-50 hover:shadow-sm"
                       }`}
                   >
                     <div className="flex justify-between items-start gap-2">
@@ -354,7 +355,10 @@ export default function Dashboard() {
           className="col-span-1 lg:col-span-2 bg-white p-3 sm:p-4 lg:p-6 xl:p-8 rounded-xl shadow-lg border border-gray-100 min-h-[400px]"
         >
           {activeCase ? (
-            <CaseSteps caseData={activeCase} onUpdated={loadCases} />
+            <>
+              <CaseSteps caseData={activeCase} onUpdated={loadCases} />
+              <CaseTimeline currentStatus={activeCase.status} />
+            </>
           ) : (
             <div className="text-center py-12 sm:py-16">
               <div className="text-5xl sm:text-6xl mb-4">📋</div>
