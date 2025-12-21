@@ -206,11 +206,10 @@ export default function AdminDashboard() {
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value)}
-                className={`px-3 py-2 rounded-full border transition ${
-                  filter === f.value
+                className={`px-3 py-2 rounded-full border transition ${filter === f.value
                     ? "bg-islamicGreen text-white border-islamicGreen shadow-sm"
                     : "bg-white text-gray-700 border-gray-200 hover:border-islamicGreen/50"
-                }`}
+                  }`}
               >
                 {f.label}
               </button>
@@ -245,9 +244,8 @@ export default function AdminDashboard() {
                   <button
                     key={c._id}
                     onClick={() => handleSelect(c)}
-                    className={`w-full text-left border rounded-xl p-3 sm:p-4 transition shadow-sm hover:shadow ${
-                      selectedCase?._id === c._id ? "border-islamicGreen bg-emerald-50/40" : "border-gray-100 bg-white"
-                    }`}
+                    className={`w-full text-left border rounded-xl p-3 sm:p-4 transition shadow-sm hover:shadow ${selectedCase?._id === c._id ? "border-islamicGreen bg-emerald-50/40" : "border-gray-100 bg-white"
+                      }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -288,7 +286,7 @@ export default function AdminDashboard() {
                   <h4 className="text-sm font-semibold text-gray-800">Applicant Information</h4>
                   <InfoRow label="Husband" value={selectedCase.details?.husbandName} />
                   <InfoRow label="Wife" value={selectedCase.details?.wifeName} />
-                  <InfoRow label="CNIC" value={selectedCase.details?.cnic} />
+                  <InfoRow label="Aadhar Number" value={selectedCase.details?.cnic || selectedCase.details?.wifeCnic || selectedCase.details?.husbandCnic} />
                   <InfoRow label="Address" value={selectedCase.details?.address} />
                 </section>
 

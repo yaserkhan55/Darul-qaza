@@ -124,7 +124,7 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Wife CNIC / Aadhar <span className="text-red-500">*</span>
+                  Wife Aadhar Number <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -133,7 +133,7 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="ID Number"
+                  placeholder="Enter 12-digit Aadhar Number"
                 />
               </div>
 
@@ -153,7 +153,7 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Husband CNIC / Aadhar (Optional)
+                  Husband Aadhar Number (Optional)
                 </label>
                 <input
                   type="text"
@@ -161,7 +161,7 @@ export default function KhulaForm({ caseData, caseId, onSuccess, onUpdated }) {
                   value={form.husbandCnic}
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="ID Number if available"
+                  placeholder="Enter 12-digit Aadhar Number if available"
                 />
               </div>
             </div>

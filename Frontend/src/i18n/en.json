@@ -135,7 +135,7 @@
       "fields": {
         "husbandName": "Husband Name",
         "wifeName": "Wife Name",
-        "cnic": "CNIC Number",
+        "cnic": "Aadhar Number",
         "marriageDate": "Marriage Date",
         "address": "Residential Address"
       },
@@ -195,8 +195,8 @@
     "quickLinks": "Quick Links",
     "contact": "Contact",
     "email": "Email: support@darulqaza.org",
-    "phone": "Phone: +92 XXX XXXXXXX",
-    "address": "Address: Islamic Court Complex",
+    "phone": "Phone: +91 XXXXXXXXXX",
+    "address": "Address: Islamic Court Complex, India",
     "copyright": "© {{year}} Dar-ul-Qaza. All rights reserved.",
     "serving": "Serving the Muslim community with dignity, care, and respect."
   },

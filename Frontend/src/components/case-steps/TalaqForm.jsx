@@ -134,7 +134,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Husband CNIC / Aadhar <span className="text-red-500">*</span>
+                  Husband Aadhar Number <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -143,7 +143,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="ID Number"
+                  placeholder="Enter 12-digit Aadhar Number"
                 />
               </div>
 
@@ -163,7 +163,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Wife CNIC / Aadhar (Optional)
+                  Wife Aadhar Number (Optional)
                 </label>
                 <input
                   type="text"
@@ -171,7 +171,7 @@ export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
                   value={form.wifeCnic}
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder="ID Number if available"
+                  placeholder="Enter 12-digit Aadhar Number if available"
                 />
               </div>
             </div>
