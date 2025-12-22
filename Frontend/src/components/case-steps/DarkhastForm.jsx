@@ -1,22 +1,29 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { submitDarkhast } from "../../api/case.api";
 
-export default function DarkhastForm({ onSubmitted, onCancel }) {
+export default function DarkhastForm({ onSubmitted, onCancel, preselectedType }) {
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [formData, setFormData] = useState({
         applicantName: "",
-        fatherHusbandName: "",
+        fatherGuardianName: "",
         cnic: "",
-        address: "Lahore", // Default city
+        address: "Lahore",
         respondentName: "",
+        respondentFatherName: "",
         respondentAddress: "",
         nikahDate: "",
         nikahPlace: "",
-        natureOfDispute: "",
+        natureOfDispute: preselectedType || "",
         reliefRequested: "",
         statement: "",
+        faskhGrounds: "",
+        evidenceUrl: ""
     });
+
+    const isFaskh = preselectedType === "Faskh-e-Nikah" || formData.natureOfDispute === "Faskh-e-Nikah";
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -25,10 +32,20 @@ export default function DarkhastForm({ onSubmitted, onCancel }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (isFaskh && !formData.faskhGrounds) {
+            setError(t("form.errors.required") + " (Faskh Grounds)");
+            return;
+        }
+
         setLoading(true);
         setError("");
         try {
-            await submitDarkhast(formData);
+            await submitDarkhast({
+                darkhast: { ...formData },
+                type: preselectedType || formData.natureOfDispute,
+                faskhDetails: isFaskh ? { grounds: formData.faskhGrounds, evidenceUrl: formData.evidenceUrl } : undefined
+            });
             onSubmitted();
         } catch (err) {
             setError(err.response?.data?.message || "Failed to submit Darkhast");
@@ -41,7 +58,7 @@ export default function DarkhastForm({ onSubmitted, onCancel }) {
         <div className="bg-white rounded-3xl shadow-2xl border border-emerald-50 overflow-hidden animate-fade-in-up">
             <div className="bg-gradient-to-r from-islamicGreen to-emerald-700 p-8 text-center">
                 <h2 className="text-3xl font-black text-white tracking-tight uppercase">Dar-ul-Qaza</h2>
-                <p className="text-emerald-100 font-bold text-xs uppercase tracking-[0.3em] mt-2">Darkhast (Application Form)</p>
+                <p className="text-emerald-100 font-bold text-xs uppercase tracking-[0.3em] mt-2">{t("form.submitDarkhast")}</p>
             </div>
 
             <div className="p-8 sm:p-12">
@@ -55,25 +72,25 @@ export default function DarkhastForm({ onSubmitted, onCancel }) {
                     <div className="space-y-6">
                         <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
                             <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                            Personal Details
+                            {t("form.personalDetails")}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField
-                                label="Applicant Name / نامِ سائل"
+                                label={t("form.applicantName")}
                                 name="applicantName"
                                 value={formData.applicantName}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label="Father/Husband Name / ولدیت/زوجیت"
-                                name="fatherHusbandName"
-                                value={formData.fatherHusbandName}
+                                label={t("form.fatherGuardianName")}
+                                name="fatherGuardianName"
+                                value={formData.fatherGuardianName}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label="CNIC / شناختی کارڈ نمبر"
+                                label={t("form.cnic")}
                                 name="cnic"
                                 value={formData.cnic}
                                 onChange={handleChange}
@@ -81,7 +98,7 @@ export default function DarkhastForm({ onSubmitted, onCancel }) {
                                 required
                             />
                             <InputField
-                                label="Address (Lahore-specific) / پتہ"
+                                label={t("form.address")}
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
@@ -93,66 +110,98 @@ export default function DarkhastForm({ onSubmitted, onCancel }) {
                     <div className="space-y-6">
                         <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
                             <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                            Marriage & Respondent Details
+                            {t("form.marriageDetails")}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField
-                                label="Respondent Name / نامِ مسئول علیہ"
+                                label={t("form.respondentName")}
                                 name="respondentName"
                                 value={formData.respondentName}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label="Respondent Address / پتہ مسئول علیہ"
+                                label={t("form.respondentFatherName")}
+                                name="respondentFatherName"
+                                value={formData.respondentFatherName}
+                                onChange={handleChange}
+                                required
+                            />
+                            <InputField
+                                label={t("form.respondentAddress")}
                                 name="respondentAddress"
                                 value={formData.respondentAddress}
                                 onChange={handleChange}
                                 required
                             />
-                            <InputField
-                                label="Nikah Date / تاریخِ نکاح"
-                                name="nikahDate"
-                                type="date"
-                                value={formData.nikahDate}
-                                onChange={handleChange}
-                                required
-                            />
-                            <InputField
-                                label="Nikah Place / مقامِ نکاح"
-                                name="nikahPlace"
-                                value={formData.nikahPlace}
-                                onChange={handleChange}
-                                required
-                            />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <InputField
+                                    label={t("form.nikahDate")}
+                                    name="nikahDate"
+                                    type="date"
+                                    value={formData.nikahDate}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <InputField
+                                    label={t("form.nikahPlace")}
+                                    name="nikahPlace"
+                                    value={formData.nikahPlace}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
                         </div>
                     </div>
 
                     <div className="space-y-6">
                         <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
                             <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                            Matter Details
+                            {t("form.natureOfDispute")}
                         </h3>
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <InputField
-                                    label="Nature of Dispute / نوعیتِ تنازعہ"
+                                    label={t("form.natureOfDispute")}
                                     name="natureOfDispute"
                                     value={formData.natureOfDispute}
                                     onChange={handleChange}
-                                    placeholder="e.g. Divorce, Maintenance, etc."
+                                    disabled={!!preselectedType}
                                     required
                                 />
                                 <InputField
-                                    label="Relief Requested / استدعا"
+                                    label={t("form.reliefRequested")}
                                     name="reliefRequested"
                                     value={formData.reliefRequested}
                                     onChange={handleChange}
                                     required
                                 />
                             </div>
+
+                            {isFaskh && (
+                                <div className="p-6 bg-emerald-50/50 rounded-2xl border-2 border-emerald-100 space-y-4">
+                                    <label className="block text-[10px] font-black text-islamicGreen uppercase tracking-widest px-1">{t("form.faskh.grounds")}</label>
+                                    <select
+                                        name="faskhGrounds"
+                                        value={formData.faskhGrounds}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full bg-white border-2 border-emerald-50 rounded-xl px-4 py-3 text-sm focus:border-islamicGreen outline-none transition-all"
+                                    >
+                                        <option value="">-- Select Ground --</option>
+                                        <option value="Husband missing">{t("form.faskh.husbandMissing")}</option>
+                                        <option value="No maintenance">{t("form.faskh.noMaintenance")}</option>
+                                        <option value="Cruelty">{t("form.faskh.cruelty")}</option>
+                                        <option value="Impotence">{t("form.faskh.impotence")}</option>
+                                        <option value="Long absence">{t("form.faskh.longAbsence")}</option>
+                                        <option value="Other valid Shariah reason">{t("form.faskh.other")}</option>
+                                    </select>
+                                    <p className="text-[10px] text-emerald-600 italic">{t("form.errors.evidence")}</p>
+                                </div>
+                            )}
+
                             <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">Detailed Statement / مفصل بیان</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t("form.statement")}</label>
                                 <textarea
                                     name="statement"
                                     rows="6"
@@ -171,14 +220,14 @@ export default function DarkhastForm({ onSubmitted, onCancel }) {
                             onClick={onCancel}
                             className="w-full sm:w-auto px-8 py-3 text-gray-400 font-bold uppercase tracking-widest hover:text-gray-600 transition"
                         >
-                            Cancel / کینسل
+                            {t("common.cancel")}
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
                             className="w-full sm:w-auto bg-islamicGreen text-white px-12 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-emerald-200 hover:bg-emerald-700 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50"
                         >
-                            {loading ? "Processing..." : "Submit Application / جمع کریں"}
+                            {loading ? t("common.loading") : t("form.submitDarkhast")}
                         </button>
                     </div>
                 </form>
@@ -187,7 +236,7 @@ export default function DarkhastForm({ onSubmitted, onCancel }) {
     );
 }
 
-function InputField({ label, name, value, onChange, placeholder, type = "text", required }) {
+function InputField({ label, name, value, onChange, placeholder, type = "text", required, disabled }) {
     return (
         <div className="space-y-2">
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{label}</label>
@@ -198,7 +247,8 @@ function InputField({ label, name, value, onChange, placeholder, type = "text", 
                 onChange={onChange}
                 placeholder={placeholder}
                 required={required}
-                className="w-full bg-emerald-50/30 border-2 border-emerald-50 rounded-2xl px-6 py-4 text-gray-900 font-medium focus:border-islamicGreen focus:bg-white outline-none transition-all placeholder:text-gray-300"
+                disabled={disabled}
+                className="w-full bg-emerald-50/30 border-2 border-emerald-50 rounded-2xl px-6 py-4 text-gray-900 font-medium focus:border-islamicGreen focus:bg-white outline-none transition-all placeholder:text-gray-300 disabled:opacity-50"
             />
         </div>
     );

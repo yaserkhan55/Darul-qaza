@@ -51,6 +51,8 @@ export default function Dashboard() {
   );
 
 
+  const [selectedType, setSelectedType] = useState("");
+
   const loadCases = async (shouldUpdateActive = true) => {
     try {
       const data = await getMyCases();
@@ -81,11 +83,12 @@ export default function Dashboard() {
     }
   };
 
-  const handleStart = async () => {
+  const handleStart = async (type) => {
     if (activeCases.length > 0) {
       setErrorMessage("Please complete your current case first");
       return;
     }
+    setSelectedType(type);
     setShowDarkhastForm(true);
     setActiveCase(null);
   };
@@ -228,6 +231,24 @@ export default function Dashboard() {
               onClick={() => handleStart("Faskh-e-Nikah")}
               disabled={activeCases.length > 0}
             />
+            <SelectionCard
+              title="Talaq-e-Zainiyat"
+              description="Specific type of divorce proceeding handled according to formal Shariah protocols."
+              onClick={() => handleStart("Talaq-e-Zainiyat")}
+              disabled={activeCases.length > 0}
+            />
+            <SelectionCard
+              title="Vina Sat"
+              description="Judicial matter related to marital rights and formal proceedings for Vina Sat matters."
+              onClick={() => handleStart("Vina Sat")}
+              disabled={activeCases.length > 0}
+            />
+            <SelectionCard
+              title="Zauj Nama Dispute"
+              description="Resolution of disputes related to marital documentation and Nikah Nama."
+              onClick={() => handleStart("Zauj Nama Dispute")}
+              disabled={activeCases.length > 0}
+            />
           </div>
 
           {activeCases.length > 0 && (
@@ -316,7 +337,11 @@ export default function Dashboard() {
           className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-2xl shadow-2xl border border-gray-100 min-h-[500px]"
         >
           {showDarkhastForm ? (
-            <DarkhastForm onSubmitted={() => loadCases(true)} onCancel={() => setShowDarkhastForm(false)} />
+            <DarkhastForm
+              onSubmitted={() => loadCases(true)}
+              onCancel={() => setShowDarkhastForm(false)}
+              preselectedType={selectedType}
+            />
           ) : activeCase ? (
             <CaseSteps caseData={activeCase} onUpdated={loadCases} />
           ) : (
@@ -329,7 +354,6 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-    </div >
   );
 }
 
@@ -339,8 +363,8 @@ function SelectionCard({ title, description, onClick, disabled }) {
       onClick={onClick}
       disabled={disabled}
       className={`group text-left p-6 border-2 rounded-2xl transition-all duration-300 ${disabled
-          ? "bg-gray-50 border-gray-100 opacity-60 cursor-not-allowed"
-          : "bg-white border-gray-100 hover:border-islamicGreen hover:shadow-xl hover:-translate-y-1"
+        ? "bg-gray-50 border-gray-100 opacity-60 cursor-not-allowed"
+        : "bg-white border-gray-100 hover:border-islamicGreen hover:shadow-xl hover:-translate-y-1"
         }`}
     >
       <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center text-2xl transition-colors ${disabled ? 'bg-gray-200' : 'bg-emerald-50 group-hover:bg-islamicGreen group-hover:text-white'}`}>
