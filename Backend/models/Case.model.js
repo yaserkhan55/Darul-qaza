@@ -94,6 +94,16 @@ const caseSchema = new mongoose.Schema(
       natureOfDispute: String,
       reliefRequested: String,
       statement: String,
+      // Specialized fields
+      talaqDate: Date,
+      talaqCount: Number,
+      mahrStatus: String,
+      khulaReason: String,
+      mahrReturn: String,
+      maintenanceAmount: String,
+      residenceStatus: String,
+      nikahRegNo: String,
+      correctionRequired: String
     },
     notice: {
       issuedAt: Date,
