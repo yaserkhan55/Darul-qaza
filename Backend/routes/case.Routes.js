@@ -1,3 +1,5 @@
+import express from "express";
+import rateLimit from "express-rate-limit";
 import {
   submitDarkhast,
   approveDarkhast,
@@ -16,7 +18,6 @@ import { generateCertificatePDF } from "../controllers/pdf.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
-import rateLimit from "express-rate-limit";
 
 const createCaseLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
@@ -46,4 +47,3 @@ router.put("/:id/issue-faisla", issueFaisla);
 router.put("/:id/close", closeCase);
 
 export default router;
-
