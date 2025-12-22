@@ -2,73 +2,65 @@ export default function ArbitrationStep({ caseData }) {
     const { arbitration } = caseData;
 
     if (!arbitration) return (
-        <div className="bg-slate-50 border-2 border-slate-300 p-12 text-center rounded-lg shadow-inner">
-            <div className="text-5xl mb-4">🤝</div>
-            <h3 className="text-xl font-bold text-slate-900 uppercase font-serif">Arbitration in Progress</h3>
-            <p className="text-slate-600 font-serif mt-2 italic">The mandatory Sulh (reconciliation) attempt is being record. Please wait for the Qazi's report.</p>
+        <div className="bg-white rounded-3xl p-12 text-center border border-emerald-50 shadow-inner">
+            <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">🤝</div>
+            <h3 className="text-xl font-bold text-islamicGreen tracking-tight">Arbitration in Progress</h3>
+            <p className="text-gray-500 mt-2 font-medium">The mandatory Sulh (reconciliation) attempt is being recorded. Please wait for the Qazi's report.</p>
         </div>
     );
 
     const isSuccess = arbitration.result === "SUCCESS";
 
     return (
-        <div className="max-w-3xl mx-auto font-serif">
-            <div className={`p-8 border-4 rounded-xl shadow-2xl relative overflow-hidden bg-white ${isSuccess ? 'border-emerald-900' : 'border-slate-900'}`}>
-                <div className="text-center mb-10 border-b-2 border-slate-200 pb-6">
-                    <h2 className="text-3xl font-black uppercase tracking-widest text-slate-900">
+        <div className="max-w-3xl mx-auto">
+            <div className={`p-8 sm:p-12 rounded-3xl shadow-2xl relative overflow-hidden bg-white border ${isSuccess ? 'border-emerald-100 shadow-emerald-100' : 'border-emerald-50 shadow-gray-100'}`}>
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl font-black text-islamicGreen tracking-tight">
                         Arbitration Record (Sulh)
                     </h2>
-                    <p className="text-sm font-bold text-slate-500 mt-1 uppercase tracking-tighter">
+                    <div className="w-12 h-1 bg-islamicGreen mx-auto mt-4 rounded-full opacity-20"></div>
+                    <p className="text-[10px] font-black text-gray-400 mt-4 uppercase tracking-[0.3em]">
                         Mandatory Reconciliation Attempt under Shariah Law
                     </p>
                 </div>
 
-                <div className="space-y-10">
-                    <div className="flex justify-between items-center text-sm font-black uppercase tracking-widest text-slate-400">
-                        <div className="flex items-center gap-2">
-                            <span>Date of Attempt:</span>
-                            <span className="text-slate-900">{new Date(arbitration.date).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span>Status:</span>
-                            <span className={isSuccess ? 'text-emerald-700' : 'text-slate-900'}>OFFICIAL RECORD</span>
-                        </div>
-                    </div>
-
+                <div className="space-y-10 relative z-10">
                     <div className="flex flex-col items-center">
-                        <div className={`text-4xl px-8 py-3 font-black border-4 rounded-full uppercase tracking-[0.2em] transform -rotate-1 shadow-lg ${isSuccess ? 'bg-emerald-100 border-emerald-900 text-emerald-900' : 'bg-slate-100 border-slate-900 text-slate-900'}`}>
+                        <div className={`px-12 py-4 rounded-2xl font-black uppercase tracking-widest text-lg shadow-lg ${isSuccess ? 'bg-emerald-500 text-white shadow-emerald-200' : 'bg-rose-500 text-white shadow-rose-200'} transition-transform hover:scale-105`}>
                             {isSuccess ? 'SUCCESSFUL' : 'FAILED'}
                         </div>
-                        <p className="text-xs font-bold text-slate-400 mt-4 uppercase tracking-tighter">
-                            Final Verdict of Reconciliation Session
+                        <p className="text-[10px] font-black text-gray-400 mt-4 uppercase tracking-widest">
+                            Final Outcome of Reconciliation Session
                         </p>
                     </div>
 
-                    <div className="bg-slate-50 p-6 border border-slate-200 rounded-lg shadow-inner">
-                        <span className="text-xs font-black text-slate-400 uppercase block mb-3 tracking-widest">Mediator / Qazi Notes</span>
-                        <p className="text-lg leading-relaxed text-slate-800 italic text-center font-medium">
+                    <div className="bg-emerald-50/30 rounded-2xl p-8 border border-emerald-50">
+                        <span className="text-[10px] font-black text-islamicGreen uppercase block mb-4 tracking-widest text-center">Mediator / Qazi Notes</span>
+                        <p className="text-lg leading-relaxed text-gray-700 italic text-center font-medium">
                             "{arbitration.notes}"
                         </p>
                     </div>
 
-                    <div className="pt-8 flex flex-col items-center space-y-4 text-center">
-                        {isSuccess ? (
-                            <div className="bg-emerald-50 text-emerald-800 p-4 rounded border border-emerald-200 text-sm leading-relaxed">
-                                <p className="font-bold mb-1 uppercase tracking-tight">Case Conclusion Notice</p>
-                                As decomposition was successful through arbitration, this case is now marked as resolved. No divorce certificate will be issued.
-                            </div>
-                        ) : (
-                            <div className="bg-slate-50 text-slate-700 p-4 rounded border border-slate-200 text-sm leading-relaxed italic">
-                                Since reconciliation failed despite exhaustive attempts, the court will now proceed to the final decision (Faisla) according to Islamic principles.
-                            </div>
-                        )}
+                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-gray-300 border-t border-emerald-50 pt-8">
+                        <div className="flex items-center gap-2">
+                            <span>Recorded on:</span>
+                            <span className="text-gray-900">{new Date(arbitration.date).toLocaleDateString()}</span>
+                        </div>
+                        <div className="text-islamicGreen opacity-40">Digital Court Authenticated</div>
                     </div>
                 </div>
 
-                <div className="mt-12 pt-8 border-t-2 border-slate-100 flex justify-center opacity-30">
-                    <div className="border-4 border-slate-900 rounded-full h-24 w-24 flex items-center justify-center font-black text-[10px] text-center p-2 uppercase rotate-12">
-                        Official Sulh Record
-                    </div>
+                {/* Success/Fail Detailed Notice */}
+                <div className="mt-10">
+                    {isSuccess ? (
+                        <div className="bg-emerald-50 text-emerald-800 p-5 rounded-2xl border border-emerald-100 text-sm font-medium leading-relaxed animate-fade-in text-center">
+                            As reconciliation was successful through arbitration, this case is now marked as resolved. No divorce certificate will be issued.
+                        </div>
+                    ) : (
+                        <div className="bg-gray-50 text-gray-500 p-5 rounded-2xl border border-gray-100 text-sm font-medium leading-relaxed italic animate-fade-in text-center">
+                            Since reconciliation failed despite exhaustive attempts, the court will now proceed to the final decision (Faisla) according to Islamic principles.
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

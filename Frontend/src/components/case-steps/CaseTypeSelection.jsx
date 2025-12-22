@@ -28,39 +28,40 @@ export default function CaseTypeSelection({ caseData, onUpdated }) {
     };
 
     return (
-        <div className="bg-slate-50 border-2 border-slate-300 p-8 shadow-inner font-serif">
-            <div className="text-center mb-10">
-                <h2 className="text-2xl font-bold text-slate-900 border-b-2 border-slate-800 pb-2 inline-block">
-                    Select Case Type / قسم کا انتخاب
+        <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-inner">
+            <div className="text-center mb-12">
+                <h2 className="text-3xl font-black text-islamicGreen tracking-tight">
+                    Select Case Type
                 </h2>
-                <p className="text-slate-600 mt-4 max-w-lg mx-auto leading-relaxed">
+                <div className="w-16 h-1 bg-islamicGreen mx-auto mt-4 rounded-full opacity-20"></div>
+                <p className="text-gray-500 mt-6 max-w-lg mx-auto leading-relaxed font-medium">
                     Your application has been approved. Please select the specific legal action you wish to pursue exactly as practiced in the Dar-ul-Qaza court.
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {TYPES.map((type) => (
                     <button
                         key={type}
                         onClick={() => setSelected(type)}
-                        className={`p-6 border-2 transition-all duration-200 text-center flex flex-col items-center justify-center gap-2 group ${selected === type
-                                ? "bg-slate-800 border-slate-900 text-white shadow-lg"
-                                : "bg-white border-slate-200 text-slate-800 hover:border-slate-800 hover:shadow-md"
+                        className={`p-6 rounded-2xl border-2 transition-all duration-300 text-center flex flex-col items-center justify-center gap-2 group ${selected === type
+                            ? "bg-emerald-50 border-islamicGreen shadow-md"
+                            : "bg-white border-gray-100 text-gray-700 hover:border-emerald-200 hover:bg-emerald-50/30"
                             }`}
                     >
-                        <span className="text-lg font-bold tracking-wide">{type}</span>
-                        <span className="text-sm border-t border-current pt-1 opacity-70 group-hover:opacity-100 transition-opacity italic">
-                            Legal Proceeding
+                        <span className={`text-lg font-bold tracking-tight ${selected === type ? 'text-islamicGreen' : 'text-gray-700'}`}>{type}</span>
+                        <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 group-hover:opacity-100 transition-opacity`}>
+                            Judicial Proceeding
                         </span>
                     </button>
                 ))}
             </div>
 
-            <div className="mt-12 flex justify-center border-t-2 border-slate-200 pt-8">
+            <div className="mt-12 flex justify-center border-t border-emerald-50 pt-10">
                 <button
                     onClick={handleConfirm}
                     disabled={!selected || loading}
-                    className="bg-emerald-800 text-white px-12 py-3 font-bold uppercase tracking-widest hover:bg-emerald-950 transition-all shadow-md active:transform active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto bg-islamicGreen text-white px-16 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-emerald-100 hover:bg-emerald-700 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                     {loading ? "Confirming..." : "Confirm & Proceed / تصدیق کریں"}
                 </button>
