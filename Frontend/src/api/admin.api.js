@@ -45,5 +45,13 @@ export const closeCase = async (caseId) => {
   return res.data;
 };
 
+export const downloadCertificate = async (caseId) => {
+  const res = await api.get(`/cases/${caseId}/certificate/pdf`, {
+    responseType: "blob",
+  });
+  return res.data;
+};
+
+
 
 
