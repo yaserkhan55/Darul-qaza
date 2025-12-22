@@ -93,6 +93,30 @@ export default function Home() {
       description: t("home.divorceTypes.khula.description"),
       details: t("home.divorceTypes.khula.details"),
     },
+    {
+      type: "Faskh-e-Nikah",
+      title: t("home.divorceTypes.faskh.title"),
+      description: t("home.divorceTypes.faskh.description"),
+      details: t("home.divorceTypes.faskh.details"),
+    },
+    {
+      type: "Talaq-e-Zainiyat",
+      title: t("home.divorceTypes.zainiyat.title"),
+      description: t("home.divorceTypes.zainiyat.description"),
+      details: t("home.divorceTypes.zainiyat.details"),
+    },
+    {
+      type: "Vina Sat",
+      title: t("home.divorceTypes.vinasat.title"),
+      description: t("home.divorceTypes.vinasat.description"),
+      details: t("home.divorceTypes.vinasat.details"),
+    },
+    {
+      type: "Zauj Nama Dispute",
+      title: t("home.divorceTypes.zauj_nama.title"),
+      description: t("home.divorceTypes.zauj_nama.description"),
+      details: t("home.divorceTypes.zauj_nama.details"),
+    },
   ];
 
   return (
@@ -178,8 +202,8 @@ export default function Home() {
                   <div
                     key={item.type}
                     className={`border-2 rounded-xl p-5 sm:p-6 cursor-pointer transition-all duration-300 transform ${selectedType === item.type
-                        ? "border-islamicGreen bg-teal-50 shadow-lg scale-105"
-                        : "border-gray-200 hover:border-teal-300 hover:shadow-md hover:scale-102"
+                      ? "border-islamicGreen bg-teal-50 shadow-lg scale-105"
+                      : "border-gray-200 hover:border-teal-300 hover:shadow-md hover:scale-102"
                       }`}
                     onClick={() => setSelectedType(item.type)}
                   >

@@ -2,18 +2,10 @@
   "welcome": "Welcome to Dar-ul-Qaza Digital Court",
   "login": "Login / Register",
   "logout": "Logout",
-  "dashboard": {
-    "title": "My Judicial Cases",
-    "activeCase": "Active Case",
-    "noActiveCase": "No Active Case",
-    "startNew": "Start New Application",
-    "completed": "Completed Cases",
-    "unableToLoad": "Unable to load cases. Please check your connection."
-  },
-  "auth": {
-    "required": "Authentication required to access court records."
-  },
   "common": {
+    "dashboard": "Dashboard",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
     "loading": "Securing data...",
     "error": "An error occurred. Please try again.",
     "cancel": "Cancel",
@@ -22,6 +14,114 @@
     "next": "Next Step",
     "back": "Go Back",
     "print": "Print Document"
+  },
+  "home": {
+    "title": "Dar-ul-Qaza Muslim Personal Law Court",
+    "subtitle": "A Digital Portal for Shariah-Compliant Marital Dissolution & Judicial Records",
+    "startDivorceCase": "Start New Application",
+    "selectDivorceType": "Please select a matter to proceed",
+    "proceedWith": "Proceed with {{type}}",
+    "signInToStart": "Sign In to Start Case",
+    "trustTitle": "Official Judicial Oversight",
+    "trustText": "Our digital court ensures that all marital matters are handled with the highest degree of Shariah integrity and legal precision.",
+    "understandingTitle": "The Judicial Process",
+    "understandingText1": "DAR-UL-QAZA provides a structured framework for resolving marital disputes under Muslim Personal Law.",
+    "understandingText2": "From initial application to final Order Sheet, every step is documented and reviewed by qualified Islamic authorities.",
+    "understandingText3": "All decisions issued are digitally authenticated and legally recognized within the community framework.",
+    "processTitle": "Workflow Overview",
+    "documentsTitle": "Primary Documentation",
+    "needHelpTitle": "Need Assistance?",
+    "contactUs": "Contact Registry",
+    "contactUsDesc": "Reach out for help with filing your application.",
+    "emailSupport": "Official Email",
+    "steps": {
+      "application": {
+        "title": "Application",
+        "description": "Submission of formal Darkhast."
+      },
+      "resolution": {
+        "title": "Arbitration",
+        "description": "Compulsory Sulh/Reconciliation session."
+      },
+      "agreement": {
+        "title": "Settlement",
+        "description": "Finalizing terms and conditions."
+      },
+      "affidavits": {
+        "title": "Statements",
+        "description": "Official records of parties/witnesses."
+      },
+      "review": {
+        "title": "Qazi Review",
+        "description": "Judicial assessment of all records."
+      },
+      "certificate": {
+        "title": "Order Sheet",
+        "description": "Issuance of the final decision."
+      }
+    },
+    "documents": {
+      "affidavits": {
+        "title": "Identities & Statements",
+        "items": {
+          "applicant": "Party Identification (CNIC)",
+          "witnesses": "Witness Affidavits",
+          "supporting": "Marriage Record (Nikahnama)"
+        }
+      },
+      "agreement": {
+        "title": "Dissolution Terms",
+        "items": {
+          "mahr": "Mahr Settlement Status",
+          "iddat": "Iddat Period Compliance",
+          "custody": "Guardianship/Custody Terms"
+        }
+      }
+    },
+    "divorceTypes": {
+      "talaq": {
+        "title": "Talaq",
+        "description": "Divorce initiated by Husband",
+        "details": "Formal registration of Talaq declarations as per Shariah."
+      },
+      "khula": {
+        "title": "Khula",
+        "description": "Divorce initiated by Wife",
+        "details": "Dissolution via mutual consent or judicial request."
+      },
+      "faskh": {
+        "title": "Faskh-e-Nikah",
+        "description": "Judicial Dissolution",
+        "details": "Dissolution ordered by Qazi based on valid grounds."
+      },
+      "zainiyat": {
+        "title": "Talaq-e-Zainiyat",
+        "description": "Zainiyat Protocol",
+        "details": "Specialized divorce proceeding for specific marital cases."
+      },
+      "vinasat": {
+        "title": "Vina Sat",
+        "description": "Marital Rights",
+        "details": "Resolution of disputes regarding living and maintenance."
+      },
+      "zauj_nama": {
+        "title": "Zauj Nama",
+        "description": "Contract Dispute",
+        "details": "Verification and resolution of Nikahnama discrepancies."
+      }
+    }
+  },
+  "dashboard": {
+    "title": "My Judicial Cases",
+    "activeCase": "Active Case",
+    "noActiveCase": "No Active Case",
+    "startNew": "Start New Application",
+    "completed": "Completed Cases",
+    "unableToLoad": "Unable to load cases. Please check your connection.",
+    "messageModalClose": "Close Notification"
+  },
+  "auth": {
+    "required": "Authentication required to access court records."
   },
   "caseTypes": {
     "Talaq": {
