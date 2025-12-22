@@ -5,45 +5,48 @@ export const getMyCases = async () => {
   return res.data;
 };
 
-export const startCase = async (divorceType, createdBy) => {
-  // Backend accepts { type, createdBy }
-  const res = await api.post("/cases/start", {
-    type: divorceType,
-    createdBy,
-  });
+export const submitDarkhast = async (darkhastData) => {
+  const res = await api.post("/cases/darkhast", { darkhast: darkhastData });
   return res.data;
 };
 
-// New workflow: save as DRAFT details, then submit case for review
-export const saveDraft = async (caseId, payload) => {
-  const res = await api.post(`/cases/${caseId}/draft`, payload);
+export const selectCaseType = async (caseId, type) => {
+  const res = await api.put(`/cases/${caseId}/select-type`, { type });
   return res.data;
 };
 
-export const saveDivorceForm = async (caseId, formData) => {
-  await api.post(`/cases/${caseId}/draft`, { details: formData });
-  const res = await api.post(`/cases/${caseId}/submit`);
+// Admin/Qazi Actions
+export const approveDarkhast = async (caseId) => {
+  const res = await api.put(`/cases/${caseId}/approve-darkhast`);
   return res.data;
 };
 
-export const saveResolution = async (caseId, resolutionData) => {
-  const res = await api.post(`/cases/${caseId}/resolution`, resolutionData);
+export const issueNotice = async (caseId, payload) => {
+  const res = await api.put(`/cases/${caseId}/issue-notice`, payload);
   return res.data;
 };
 
-export const saveAgreement = async (caseId, agreementData) => {
-  const res = await api.post(`/cases/${caseId}/agreement`, agreementData);
+export const recordAttendance = async (caseId, hazri) => {
+  const res = await api.put(`/cases/${caseId}/record-attendance`, { hazri });
   return res.data;
 };
 
-export const saveAffidavits = async (caseId, affidavitsData) => {
-  const res = await api.post(`/cases/${caseId}/affidavits`, affidavitsData);
+export const recordStatement = async (caseId, statement) => {
+  const res = await api.put(`/cases/${caseId}/record-statement`, { statement });
   return res.data;
 };
 
-// Generic transition handler (shared with admin)
-// payload: { nextStatus, note? }
-export const transitionCase = async (caseId, payload) => {
-  const res = await api.patch(`/cases/${caseId}/transition`, payload);
+export const recordArbitration = async (caseId, payload) => {
+  const res = await api.put(`/cases/${caseId}/record-arbitration`, payload);
+  return res.data;
+};
+
+export const issueFaisla = async (caseId, faisla) => {
+  const res = await api.put(`/cases/${caseId}/issue-faisla`, { faisla });
+  return res.data;
+};
+
+export const closeCase = async (caseId) => {
+  const res = await api.put(`/cases/${caseId}/close`);
   return res.data;
 };

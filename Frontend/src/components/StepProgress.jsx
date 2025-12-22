@@ -4,43 +4,36 @@ export default function StepProgress({ status }) {
   const { t } = useTranslation();
 
   const steps = [
-    { id: "STARTED", label: "Application" },
-    { id: "FORM_COMPLETED", label: "Review" },
-    { id: "RESOLUTION_SUCCESS", label: "Resolution" },
-    { id: "AGREEMENT_DONE", label: "Agreement" },
-    { id: "AFFIDAVITS_DONE", label: "Affidavits" },
-    { id: "APPROVED", label: "Certificate" },
+    { id: "DARKHAST_SUBMITTED", label: "Darkhast" },
+    { id: "NOTICE_SENT", label: "Notice" },
+    { id: "HEARING_IN_PROGRESS", label: "Hearing" },
+    { id: "ARBITRATION_IN_PROGRESS", label: "Arbitration" },
+    { id: "DECISION_PENDING", label: "Decision" },
+    { id: "CASE_CLOSED", label: "Certificate" },
   ];
 
   // Map status to step index - handles all possible statuses
   const getStepIndex = (status) => {
     switch (status) {
-      case "STARTED":
-      case "CREATED":
-      case "DRAFT":
+      case "DARKHAST_SUBMITTED":
+      case "DARKHAST_APPROVED":
         return 0;
-      case "FORM_COMPLETED":
-      case "SUBMITTED":
+      case "NOTICE_SENT":
         return 1;
-      case "RESOLUTION_SUCCESS":
-      case "RESOLUTION_FAILED":
+      case "HEARING_IN_PROGRESS":
         return 2;
-      case "AGREEMENT_DONE":
+      case "ARBITRATION_IN_PROGRESS":
         return 3;
-      case "AFFIDAVITS_DONE":
+      case "DECISION_PENDING":
         return 4;
-      case "UNDER_REVIEW":
-      case "PENDING_REVIEW":
-      case "PENDING_HUSBAND_CONSENT":
-      case "ARBITRATION":
+      case "DECISION_APPROVED":
+      case "CASE_CLOSED":
         return 5;
-      case "APPROVED":
-      case "COMPLETED":
-        return 6;
       default:
         return 0;
     }
   };
+
 
   const current = getStepIndex(status);
 

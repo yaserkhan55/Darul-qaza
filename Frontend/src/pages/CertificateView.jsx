@@ -7,11 +7,12 @@ export default function CertificateView({ caseData }) {
   const handleDownload = async () => {
     setDownloading(true);
     try {
+      // In a real app, this would call the API. For now we use the same structure.
       const blob = await downloadCertificate(caseData._id);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `divorce-certificate-${caseData._id.slice(-8)}.pdf`;
+      a.download = `darulqaza-certificate-${caseData.caseId || caseData._id.slice(-8)}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -23,103 +24,88 @@ export default function CertificateView({ caseData }) {
     }
   };
 
-  if (!caseData || caseData.status !== "APPROVED") {
+  const isReady = ["DECISION_APPROVED", "CASE_CLOSED"].includes(caseData.status);
+
+  if (!caseData || !isReady) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">Certificate not available yet</p>
+        <p className="text-gray-500 font-serif italic">Certificate not issued yet / سرٹیفکیٹ ابھی جاری نہیں ہوا</p>
       </div>
     );
   }
 
+  const { darkhast, type, faisla } = caseData;
+
   return (
-    <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto">
-      <div className="text-center mb-4 sm:mb-6">
-        <div className="text-4xl sm:text-5xl mb-3 sm:mb-4">📜</div>
-        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-islamicGreen mb-2">
-          Divorce Certificate
+    <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-10 max-w-3xl mx-auto font-serif border-4 border-slate-900">
+      <div className="text-center mb-8 border-b-2 border-slate-200 pb-6">
+        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2 uppercase tracking-widest">
+          Dar-ul-Qaza
         </h2>
-        <p className="text-sm sm:text-base text-gray-600">Official Islamic Divorce Certificate</p>
+        <p className="text-sm font-bold text-slate-500 uppercase tracking-tighter">Official Judicial Certificate</p>
       </div>
 
-      <div className="border-2 border-islamicGreen rounded-lg p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6">
-        <div className="text-center mb-4 sm:mb-6">
-          <h3 className="text-lg sm:text-xl lg:text-2xl font-serif mb-2">
-            <span className="text-xl sm:text-2xl lg:text-3xl">دار القضاء</span>
-            <br />
-            <span className="text-islamicGreen text-base sm:text-lg lg:text-xl">Dar-ul-Qaza</span>
-          </h3>
-          <p className="text-xs sm:text-sm text-gray-600">Islamic Family Resolution Platform</p>
-        </div>
+      <div className="space-y-8">
+        <div className="text-center">
+          <h3 className="text-xl font-bold border-b-2 border-slate-900 inline-block pb-1 mb-6">CERTIFICATE OF {type?.toUpperCase()}</h3>
 
-        <div className="border-t border-b border-gray-200 py-4 sm:py-6 my-4 sm:my-6">
-          <p className="text-center text-base sm:text-lg font-semibold mb-3 sm:mb-4">CERTIFICATE OF DIVORCE</p>
-          
-          <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm lg:text-base">
-            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
-              <span className="text-gray-600">Case ID:</span>
-              <span className="font-mono font-semibold break-all sm:break-normal">{caseData._id}</span>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
-              <span className="text-gray-600">Divorce Type:</span>
-              <span className="font-semibold">{caseData.divorceType}</span>
+          <div className="space-y-6 text-left max-w-md mx-auto">
+            <div className="flex justify-between border-b border-slate-100 pb-2">
+              <span className="text-xs font-black text-slate-400 uppercase">Case Number</span>
+              <span className="font-bold text-slate-900 font-mono tracking-tighter italic">#{caseData.caseId?.slice(-8).toUpperCase()}</span>
             </div>
 
-            {caseData.divorceForm && (
-              <>
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
-                  <span className="text-gray-600">Husband Name:</span>
-                  <span className="font-semibold break-words">{caseData.divorceForm.husbandName}</span>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
-                  <span className="text-gray-600">Wife Name:</span>
-                  <span className="font-semibold break-words">{caseData.divorceForm.wifeName}</span>
-                </div>
-              </>
-            )}
+            <div className="flex justify-between border-b border-slate-100 pb-2">
+              <span className="text-xs font-black text-slate-400 uppercase">Type of Dissolution</span>
+              <span className="font-bold text-slate-900">{type}</span>
+            </div>
 
-            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
-              <span className="text-gray-600">Date of Approval:</span>
-              <span className="font-semibold">{new Date(caseData.updatedAt).toLocaleDateString()}</span>
+            <div className="flex justify-between border-b border-slate-100 pb-2">
+              <span className="text-xs font-black text-slate-400 uppercase">Applicant Name</span>
+              <span className="font-bold text-slate-900">{darkhast?.applicantName}</span>
+            </div>
+
+            <div className="flex justify-between border-b border-slate-100 pb-2">
+              <span className="text-xs font-black text-slate-400 uppercase">Respondent Name</span>
+              <span className="font-bold text-slate-900">{darkhast?.respondentName}</span>
+            </div>
+
+            <div className="flex justify-between border-b border-slate-100 pb-2">
+              <span className="text-xs font-black text-slate-400 uppercase">Effective Date</span>
+              <span className="font-bold text-slate-900">{faisla?.decisionDate ? new Date(faisla.decisionDate).toLocaleDateString() : "---"}</span>
             </div>
           </div>
         </div>
 
-        <div className="text-center text-sm text-gray-600 space-y-2">
-          <p>This certificate is issued in accordance with Islamic Shariah law</p>
-          <p>and confirms the legal dissolution of marriage.</p>
+        <div className="text-center text-sm text-slate-600 italic bg-slate-50 p-4 border border-slate-100 rounded">
+          <p>"This document serves as final proof of the dissolution of marriage according to the principles of Islamic Shariah and the procedures of Dar-ul-Qaza."</p>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-gray-200 text-center">
-          <p className="text-xs text-gray-500">Verified and Approved by Qazi</p>
-          <p className="text-xs text-gray-500 mt-1">
-            {new Date().toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-          </p>
+        <div className="pt-10 flex flex-col items-center">
+          <div className="w-48 border-t-2 border-slate-900 pt-2 text-center">
+            <p className="text-[10px] font-black uppercase text-slate-400">Authenticated By</p>
+            <p className="font-bold text-slate-900 italic">Signature of Qazi</p>
+          </div>
+
+          <div className="mt-8 opacity-40">
+            <div className="border-4 border-slate-900 rounded-full h-16 w-16 flex items-center justify-center font-black text-[8px] text-center p-1 uppercase rotate-12">
+              Official Court Seal
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+      <div className="mt-12 flex justify-center no-print">
         <button
           onClick={handleDownload}
           disabled={downloading}
-          className="bg-islamicGreen text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 text-sm sm:text-base font-semibold shadow-md hover:shadow-lg"
+          className="bg-slate-900 text-white px-8 py-3 rounded font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl disabled:opacity-50"
         >
-          {downloading ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin">⏳</span>
-              Downloading...
-            </span>
-          ) : (
-            "Download PDF Certificate"
-          )}
+          {downloading ? "Generating PDF..." : "Download Original (PDF)"}
         </button>
       </div>
     </div>
   );
 }
+
 

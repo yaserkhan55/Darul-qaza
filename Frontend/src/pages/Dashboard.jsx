@@ -8,16 +8,18 @@ import StatusBadge from "../components/StatusBadge";
 import CaseSteps from "../components/CaseSteps";
 import CaseTimeline from "../components/CaseTimeline";
 import LoadingSpinner from "../components/LoadingSpinner";
+import DarkhastForm from "../components/case-steps/DarkhastForm";
+
 
 const STEP_LABELS = {
-  STARTED: "Divorce Form / خلع فارم",
-  FORM_COMPLETED: "Resolution (Sulh) / صلح کی کوشش",
-  RESOLUTION_SUCCESS: "Agreement / معاہدہ",
-  RESOLUTION_FAILED: "Agreement / معاہدہ",
-  AGREEMENT_DONE: "Affidavits / حلف نامے",
-  AFFIDAVITS_DONE: "Under Review / زیرِ جائزہ",
-  UNDER_REVIEW: "Under Review / زیرِ جائزہ",
-  APPROVED: "Certificate Ready / سرٹیفکیٹ تیار",
+  DARKHAST_SUBMITTED: "Application / درخواست",
+  DARKHAST_APPROVED: "Case Type / قسم کے انتخاب",
+  NOTICE_SENT: "Notice Issued / نوٹس کا اجراء",
+  HEARING_IN_PROGRESS: "Under Hearing / سماعت جاری",
+  ARBITRATION_IN_PROGRESS: "Arbitration / ثالثی (صلح)",
+  DECISION_PENDING: "Decision Pending / فیصلے کا انتظار",
+  DECISION_APPROVED: "Faisla Issued / فیصلہ جاری",
+  CASE_CLOSED: "Completed / مکمل",
 };
 
 export default function Dashboard() {
@@ -31,9 +33,10 @@ export default function Dashboard() {
   const [errorMessage, setErrorMessage] = useState("");
   const [latestMessage, setLatestMessage] = useState(null);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showDarkhastForm, setShowDarkhastForm] = useState(false);
 
   const activeCases = useMemo(
-    () => allCases.filter((c) => c.status !== "APPROVED"),
+    () => allCases.filter((c) => c.status !== "CASE_CLOSED"),
     [allCases]
   );
 
@@ -41,11 +44,12 @@ export default function Dashboard() {
     () => ({
       active: activeCases.length,
       completed: completedCases.length,
-      underReview: allCases.filter((c) => c.status === "UNDER_REVIEW").length,
-      nextStep: activeCase ? STEP_LABELS[activeCase.status] || activeCase.status : t("dashboard.startNewCase"),
+      underReview: allCases.filter((c) => c.status === "DARKHAST_SUBMITTED").length,
+      nextStep: activeCase ? STEP_LABELS[activeCase.status] || activeCase.status : "Submit Darkhast",
     }),
     [activeCases.length, completedCases.length, allCases, activeCase, t]
   );
+
 
   const loadCases = async (shouldUpdateActive = true) => {
     try {
@@ -53,17 +57,17 @@ export default function Dashboard() {
       setAllCases(data);
       setErrorMessage("");
 
-      const completed = data.filter((c) => c.status === "APPROVED");
+      const completed = data.filter((c) => c.status === "CASE_CLOSED");
       setCompletedCases(completed);
 
       if (shouldUpdateActive) {
-        const actives = data.filter((c) => c.status !== "APPROVED");
+        const actives = data.filter((c) => c.status !== "CASE_CLOSED");
         if (actives.length > 0) {
-          // Always prefer the latest active case from fresh data
           setActiveCase(actives[0]);
+          setShowDarkhastForm(false);
         } else if (completed.length > 0) {
-          // Fall back to the most recent completed case
           setActiveCase(completed[0]);
+          setShowDarkhastForm(false);
         } else {
           setActiveCase(null);
         }
@@ -72,49 +76,20 @@ export default function Dashboard() {
       return data;
     } catch (err) {
       console.error("Failed to load cases:", err);
-      setErrorMessage(t("dashboard.unableToLoad"));
+      setErrorMessage(t("dashboard.unableToLoad") || "Unable to load cases");
       return [];
     }
   };
 
-
-
-  const handleStart = async (divorceType = "TALAQ") => {
-    setLoading(true);
-    try {
-      const resultCase = await startCase(divorceType, user?.id);
-
-      // If backend returned an existing case (200), or a new one (201)
-      // We check if it's already in our list to avoid duplicates
-      setAllCases((prev) => {
-        const exists = prev.find(c => c._id === resultCase._id);
-        if (exists) return prev; // Don't add if already there
-        return [resultCase, ...prev]; // Add if new
-      });
-
-      setActiveCase(resultCase);
-      setErrorMessage("");
-
-      // Optional: Refresh background
-      loadCases(false);
-      setErrorMessage("");
-    } catch (err) {
-      if (err.response?.data?.code === "ACTIVE_CASE_EXISTS" || err.response?.data?.caseId) {
-        // Show the specific error message as requested
-        setErrorMessage(err.response?.data?.message || "Please complete your current case first");
-        // Also ensure we load the active case so they can see it
-        await loadCases(true);
-      } else {
-        const message =
-          err.response?.data?.error ||
-          err.response?.data?.message ||
-          "Failed to start case";
-        setErrorMessage(message);
-      }
-    } finally {
-      setLoading(false);
+  const handleStart = async () => {
+    if (activeCases.length > 0) {
+      setErrorMessage("Please complete your current case first");
+      return;
     }
+    setShowDarkhastForm(true);
+    setActiveCase(null);
   };
+
 
 
   useEffect(() => {
@@ -268,12 +243,13 @@ export default function Dashboard() {
             </p>
           </div>
           <button
-            onClick={() => handleStart("TALAQ")}
+            onClick={handleStart}
             disabled={loading || activeCases.length > 0}
             className="w-full sm:w-auto bg-islamicGreen text-white px-5 py-3 rounded-lg font-semibold shadow-md hover:bg-teal-700 disabled:opacity-40 transition-all"
           >
-            {loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
+            {loading ? "Starting..." : "Start New Case"}
           </button>
+
         </div>
 
         {errorMessage && (
@@ -320,12 +296,13 @@ export default function Dashboard() {
             <div className="text-center py-8">
               <p className="text-sm text-gray-500 mb-4">{t("dashboard.noCasesYet")}</p>
               <button
-                onClick={() => handleStart("TALAQ")}
+                onClick={handleStart}
                 disabled={loading}
                 className="w-full bg-islamicGreen text-white py-2.5 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 text-sm font-medium shadow-md hover:shadow-lg"
               >
-                {loading ? t("dashboard.starting") : t("dashboard.startFirstCase")}
+                {loading ? "Starting..." : "Start First Case"}
               </button>
+
             </div>
           ) : (
             <>
@@ -355,12 +332,13 @@ export default function Dashboard() {
               </div>
 
               <button
-                onClick={() => handleStart("TALAQ")}
+                onClick={handleStart}
                 disabled={loading}
                 className="w-full mt-4 bg-islamicGreen text-white py-2.5 sm:py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 disabled:opacity-50 text-sm sm:text-base font-medium shadow-md hover:shadow-lg"
               >
-                {loading ? t("dashboard.starting") : t("dashboard.startNewCase")}
+                {loading ? "Starting..." : "Start New Case"}
               </button>
+
             </>
           )}
         </div>
@@ -370,7 +348,11 @@ export default function Dashboard() {
           id="case-steps-section"
           className="col-span-1 lg:col-span-2 bg-white p-3 sm:p-4 lg:p-6 xl:p-8 rounded-xl shadow-lg border border-gray-100 min-h-[400px]"
         >
-          {activeCase ? (
+          {showDarkhastForm ? (
+            <div className="animate-fade-in">
+              <DarkhastForm onSubmitted={() => loadCases(true)} onCancel={() => setShowDarkhastForm(false)} />
+            </div>
+          ) : activeCase ? (
             <div className="animate-fade-in">
               <CaseSteps caseData={activeCase} onUpdated={loadCases} />
             </div>
@@ -387,10 +369,10 @@ export default function Dashboard() {
               </p>
 
               {loading ? (
-                <LoadingSpinner text={t("dashboard.starting")} />
+                <LoadingSpinner text={t("dashboard.starting") || "Starting..."} />
               ) : (
                 <button
-                  onClick={() => handleStart("TALAQ")}
+                  onClick={handleStart}
                   disabled={loading}
                   className="w-full sm:w-auto bg-islamicGreen text-white px-8 py-3 rounded-lg font-semibold shadow-md hover:bg-teal-700 hover:shadow-lg transition-all transform hover:-translate-y-0.5"
                 >
@@ -400,6 +382,7 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+
       </div>
     </div>
   );

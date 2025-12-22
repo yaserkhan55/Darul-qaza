@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { getAllCases, transitionCase } from "../api/admin.api";
+import * as adminApi from "../api/admin.api";
 import { sendAdminMessage } from "../api/message.api";
 import StatusBadge from "../components/StatusBadge";
 import { useTranslation } from "react-i18next";
-
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -15,11 +14,16 @@ export default function AdminDashboard() {
   const [filter, setFilter] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
-  const [rejectReason, setRejectReason] = useState("");
-  const [sendBackNote, setSendBackNote] = useState("");
   const [error, setError] = useState("");
   const [authChecked, setAuthChecked] = useState(false);
   const [authCode, setAuthCode] = useState("");
+
+  // Form states for different steps
+  const [noticeData, setNoticeData] = useState({ hearingDate: "", notes: "" });
+  const [hazriData, setHazriData] = useState({ applicantPresent: true, respondentPresent: true, qaziRemarks: "" });
+  const [statementData, setStatementData] = useState({ applicantStatement: "", respondentStatement: "", qaziNotes: "" });
+  const [arbitrationData, setArbitrationData] = useState({ result: "FAILED", notes: "" });
+  const [faislaData, setFaislaData] = useState({ finalOrderText: "", qaziSignature: "", courtSealRef: "", decisionType: "" });
 
   useEffect(() => {
     loadCases();
@@ -28,7 +32,7 @@ export default function AdminDashboard() {
   const loadCases = async () => {
     setLoading(true);
     try {
-      const data = await getAllCases();
+      const data = await adminApi.getAllCases();
       setCases(data || []);
     } catch (err) {
       setError("Failed to load cases. Please retry.");
@@ -37,372 +41,253 @@ export default function AdminDashboard() {
     }
   };
 
-
-
-  const filters = useMemo(() => [
-    { value: "ALL", label: t("admin.filters.all") },
-    { value: "UNDER_REVIEW", label: t("admin.filters.underReview") },
-    { value: "APPROVED", label: t("admin.filters.approved") },
-    { value: "REJECTED", label: t("admin.filters.rejected") },
-  ], [t]);
-
   const filteredCases = useMemo(() => {
     return (cases || []).filter((c) => {
       const matchesFilter = filter === "ALL" || c.status === filter;
       const term = searchTerm.trim().toLowerCase();
       const matchesSearch =
         term === "" ||
-        (c.type || c.divorceType || "").toLowerCase().includes(term) ||
-        (c.caseId || c._id || "").toString().toLowerCase().includes(term) ||
-        (c.createdBy || "").toLowerCase().includes(term);
+        (c.type || "").toLowerCase().includes(term) ||
+        (c.caseId || "").toString().toLowerCase().includes(term) ||
+        (c.darkhast?.applicantName || "").toLowerCase().includes(term);
       return matchesFilter && matchesSearch;
     });
   }, [cases, filter, searchTerm]);
 
-  const pickDoc = (key) =>
-    selectedCase?.affidavits?.[key] ||
-    selectedCase?.details?.affidavits?.[key] ||
-    selectedCase?.details?.[key];
-
-
-
-  const documentList = [
-    { key: "applicantAffidavit", label: t("documents.labels.applicant") },
-    { key: "respondentAffidavit", label: t("documents.labels.respondent") },
-    { key: "witnessAffidavits", label: t("documents.labels.witness") },
-    { key: "nikahnama", label: t("documents.labels.nikahnama") },
-    { key: "idProof", label: t("documents.labels.idProof") },
-  ]
-    .flatMap((d) => {
-      const value = pickDoc(d.key);
-      if (!value) return [];
-
-      if (Array.isArray(value)) {
-        return value
-          .filter(Boolean)
-          .map((v, idx) => ({
-            key: `${d.key}-${idx + 1}`,
-            label: `${d.label} #${idx + 1}`,
-            value: v,
-          }));
-      }
-
-      return [{ key: d.key, label: d.label, value }];
-    })
-    .map((d) => {
-      const raw = d.value;
-      const url = typeof raw === "string" ? raw : raw?.url;
-      const filename =
-        (typeof raw === "object" && raw?.filename) || url?.split("/").pop();
-      const uploadedAt =
-        typeof raw === "object" && raw?.uploadedAt
-          ? new Date(raw.uploadedAt)
-          : null;
-
-      return { ...d, url, filename, uploadedAt };
-    })
-    .filter((d) => d.url);
-
   const handleSelect = (c) => {
     setSelectedCase(c);
-    setRejectReason("");
-    setSendBackNote("");
     setError("");
+    // Reset forms
+    setNoticeData({ hearingDate: "", notes: "" });
+    setHazriData({ applicantPresent: true, respondentPresent: true, qaziRemarks: "" });
+    setStatementData({ applicantStatement: "", respondentStatement: "", qaziNotes: "" });
+    setArbitrationData({ result: "FAILED", notes: "" });
+    setFaislaData({
+      finalOrderText: "",
+      qaziSignature: user?.fullName || "Qazi Dar-ul-Qaza",
+      courtSealRef: `DQ/LHR/${new Date().getFullYear()}/${c.caseId?.slice(-4).toUpperCase() || "X"}`,
+      decisionType: c.type
+    });
   };
 
-  const doTransition = async (nextStatus, note) => {
-    if (!selectedCase?._id || !nextStatus) return;
+  const handleAdminAction = async (actionFn, ...args) => {
     setActionLoading(true);
     setError("");
     try {
-      const updatedCase = await transitionCase(selectedCase._id, {
-        nextStatus,
-        note: note || undefined,
-        assignedQazi: user?.id,
-      });
-
-      // Send automatic notification to applicant
-      if (selectedCase.createdBy) {
-        let title = "";
-        let body = "";
-        if (nextStatus === "APPROVED") {
-          title = t("admin.notifications.approved.title");
-          body = t("admin.notifications.approved.body");
-        } else if (nextStatus === "REJECTED") {
-          title = t("admin.notifications.rejected.title");
-          body = note || t("admin.notifications.rejected.body");
-        } else {
-          title = t("admin.notifications.update.title");
-          body = note || t("admin.notifications.update.body");
-        }
-
-        try {
-          await sendAdminMessage({
-            caseId: selectedCase._id,
-            recipientId: selectedCase.createdBy,
-            title,
-            body,
-            senderId: user?.id,
-            senderName: user?.fullName || "Dar-ul-Qaza Admin",
-          });
-        } catch (msgErr) {
-          console.error("Failed to send admin message", msgErr);
-        }
-      }
-
+      const updatedCase = await actionFn(selectedCase._id, ...args);
       await loadCases();
-      setSelectedCase(updatedCase || null);
-      setRejectReason("");
-      setSendBackNote("");
+      setSelectedCase(updatedCase);
     } catch (err) {
-      setError(err?.response?.data?.message || "Action failed. Please try again.");
+      setError(err?.response?.data?.message || "Action failed.");
     } finally {
       setActionLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-islamicBeige to-white p-3 sm:p-4 lg:p-6">
-      {/* Safety confirmation before entering admin controls */}
-      {!authChecked && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 sm:p-7 max-w-md w-full space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">{t("admin.safety.title")}</h2>
-            <p className="text-sm text-gray-600">
-              {t("admin.safety.description")}
-            </p>
-            <input
-              type="text"
-              value={authCode}
-              onChange={(e) => setAuthCode(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-islamicGreen"
-              placeholder={t("admin.safety.placeholder")}
-            />
+  const renderActionSection = () => {
+    const status = selectedCase.status;
+
+    switch (status) {
+      case "DARKHAST_SUBMITTED":
+        return (
+          <div className="space-y-4">
+            <h4 className="font-bold text-slate-800 uppercase text-xs tracking-widest border-b pb-2">Darkhast Review</h4>
             <button
-              onClick={() => authCode.trim().toUpperCase() === "QAZI" && setAuthChecked(true)}
-              className="w-full bg-islamicGreen text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-teal-700 transition disabled:opacity-60"
-              disabled={authCode.trim().length === 0}
+              onClick={() => handleAdminAction(adminApi.approveDarkhast)}
+              disabled={actionLoading}
+              className="w-full bg-emerald-700 text-white py-3 rounded font-black uppercase tracking-widest hover:bg-emerald-800 disabled:opacity-50"
             >
-              {t("admin.safety.button")}
+              Issue Approval / منظوری دیں
             </button>
-            <p className="text-[12px] text-gray-500 text-center">
-              {t("admin.disclaimer")}
-            </p>
           </div>
-        </div>
+        );
+
+      case "DARKHAST_APPROVED":
+        return (
+          <div className="bg-amber-50 p-4 border border-amber-200 rounded text-center">
+            <p className="text-amber-800 text-xs font-bold uppercase italic font-serif">Awaiting User to select Case Type</p>
+          </div>
+        );
+
+      case "NOTICE_SENT":
+        return (
+          <div className="space-y-4">
+            <h4 className="font-bold text-slate-800 uppercase text-xs tracking-widest border-b pb-2">Hearing Management</h4>
+            <button
+              onClick={() => handleAdminAction(adminApi.startHearing)}
+              disabled={actionLoading}
+              className="w-full bg-indigo-700 text-white py-3 rounded font-black uppercase tracking-widest hover:bg-indigo-800 disabled:opacity-50"
+            >
+              Start Hearing / سماعت شروع کریں
+            </button>
+          </div>
+        );
+
+      case "HEARING_IN_PROGRESS":
+        return (
+          <div className="space-y-6">
+            <h4 className="font-bold text-slate-800 uppercase text-xs tracking-widest border-b pb-2">Record Hearing</h4>
+
+            <div className="space-y-3 bg-slate-50 p-3 border rounded">
+              <p className="text-[10px] font-black uppercase text-slate-400">Step 1: Record Attendance (Hazri)</p>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 text-xs">
+                  <input type="checkbox" checked={hazriData.applicantPresent} onChange={e => setHazriData({ ...hazriData, applicantPresent: e.target.checked })} /> Applicant
+                </label>
+                <label className="flex items-center gap-2 text-xs">
+                  <input type="checkbox" checked={hazriData.respondentPresent} onChange={e => setHazriData({ ...hazriData, respondentPresent: e.target.checked })} /> Respondent
+                </label>
+              </div>
+              <input
+                className="w-full text-xs border p-2 rounded"
+                placeholder="Remarks on presence..."
+                value={hazriData.qaziRemarks}
+                onChange={e => setHazriData({ ...hazriData, qaziRemarks: e.target.value })}
+              />
+              <button onClick={() => handleAdminAction(adminApi.recordAttendance, hazriData)} className="w-full bg-slate-800 text-white py-1.5 rounded text-[10px] font-bold uppercase">Record Hazri</button>
+            </div>
+
+            <div className="space-y-3 bg-slate-50 p-3 border rounded">
+              <p className="text-[10px] font-black uppercase text-slate-400">Step 2: Record Statements</p>
+              <textarea placeholder="Applicant statement" className="w-full text-xs border p-2 rounded" rows="2" value={statementData.applicantStatement} onChange={e => setStatementData({ ...statementData, applicantStatement: e.target.value })} />
+              <textarea placeholder="Respondent statement" className="w-full text-xs border p-2 rounded" rows="2" value={statementData.respondentStatement} onChange={e => setStatementData({ ...statementData, respondentStatement: e.target.value })} />
+              <textarea placeholder="Qazi's judicial notes" className="w-full text-xs border p-2 rounded" rows="2" value={statementData.qaziNotes} onChange={e => setStatementData({ ...statementData, qaziNotes: e.target.value })} />
+              <button onClick={() => handleAdminAction(adminApi.recordStatement, statementData)} className="w-full bg-slate-800 text-white py-1.5 rounded text-[10px] font-bold uppercase">Submit Statements</button>
+            </div>
+
+            <button onClick={() => handleAdminAction(adminApi.recordArbitration, { result: "FAILED", notes: "Proceeding to Arbitration stage." })} className="w-full bg-amber-600 text-white py-3 rounded font-black uppercase tracking-widest">Move to Arbitration</button>
+          </div>
+        );
+
+      case "ARBITRATION_IN_PROGRESS":
+        return (
+          <div className="space-y-4">
+            <h4 className="font-bold text-slate-800 uppercase text-xs tracking-widest border-b pb-2">Arbitration (Sulh) Report</h4>
+            <select
+              className="w-full border p-2 rounded font-bold"
+              value={arbitrationData.result}
+              onChange={e => setArbitrationData({ ...arbitrationData, result: e.target.value })}
+            >
+              <option value="FAILED">FAILED (Proceed to Faisla)</option>
+              <option value="SUCCESS">SUCCESS (Close Case)</option>
+            </select>
+            <textarea
+              placeholder="Detail of mediation attempt..."
+              className="w-full border p-2 rounded italic text-sm"
+              rows="3"
+              value={arbitrationData.notes}
+              onChange={e => setArbitrationData({ ...arbitrationData, notes: e.target.value })}
+            />
+            <button onClick={() => handleAdminAction(adminApi.recordArbitration, arbitrationData)} className="w-full bg-emerald-800 text-white py-3 rounded font-black uppercase tracking-widest">Confirm Resolution Result</button>
+          </div>
+        );
+
+      case "DECISION_PENDING":
+        return (
+          <div className="space-y-4">
+            <h4 className="font-bold text-slate-800 uppercase text-xs tracking-widest border-b pb-2">Issue Final Order Sheet</h4>
+            <textarea
+              placeholder="Final Order Text..."
+              className="w-full border p-4 rounded bg-slate-50 italic text-sm"
+              rows="8"
+              value={faislaData.finalOrderText}
+              onChange={e => setFaislaData({ ...faislaData, finalOrderText: e.target.value })}
+            />
+            <button onClick={() => handleAdminAction(adminApi.issueFaisla, faislaData)} className="w-full bg-slate-900 text-white py-4 rounded font-black uppercase tracking-widest shadow-xl">Issue Faisla / فیصلہ جاری کریں</button>
+          </div>
+        );
+
+      default:
+        // Handle Issue Notice form for other applicable statuses (like when first selecting type)
+        // If type is selected but no notice yet
+        if (selectedCase.type && !selectedCase.notice) {
+          return (
+            <div className="space-y-4">
+              <h4 className="font-bold text-slate-800 uppercase text-xs tracking-widest border-b pb-2">Issue Notice & Fix Date</h4>
+              <input type="datetime-local" className="w-full border p-2 rounded" value={noticeData.hearingDate} onChange={e => setNoticeData({ ...noticeData, hearingDate: e.target.value })} />
+              <textarea placeholder="Notice notes..." className="w-full border p-2 rounded text-sm italic" rows="2" value={noticeData.notes} onChange={e => setNoticeData({ ...noticeData, notes: e.target.value })} />
+              <button onClick={() => handleAdminAction(adminApi.issueNotice, noticeData)} className="w-full bg-slate-900 text-white py-3 rounded font-black uppercase tracking-widest">Generate Notice</button>
+            </div>
+          );
+        }
+        return <p className="text-center text-xs text-slate-400 italic">No further actions available for this status.</p>;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f8fafc] p-4 lg:p-8 font-serif">
+      {!authChecked && (
+        <AuthModal onAuth={() => setAuthChecked(true)} />
       )}
 
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        <header className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 flex flex-col gap-3 sm:gap-4">
-          <div className="flex items-start sm:items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-islamicGreen">{t("admin.header.title")}</h1>
-              <p className="text-sm text-gray-600">{t("admin.header.subtitle")}</p>
-            </div>
-            {user && (
-              <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 max-w-xs">
-                Signed in as <span className="font-semibold">{user.fullName || user.emailAddresses[0]?.emailAddress}</span>
-              </div>
-            )}
+      <div className="max-w-7xl mx-auto space-y-6">
+        <header className="flex flex-col md:flex-row justify-between items-center bg-white p-6 shadow-md border-b-4 border-slate-900">
+          <div>
+            <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900">Qazi Dashboard</h1>
+            <p className="text-sm font-bold text-slate-500 uppercase tracking-[0.2em]">Dar-ul-Qaza Lahore • Judicial Panel</p>
           </div>
-          <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
-            {filters.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setFilter(f.value)}
-                className={`px-3 py-2 rounded-full border transition ${filter === f.value
-                  ? "bg-islamicGreen text-white border-islamicGreen shadow-sm"
-                  : "bg-white text-gray-700 border-gray-200 hover:border-islamicGreen/50"
-                  }`}
-              >
-                {f.label}
-              </button>
-            ))}
+          <div className="mt-4 md:mt-0 flex gap-4">
             <input
               type="text"
+              placeholder="Search cases..."
+              className="border-2 border-slate-200 px-4 py-2 rounded font-sans text-sm focus:border-slate-900 outline-none"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={t("admin.searchPlaceholder")}
-              className="flex-1 min-w-[160px] px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-islamicGreen"
+              onChange={e => setSearchTerm(e.target.value)}
             />
+            <button onClick={loadCases} className="bg-slate-900 text-white px-6 py-2 rounded font-black uppercase text-xs tracking-widest">Refresh</button>
           </div>
-          {error && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              {error}
-            </div>
-          )}
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Left Panel */}
-          <div className="lg:col-span-2 bg-white border border-gray-100 rounded-2xl shadow-sm p-3 sm:p-4">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm text-gray-600">Cases ({filteredCases.length})</p>
-              {loading && <span className="text-xs text-gray-500">Loading...</span>}
-            </div>
-            <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
-              {filteredCases.length === 0 ? (
-                <div className="text-center text-gray-500 text-sm py-6">No cases found.</div>
-              ) : (
-                filteredCases.map((c) => (
-                  <button
-                    key={c._id}
-                    onClick={() => handleSelect(c)}
-                    className={`w-full text-left border rounded-xl p-3 sm:p-4 transition shadow-sm hover:shadow ${selectedCase?._id === c._id ? "border-islamicGreen bg-emerald-50/40" : "border-gray-100 bg-white"
-                      }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-xs text-gray-500">{t("admin.caseId")}</p>
-                        <p className="font-mono text-xs break-all">{(c.caseId || c._id || "").toString()}</p>
-                      </div>
-                      <StatusBadge status={c.status} />
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-600">
-                      <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-700">{c.type || c.divorceType}</span>
-                      <span>{new Date(c.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* List */}
+          <div className="lg:col-span-1 space-y-3 max-h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
+            {filteredCases.map(c => (
+              <CaseCard key={c._id} c={c} isSelected={selectedCase?._id === c._id} onSelect={() => handleSelect(c)} />
+            ))}
           </div>
 
-          {/* Right Panel */}
-          <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-4">
+          {/* Details */}
+          <div className="lg:col-span-2 space-y-8">
             {selectedCase ? (
-              <>
-                <div className="space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-xs text-gray-500">Applicant</p>
-                      <p className="font-semibold text-gray-900">
-                        {selectedCase.details?.wifeName || selectedCase.details?.husbandName || "—"}
-                      </p>
-                    </div>
-                    <StatusBadge status={selectedCase.status} />
+              <div className="bg-white p-8 shadow-2xl border-2 border-slate-100 min-h-screen">
+                <div className="flex justify-between items-start border-b-2 border-slate-100 pb-6 mb-8">
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Active Record</span>
+                    <h2 className="text-2xl font-black text-slate-900 font-mono italic">#{selectedCase.caseId?.slice(-8).toUpperCase()}</h2>
                   </div>
-                  <p className="text-xs text-gray-600">Divorce Type: {selectedCase.type || selectedCase.divorceType}</p>
-                  <p className="text-xs text-gray-600">Created: {new Date(selectedCase.createdAt).toLocaleString()}</p>
+                  <StatusBadge status={selectedCase.status} />
                 </div>
 
-                <section className="pt-2 border-t space-y-2">
-                  <h4 className="text-sm font-semibold text-gray-800">{t("form.personalDetails")}</h4>
-                  <InfoRow label={t("form.husbandName")} value={selectedCase.details?.husbandName} />
-                  <InfoRow label={t("form.wifeName")} value={selectedCase.details?.wifeName} />
-                  <InfoRow label={t("form.aadharNumber")} value={selectedCase.details?.cnic || selectedCase.details?.wifeCnic || selectedCase.details?.husbandCnic} />
-                  <InfoRow label={t("admin.details.address")} value={selectedCase.details?.address} />
-                </section>
-
-                <section className="pt-2 border-t space-y-2">
-                  <h4 className="text-sm font-semibold text-gray-800">Resolution Notes</h4>
-                  <InfoRow label="Outcome" value={selectedCase.resolution?.outcome} />
-                  <InfoRow label="Attempt Date" value={selectedCase.resolution?.attemptDate} />
-                  <InfoRow label="Description" value={selectedCase.resolution?.description} />
-                </section>
-
-                <section className="pt-2 border-t space-y-2">
-                  <h4 className="text-sm font-semibold text-gray-800">{t("admin.details.agreement")}</h4>
-                  <InfoRow label={t("form.mahrAmount")} value={selectedCase.details?.mahr} />
-                  <InfoRow label="Maintenance / Iddat" value={selectedCase.details?.maintenance || selectedCase.details?.iddat} />
-                  <InfoRow label="Custody" value={selectedCase.details?.custody} />
-                  <InfoRow label="Conditions" value={selectedCase.details?.conditions} />
-                </section>
-
-                <section className="pt-2 border-t space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-semibold text-gray-800">{t("documents.title")}</h4>
-                    <span className="text-[11px] text-gray-500">{t("admin.documents.viewOnly")}</span>
+                {/* Darkhast Details */}
+                <section className="space-y-4">
+                  <h3 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 border-l-4 border-slate-900 pl-4 mb-6">Application Details</h3>
+                  <div className="grid grid-cols-2 gap-y-4 text-sm">
+                    <DataItem label="Applicant" value={selectedCase.darkhast?.applicantName} />
+                    <DataItem label="Relation" value={selectedCase.darkhast?.fatherHusbandName} />
+                    <DataItem label="CNIC" value={selectedCase.darkhast?.cnic} />
+                    <DataItem label="Respondent" value={selectedCase.darkhast?.respondentName} />
+                    <DataItem label="City" value={selectedCase.darkhast?.address} />
+                    <DataItem label="Proceeding" value={selectedCase.type || "Pending Type Selection"} />
                   </div>
-                  {documentList.length === 0 ? (
-                    <p className="text-xs text-gray-500">{t("admin.documents.noDocs")}</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {documentList.map((doc) => (
-                        <DocRow
-                          key={doc.key}
-                          label={doc.label}
-                          url={doc.url}
-                          filename={doc.filename}
-                          uploadedAt={doc.uploadedAt}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  <div className="text-[11px] text-gray-500 bg-amber-50 border border-amber-200 rounded-lg p-2">
-                    {t("admin.documents.note")}
-                  </div>
-                </section>
-
-                <section className="pt-2 border-t space-y-2">
-                  <h4 className="text-sm font-semibold text-gray-800">Timeline</h4>
-                  <div className="space-y-1 text-xs text-gray-700">
-                    <p>Created: {new Date(selectedCase.createdAt).toLocaleString()}</p>
-                    {Array.isArray(selectedCase.history) &&
-                      selectedCase.history.map((h, idx) => (
-                        <div key={`${h.status}-${idx}`} className="flex items-start gap-2">
-                          <span className="mt-0.5 w-2 h-2 rounded-full bg-islamicGreen block" />
-                          <div>
-                            <p className="font-medium">{h.status?.replace(/_/g, " ")}</p>
-                            <p className="text-gray-500">{new Date(h.timestamp || h.createdAt).toLocaleString()}</p>
-                            {h.note && <p className="text-gray-500">{h.note}</p>}
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </section>
-
-                <section className="pt-2 border-t space-y-3">
-                  <h4 className="text-sm font-semibold text-gray-800">{t("admin.actions.title")}</h4>
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => doTransition("APPROVED")}
-                      disabled={actionLoading}
-                      className="w-full bg-islamicGreen text-white py-2 rounded-lg text-sm font-semibold hover:bg-teal-700 disabled:opacity-60"
-                    >
-                      {actionLoading ? t("common.loading") : t("admin.actions.approve")}
-                    </button>
-                    <div className="space-y-2">
-                      <textarea
-                        value={rejectReason}
-                        onChange={(e) => setRejectReason(e.target.value)}
-                        placeholder={t("admin.actions.rejectReason")}
-                        rows="3"
-                        className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-                      />
-                      <button
-                        onClick={() => rejectReason.trim() && doTransition("REJECTED", rejectReason.trim())}
-                        disabled={actionLoading || !rejectReason.trim()}
-                        className="w-full bg-red-500 text-white py-2 rounded-lg text-sm font-semibold hover:bg-red-600 disabled:opacity-60"
-                      >
-                        {actionLoading ? t("common.loading") : t("admin.actions.reject")}
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      <textarea
-                        value={sendBackNote}
-                        onChange={(e) => setSendBackNote(e.target.value)}
-                        placeholder={t("admin.actions.correctionNote")}
-                        rows="2"
-                        className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                      />
-                      <button
-                        onClick={() => doTransition("FORM_COMPLETED", sendBackNote || "Please correct and resubmit.")}
-                        disabled={actionLoading}
-                        className="w-full bg-amber-500 text-white py-2 rounded-lg text-sm font-semibold hover:bg-amber-600 disabled:opacity-60"
-                      >
-                        {actionLoading ? t("common.loading") : t("admin.actions.sendBack")}
-                      </button>
+                  <div className="mt-6">
+                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-2">Original Statement</span>
+                    <div className="bg-slate-50 p-4 border italic text-slate-700 text-sm leading-relaxed">
+                      {selectedCase.darkhast?.statement}
                     </div>
                   </div>
                 </section>
 
-                <p className="text-[12px] text-gray-500 pt-2 border-t">
-                  {t("admin.disclaimer")}
-                </p>
-              </>
+                {/* Workflow Action Panel */}
+                <section className="mt-12 pt-8 border-t-4 border-slate-900">
+                  {renderActionSection()}
+                  {error && <p className="mt-4 text-red-600 bg-red-50 p-3 text-xs font-bold border-l-4 border-red-500">{error}</p>}
+                </section>
+              </div>
             ) : (
-              <div className="text-center text-gray-500 text-sm py-10">Select a case to view details.</div>
+              <div className="h-full flex flex-col items-center justify-center opacity-20 py-40 bg-slate-100 rounded-xl border-4 border-dashed border-slate-300">
+                <span className="text-9xl">⚖️</span>
+                <p className="text-2xl font-black uppercase tracking-[0.5em] mt-8">Select a Case</p>
+              </div>
             )}
           </div>
         </div>
@@ -411,32 +296,53 @@ export default function AdminDashboard() {
   );
 }
 
-function InfoRow({ label, value }) {
-  if (!value) return null;
+function CaseCard({ c, isSelected, onSelect }) {
   return (
-    <div className="text-xs text-gray-700">
-      <span className="font-medium text-gray-600">{label}: </span>
-      <span>{value}</span>
+    <button
+      onClick={onSelect}
+      className={`w-full text-left p-4 border-2 transition-all ${isSelected ? 'bg-slate-900 border-slate-900 text-white shadow-xl translate-x-1' : 'bg-white border-slate-100 text-slate-900 hover:border-slate-300'}`}
+    >
+      <div className="flex justify-between items-start mb-2">
+        <span className="text-[10px] font-black font-mono tracking-tighter opacity-60">#{c.caseId?.slice(-6).toUpperCase()}</span>
+        <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${isSelected ? 'bg-white/20' : 'bg-slate-100'}`}>{c.status?.replace(/_/g, " ")}</span>
+      </div>
+      <p className="font-bold text-sm truncate uppercase tracking-widest">{c.darkhast?.applicantName || 'Anonymous'}</p>
+      <p className={`text-[10px] italic mt-1 ${isSelected ? 'text-slate-400' : 'text-slate-500'}`}>{c.type || 'Inquiry Stage'}</p>
+    </button>
+  );
+}
+
+function DataItem({ label, value }) {
+  return (
+    <div>
+      <span className="text-[10px] font-black uppercase text-slate-400 block">{label}</span>
+      <span className="font-bold text-slate-900">{value || "---"}</span>
     </div>
   );
 }
 
-function DocRow({ label, url, filename, uploadedAt }) {
-  const name = filename || url?.split("/").pop();
-  const isPdf = url?.toLowerCase().endsWith(".pdf");
+function AuthModal({ onAuth }) {
+  const [code, setCode] = useState("");
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noreferrer"
-      className="flex items-center justify-between text-xs text-islamicGreen hover:text-teal-700 underline"
-    >
-      <span>{label}</span>
-      <span className="truncate ml-2 text-gray-600">{name || url}</span>
-      <span className="ml-2 text-[11px] text-gray-500">
-        {isPdf ? "PDF" : "Image/Doc"}
-        {uploadedAt && ` · ${uploadedAt.toLocaleDateString()}`}
-      </span>
-    </a>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4">
+      <div className="bg-white border-b-8 border-slate-900 p-8 max-w-sm w-full space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-black uppercase tracking-widest text-slate-900">Judicial Access</h2>
+          <p className="text-sm font-medium text-slate-500 mt-2 italic font-serif">Enter your Qazi credentials to access the judicial panel.</p>
+        </div>
+        <input
+          type="password"
+          value={code}
+          onChange={e => setCode(e.target.value)}
+          className="w-full border-4 border-slate-100 focus:border-slate-900 p-4 text-center font-black tracking-[1em] outline-none"
+        />
+        <button
+          onClick={() => code === "QAZI" && onAuth()}
+          className="w-full bg-slate-900 text-white py-4 font-black uppercase tracking-widest hover:bg-black transition-colors"
+        >
+          Verify & Enter
+        </button>
+      </div>
+    </div>
   );
 }
