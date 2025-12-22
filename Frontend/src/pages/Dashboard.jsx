@@ -205,47 +205,53 @@ export default function Dashboard() {
 
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-islamicGreen p-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-2">Start Your Divorce Case</h2>
+          <h2 className="text-3xl font-bold text-white mb-2">{t("dashboard.title")}</h2>
           <p className="text-emerald-50 max-w-2xl mx-auto">
-            Begin your journey with a dignified, Shariah-compliant process. Select the type of divorce proceeding that applies to your situation.
+            {t("home.subtitle")}
           </p>
         </div>
 
         <div className="p-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <SelectionCard
-              title="Talaq"
-              description="Divorce initiated by the husband according to Islamic law. The husband pronounces talaq, followed by an iddat period."
+              title={t("home.divorceTypes.talaq.title")}
+              description={t("home.divorceTypes.talaq.description")}
+              type="talaq"
               onClick={() => handleStart("Talaq")}
               disabled={activeCases.length > 0}
             />
             <SelectionCard
-              title="Khula"
-              description="Divorce initiated by the wife with mutual consent. Often involves return of mahr or other agreed terms."
+              title={t("home.divorceTypes.khula.title")}
+              description={t("home.divorceTypes.khula.description")}
+              type="khula"
               onClick={() => handleStart("Khula")}
               disabled={activeCases.length > 0}
             />
             <SelectionCard
-              title="Faskh-e-Nikah"
-              description="Judicial dissolution of marriage by the Qazi based on specific Shariah grounds and investigation."
+              title={t("home.divorceTypes.faskh.title")}
+              description={t("home.divorceTypes.faskh.description")}
+              type="faskh"
               onClick={() => handleStart("Faskh-e-Nikah")}
               disabled={activeCases.length > 0}
             />
             <SelectionCard
-              title="Talaq-e-Zainiyat"
-              description="Specific type of divorce proceeding handled according to formal Shariah protocols."
+              title={t("home.divorceTypes.zainiyat.title")}
+              description={t("home.divorceTypes.zainiyat.description")}
+              type="zainiyat"
               onClick={() => handleStart("Talaq-e-Zainiyat")}
               disabled={activeCases.length > 0}
             />
             <SelectionCard
-              title="Vina Sat"
-              description="Judicial matter related to marital rights and formal proceedings for Vina Sat matters."
+              title={t("home.divorceTypes.vinasat.title")}
+              description={t("home.divorceTypes.vinasat.description")}
+              type="vinasat"
               onClick={() => handleStart("Vina Sat")}
               disabled={activeCases.length > 0}
             />
             <SelectionCard
-              title="Zauj Nama Dispute"
-              description="Resolution of disputes related to marital documentation and Nikah Nama."
+              title={t("home.divorceTypes.zauj_nama.title")}
+              description={t("home.divorceTypes.zauj_nama.description")}
+              type="zauj_nama"
               onClick={() => handleStart("Zauj Nama Dispute")}
               disabled={activeCases.length > 0}
             />
@@ -254,10 +260,14 @@ export default function Dashboard() {
           {activeCases.length > 0 && (
             <div className="mt-8 bg-amber-50 border border-amber-200 rounded-xl p-6 flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-700 text-2xl">⚖️</div>
+                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-700">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
                 <div>
-                  <h4 className="font-bold text-amber-900">Active Case in Progress</h4>
-                  <p className="text-sm text-amber-700">You must complete or close your current case before starting a new one.</p>
+                  <h4 className="font-bold text-amber-900">{t("dashboard.activeCaseWarn")}</h4>
+                  <p className="text-sm text-amber-700">{t("dashboard.activeCaseWarnDesc")}</p>
                 </div>
               </div>
               <button
@@ -267,7 +277,7 @@ export default function Dashboard() {
                 }}
                 className="bg-amber-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-amber-700 transition shadow-md"
               >
-                Resume Case
+                {t("dashboard.resumeCase")}
               </button>
             </div>
           )}
@@ -280,24 +290,27 @@ export default function Dashboard() {
           {/* Timeline component */}
           <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
             <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-              <span className="text-xl">📅</span> Estimated Timeline
+              <svg className="w-5 h-5 text-islamicGreen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {t("dashboard.timelineTitle")}
             </h3>
             <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
-              <TimelineItem label="Application" day="Day 1" active={activeCase?.status === "DARKHAST_SUBMITTED"} />
-              <TimelineItem label="Review" day="Day 2-3" active={activeCase?.status === "DARKHAST_APPROVED"} />
-              <TimelineItem label="Hearing" day="Day 5-10" active={activeCase?.status === "NOTICE_SENT" || activeCase?.status === "HEARING_IN_PROGRESS"} />
-              <TimelineItem label="Arbitration" day="Day 12" active={activeCase?.status === "ARBITRATION_IN_PROGRESS"} />
-              <TimelineItem label="Decision" day="Day 15" active={activeCase?.status === "DECISION_PENDING"} />
-              <TimelineItem label="Certificate" day="Day 30+" active={activeCase?.status === "DECISION_APPROVED" || activeCase?.status === "CASE_CLOSED"} />
+              <TimelineItem label={t("dashboard.timeline.application")} day="Day 1" active={activeCase?.status === "DARKHAST_SUBMITTED"} />
+              <TimelineItem label={t("dashboard.timeline.review")} day="Day 2-3" active={activeCase?.status === "DARKHAST_APPROVED"} />
+              <TimelineItem label={t("dashboard.timeline.hearing")} day="Day 5-10" active={activeCase?.status === "NOTICE_SENT" || activeCase?.status === "HEARING_IN_PROGRESS"} />
+              <TimelineItem label={t("dashboard.timeline.arbitration")} day="Day 12" active={activeCase?.status === "ARBITRATION_IN_PROGRESS"} />
+              <TimelineItem label={t("dashboard.timeline.decision")} day="Day 15" active={activeCase?.status === "DECISION_PENDING"} />
+              <TimelineItem label={t("dashboard.timeline.certificate")} day="Day 30+" active={activeCase?.status === "DECISION_APPROVED" || activeCase?.status === "CASE_CLOSED"} />
             </div>
             <p className="mt-8 text-xs text-gray-400 italic leading-relaxed border-t pt-4">
-              <strong>Islamic Guidance:</strong> This process follows the step-by-step specific approach to ensure fairness and time for reflection (Iddat), avoiding hasty decisions.
+              <strong className="text-islamicGreen font-black mr-1">Islamic Guidance:</strong> {t("dashboard.timelineGuidance")}
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-xl text-gray-800">Closed Records</h2>
+              <h2 className="font-bold text-xl text-gray-800">{t("dashboard.closedRecords")}</h2>
               <span className="text-sm font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
                 {completedCases.length}
               </span>
@@ -346,9 +359,13 @@ export default function Dashboard() {
             <CaseSteps caseData={activeCase} onUpdated={loadCases} />
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-center py-20 opacity-40">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-4xl mb-6">📜</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">No Active Case</h3>
-              <p className="max-w-xs text-gray-500">Select a case type above to begin your digital court application.</p>
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-4xl mb-6">
+                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{t("dashboard.noActiveCase")}</h3>
+              <p className="max-w-xs text-gray-500">{t("dashboard.noActiveCaseDesc")}</p>
             </div>
           )}
         </div>
@@ -357,7 +374,40 @@ export default function Dashboard() {
   );
 }
 
-function SelectionCard({ title, description, onClick, disabled }) {
+function SelectionCard({ title, description, onClick, disabled, type }) {
+  const icons = {
+    talaq: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    ),
+    khula: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    ),
+    faskh: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+      </svg>
+    ),
+    zainiyat: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
+    vinasat: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+    zauj_nama: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  };
+
   return (
     <button
       onClick={onClick}
@@ -367,14 +417,21 @@ function SelectionCard({ title, description, onClick, disabled }) {
         : "bg-white border-gray-100 hover:border-islamicGreen hover:shadow-xl hover:-translate-y-1"
         }`}
     >
-      <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center text-2xl transition-colors ${disabled ? 'bg-gray-200' : 'bg-emerald-50 group-hover:bg-islamicGreen group-hover:text-white'}`}>
-        {title === "Talaq" ? "👨‍⚖️" : title === "Khula" ? "👩‍⚖️" : "⚖️"}
+      <div className={`w-14 h-14 rounded-2xl mb-4 flex items-center justify-center transition-colors ${disabled ? 'bg-gray-200 text-gray-400' : 'bg-emerald-50 text-islamicGreen group-hover:bg-islamicGreen group-hover:text-white'}`}>
+        {icons[type]}
       </div>
       <h3 className={`text-xl font-bold mb-2 ${disabled ? 'text-gray-400' : 'text-gray-900'}`}>{title}</h3>
       <p className="text-sm text-gray-500 leading-relaxed mb-4">{description}</p>
-      <span className={`text-xs font-black uppercase tracking-widest ${disabled ? 'text-gray-300' : 'text-islamicGreen'}`}>
-        {disabled ? "In Progress" : "Start Application →"}
-      </span>
+      <div className="mt-auto flex items-center gap-2">
+        <span className={`text-xs font-black uppercase tracking-widest ${disabled ? 'text-gray-300' : 'text-islamicGreen'}`}>
+          {disabled ? "In Progress" : "Start Application"}
+        </span>
+        {!disabled && (
+          <svg className="w-4 h-4 text-islamicGreen group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        )}
+      </div>
     </button>
   );
 }

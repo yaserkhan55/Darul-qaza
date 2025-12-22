@@ -82,13 +82,13 @@ export default function Home() {
 
   const divorceTypes = [
     {
-      type: "TALAQ",
+      type: "Talaq",
       title: t("home.divorceTypes.talaq.title"),
       description: t("home.divorceTypes.talaq.description"),
       details: t("home.divorceTypes.talaq.details"),
     },
     {
-      type: "KHULA",
+      type: "Khula",
       title: t("home.divorceTypes.khula.title"),
       description: t("home.divorceTypes.khula.description"),
       details: t("home.divorceTypes.khula.details"),
@@ -387,26 +387,16 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Contact/Help Section */}
-        <section id="contact" className="mb-12">
-          <div className="bg-gradient-to-r from-islamicGreen to-teal-700 rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 text-white">
-            <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-center">
-              {t("home.needHelpTitle")}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-              <div className="text-center">
-                <div className="text-3xl mb-3">📞</div>
-                <h3 className="font-semibold mb-2">{t("home.contactUs")}</h3>
-                <p className="text-sm text-teal-100">
-                  {t("home.contactUsDesc")}
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl mb-3">📧</div>
-                <h3 className="font-semibold mb-2">{t("home.emailSupport")}</h3>
-                <p className="text-sm text-teal-100">support@darulqaza.org</p>
-              </div>
+        {/* Final Official Seal/Sign Section for Realism */}
+        <section className="mb-12">
+          <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100 flex flex-col items-center text-center">
+            <div className="w-20 h-20 bg-islamicGreen/10 rounded-full flex items-center justify-center mb-4">
+              <Scale className="w-10 h-10 text-islamicGreen" />
             </div>
+            <h4 className="text-xl font-bold text-gray-900 mb-2">{t("common.brandUrdu")}</h4>
+            <p className="text-sm text-gray-500 max-w-md italic">
+              "Providing accessible, technology-driven judicial services to the Muslim community while upholding the sanctity of Shariah law."
+            </p>
           </div>
         </section>
       </main>

@@ -10,7 +10,7 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
         applicantName: "",
         fatherGuardianName: "",
         cnic: "",
-        address: "Lahore",
+        address: "",
         respondentName: "",
         respondentFatherName: "",
         respondentAddress: "",
@@ -20,7 +20,17 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
         reliefRequested: "",
         statement: "",
         faskhGrounds: "",
-        evidenceUrl: ""
+        evidenceUrl: "",
+        // Specialized fields
+        talaqDate: "",
+        talaqCount: "",
+        mahrStatus: "",
+        khulaReason: "",
+        mahrReturn: "",
+        maintenanceAmount: "",
+        residenceStatus: "",
+        nikahRegNo: "",
+        correctionRequired: ""
     });
 
     const isFaskh = preselectedType === "Faskh-e-Nikah" || formData.natureOfDispute === "Faskh-e-Nikah";
@@ -76,21 +86,21 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField
-                                label={t("form.applicantName")}
+                                label={t("form.fields.applicantName")}
                                 name="applicantName"
                                 value={formData.applicantName}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label={t("form.fatherGuardianName")}
+                                label={t("form.fields.fatherGuardianName")}
                                 name="fatherGuardianName"
                                 value={formData.fatherGuardianName}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label={t("form.cnic")}
+                                label={t("form.fields.cnic")}
                                 name="cnic"
                                 value={formData.cnic}
                                 onChange={handleChange}
@@ -98,7 +108,7 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
                                 required
                             />
                             <InputField
-                                label={t("form.address")}
+                                label={t("form.fields.address")}
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
@@ -114,21 +124,21 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField
-                                label={t("form.respondentName")}
+                                label={t("form.fields.respondentName")}
                                 name="respondentName"
                                 value={formData.respondentName}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label={t("form.respondentFatherName")}
+                                label={t("form.fields.respondentFatherName")}
                                 name="respondentFatherName"
                                 value={formData.respondentFatherName}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label={t("form.respondentAddress")}
+                                label={t("form.fields.respondentAddress")}
                                 name="respondentAddress"
                                 value={formData.respondentAddress}
                                 onChange={handleChange}
@@ -136,7 +146,7 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
                             />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <InputField
-                                    label={t("form.nikahDate")}
+                                    label={t("form.fields.nikahDate")}
                                     name="nikahDate"
                                     type="date"
                                     value={formData.nikahDate}
@@ -144,7 +154,7 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
                                     required
                                 />
                                 <InputField
-                                    label={t("form.nikahPlace")}
+                                    label={t("form.fields.nikahPlace")}
                                     name="nikahPlace"
                                     value={formData.nikahPlace}
                                     onChange={handleChange}
@@ -154,6 +164,14 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
                         </div>
                     </div>
 
+                    {/* Specialized Sections */}
+                    <SpecializedSection
+                        type={preselectedType || formData.natureOfDispute}
+                        formData={formData}
+                        handleChange={handleChange}
+                        t={t}
+                    />
+
                     <div className="space-y-6">
                         <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
                             <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
@@ -162,7 +180,7 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <InputField
-                                    label={t("form.natureOfDispute")}
+                                    label={t("form.fields.natureOfDispute")}
                                     name="natureOfDispute"
                                     value={formData.natureOfDispute}
                                     onChange={handleChange}
@@ -170,7 +188,7 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
                                     required
                                 />
                                 <InputField
-                                    label={t("form.reliefRequested")}
+                                    label={t("form.fields.reliefRequested")}
                                     name="reliefRequested"
                                     value={formData.reliefRequested}
                                     onChange={handleChange}
@@ -178,30 +196,8 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
                                 />
                             </div>
 
-                            {isFaskh && (
-                                <div className="p-6 bg-emerald-50/50 rounded-2xl border-2 border-emerald-100 space-y-4">
-                                    <label className="block text-[10px] font-black text-islamicGreen uppercase tracking-widest px-1">{t("form.faskh.grounds")}</label>
-                                    <select
-                                        name="faskhGrounds"
-                                        value={formData.faskhGrounds}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full bg-white border-2 border-emerald-50 rounded-xl px-4 py-3 text-sm focus:border-islamicGreen outline-none transition-all"
-                                    >
-                                        <option value="">-- Select Ground --</option>
-                                        <option value="Husband missing">{t("form.faskh.husbandMissing")}</option>
-                                        <option value="No maintenance">{t("form.faskh.noMaintenance")}</option>
-                                        <option value="Cruelty">{t("form.faskh.cruelty")}</option>
-                                        <option value="Impotence">{t("form.faskh.impotence")}</option>
-                                        <option value="Long absence">{t("form.faskh.longAbsence")}</option>
-                                        <option value="Other valid Shariah reason">{t("form.faskh.other")}</option>
-                                    </select>
-                                    <p className="text-[10px] text-emerald-600 italic">{t("form.errors.evidence")}</p>
-                                </div>
-                            )}
-
                             <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t("form.statement")}</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t("form.fields.statement")}</label>
                                 <textarea
                                     name="statement"
                                     rows="6"
@@ -234,6 +230,96 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
             </div>
         </div>
     );
+}
+
+function SpecializedSection({ type, formData, handleChange, t }) {
+    if (type === "Talaq") {
+        return (
+            <div className="space-y-6 animate-fade-in">
+                <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
+                    <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
+                    {t("form.sections.talaq")}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <InputField label={t("form.fields.talaqDate")} name="talaqDate" type="date" value={formData.talaqDate} onChange={handleChange} required />
+                    <InputField label={t("form.fields.talaqCount")} name="talaqCount" type="number" value={formData.talaqCount} onChange={handleChange} required />
+                    <InputField label={t("form.fields.mahrStatus")} name="mahrStatus" value={formData.mahrStatus} onChange={handleChange} required />
+                </div>
+            </div>
+        );
+    }
+    if (type === "Khula") {
+        return (
+            <div className="space-y-6 animate-fade-in">
+                <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
+                    <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
+                    {t("form.sections.khula")}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField label={t("form.fields.khulaReason")} name="khulaReason" value={formData.khulaReason} onChange={handleChange} required />
+                    <InputField label={t("form.fields.mahrReturn")} name="mahrReturn" value={formData.mahrReturn} onChange={handleChange} required />
+                </div>
+            </div>
+        );
+    }
+    if (type === "Faskh-e-Nikah") {
+        return (
+            <div className="space-y-6 animate-fade-in">
+                <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
+                    <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
+                    {t("form.sections.faskh")}
+                </h3>
+                <div className="p-6 bg-emerald-50/50 rounded-2xl border-2 border-emerald-100 space-y-4">
+                    <label className="block text-[10px] font-black text-islamicGreen uppercase tracking-widest px-1">{t("form.faskh.grounds")}</label>
+                    <select
+                        name="faskhGrounds"
+                        value={formData.faskhGrounds}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-white border-2 border-emerald-50 rounded-xl px-4 py-3 text-sm focus:border-islamicGreen outline-none transition-all"
+                    >
+                        <option value="">-- Select Ground --</option>
+                        <option value="Husband missing">{t("form.faskh.husbandMissing")}</option>
+                        <option value="No maintenance">{t("form.faskh.noMaintenance")}</option>
+                        <option value="Cruelty">{t("form.faskh.cruelty")}</option>
+                        <option value="Impotence">{t("form.faskh.impotence")}</option>
+                        <option value="Long absence">{t("form.faskh.longAbsence")}</option>
+                        <option value="Other valid Shariah reason">{t("form.faskh.other")}</option>
+                    </select>
+                    <p className="text-[10px] text-emerald-600 italic">{t("form.errors.evidence")}</p>
+                </div>
+            </div>
+        );
+    }
+    if (type === "Vina Sat") {
+        return (
+            <div className="space-y-6 animate-fade-in">
+                <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
+                    <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
+                    {t("form.sections.vinasat")}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField label={t("form.fields.maintenanceAmount")} name="maintenanceAmount" value={formData.maintenanceAmount} onChange={handleChange} required />
+                    <InputField label={t("form.fields.residenceStatus")} name="residenceStatus" value={formData.residenceStatus} onChange={handleChange} required />
+                </div>
+            </div>
+        );
+    }
+    if (type === "Zauj Nama Dispute") {
+        return (
+            <div className="space-y-6 animate-fade-in">
+                <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
+                    <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
+                    {t("form.sections.zaujnama")}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField label={t("form.fields.nikahRegNo")} name="nikahRegNo" value={formData.nikahRegNo} onChange={handleChange} required />
+                    <InputField label={t("form.fields.correctionRequired")} name="correctionRequired" value={formData.correctionRequired} onChange={handleChange} required />
+                </div>
+            </div>
+        );
+    }
+    return null;
 }
 
 function InputField({ label, name, value, onChange, placeholder, type = "text", required, disabled }) {

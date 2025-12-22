@@ -13,7 +13,9 @@
     "save": "Save Progress",
     "next": "Next Step",
     "back": "Go Back",
-    "print": "Print Document"
+    "print": "Print Document",
+    "brandEnglish": "Darul Qaza",
+    "brandUrdu": "دار القضاء"
   },
   "home": {
     "title": "Dar-ul-Qaza Muslim Personal Law Court",
@@ -114,11 +116,29 @@
   "dashboard": {
     "title": "My Judicial Cases",
     "activeCase": "Active Case",
-    "noActiveCase": "No Active Case",
     "startNew": "Start New Application",
     "completed": "Completed Cases",
     "unableToLoad": "Unable to load cases. Please check your connection.",
-    "messageModalClose": "Close Notification"
+    "messageModalClose": "Close Notification",
+    "greeting": "As-salamu alaykum, {{name}}",
+    "greetingSubtitle": "Welcome to your judicial portal.",
+    "nextStep": "Action Required",
+    "timelineTitle": "Estimated Timeline",
+    "timelineGuidance": "This process follows a structured Islamic approach to ensure fairness and reflection (Iddat), avoiding hasty decisions.",
+    "closedRecords": "Closed Records",
+    "activeCaseWarn": "Active Case in Progress",
+    "activeCaseWarnDesc": "You must complete or close your current case before starting a new one.",
+    "resumeCase": "Resume Case",
+    "noActiveCase": "No Active Records",
+    "noActiveCaseDesc": "Select a case type above to begin your application.",
+    "timeline": {
+      "application": "Application",
+      "review": "Review",
+      "hearing": "Hearing",
+      "arbitration": "Arbitration",
+      "decision": "Decision",
+      "certificate": "Certificate"
+    }
   },
   "auth": {
     "required": "Authentication required to access court records."
@@ -150,50 +170,51 @@
     }
   },
   "form": {
-    "applicant": {
-      "sectionTitle": "Section 1: Applicant Details (درخواست گزار کی تفصیلات)",
-      "name": "Full Name (as per CNIC)",
+    "submitDarkhast": "Submit Official Darkhast",
+    "personalDetails": "Personal Details / متعلقہ کوائف",
+    "marriageDetails": "Marriage Details / نکاح کی تفصیلات",
+    "sections": {
+      "talaq": "Talaq Declaration Details",
+      "khula": "Khula Request Details",
+      "faskh": "Faskh-e-Nikah Grounds",
+      "vinasat": "Marital Rights & Vina Sat",
+      "zaujnama": "Nikahnama Discrepancy"
+    },
+    "fields": {
+      "applicantName": "Full Name (Applicant)",
       "fatherGuardianName": "Father / Guardian Name",
-      "cnic": "CNIC Number (e.g. 12345-1234567-1)",
-      "address": "Complete Residential Address"
+      "cnic": "CNIC Number",
+      "address": "Residential Address",
+      "respondentName": "Respondent Name",
+      "respondentFatherName": "Respondent's Father Name",
+      "respondentAddress": "Respondent's Address",
+      "nikahDate": "Date of Nikah",
+      "nikahPlace": "Place of Nikah",
+      "natureOfDispute": "Nature of Dispute / نوعیتِ تنازع",
+      "reliefRequested": "Relief Requested",
+      "statement": "Detailed Statement / تحریری بیان",
+      "talaqDate": "Date of Pronouncement",
+      "talaqCount": "Number of Talaqs Pronounced",
+      "mahrStatus": "Mahr Status (Paid/Unpaid)",
+      "khulaReason": "Primary Reason for Khula",
+      "mahrReturn": "Agreement to Return Mahr",
+      "maintenanceAmount": "Maintenance Due (if any)",
+      "residenceStatus": "Current Living Status",
+      "nikahRegNo": "Nikah Registration No.",
+      "correctionRequired": "Correction Required in Nikahnama"
     },
-    "respondent": {
-      "sectionTitle": "Section 2: Respondent Details (مدعا علیہ کی تفصیلات)",
-      "name": "Respondent Name",
-      "fatherName": "Respondent's Father/Guardian Name",
-      "address": "Respondent's Last Known Address"
+    "faskh": {
+      "grounds": "Shariah Grounds for Faskh",
+      "husbandMissing": "Husband missing for 4+ years",
+      "noMaintenance": "Non-provision of maintenance (2+ years)",
+      "cruelty": "Habitual cruelty / ill-treatment",
+      "impotence": "Husband's impotence",
+      "longAbsence": "Long absence without valid cause",
+      "other": "Other valid Shariah reason"
     },
-    "marriage": {
-      "sectionTitle": "Section 3: Nikah Details (نکاح کی تفصیلات)",
-      "date": "Nikah Date",
-      "place": "Nikah Location (City/Area)"
-    },
-    "dispute": {
-      "sectionTitle": "Section 4: Nature of Dispute (معاملہ کی تفصیلات)",
-      "type": "Case Category",
-      "nature": "Brief Nature of Dispute",
-      "relief": "Relief Requested from Court",
-      "statement": "Detailed Statement / Darkhast Text",
-      "faskhGrounds": "Grounds for Faskh (Shariah Basis)",
-      "evidence": "Evidence (Supportive Docs/Witnesses)",
-      "evidenceError": "Evidence is required for Faskh-e-Nikah cases."
-    },
-    "labels": {
-      "selectType": "Select Case Type",
-      "selectGrounds": "Select Valid Shariah Ground",
-      "grounds": {
-        "missing": "Husband missing for more than 4 years",
-        "maintenance": "Failure to provide maintenance (2+ years)",
-        "imprisonment": "Husband's imprisonment (7+ years)",
-        "impotence": "Husband's impotence",
-        "insanity": "Husband's insanity or severe disease",
-        "cruelty": "Cruelty or habitual ill-treatment",
-        "other": "Other valid Shariah reason"
-      }
-    },
-    "validation": {
+    "errors": {
       "required": "This field is mandatory.",
-      "invalidCnic": "Invalid CNIC format."
+      "evidence": "Mandatory: Evidence documentation required for Faskh cases."
     }
   },
   "status": {
@@ -210,65 +231,11 @@
     "DECISION_APPROVED": "Final Order Issued",
     "CASE_CLOSED": "Record Closed"
   },
-  "badges": {
-    "SUBMITTED": "Submitted",
-    "REVIEW": "In Review",
-    "NOTICE": "Notice Issued",
-    "HEARING": "Hearing",
-    "SULH": "Arbitration",
-    "DECISION": "Decision",
-    "CLOSED": "Closed"
-  },
   "admin": {
-    "header": {
-      "title": "Qazi Admin Panel",
-      "subtitle": "Review, verify, and issue formal decisions."
-    },
-    "filters": {
-      "all": "All",
-      "underReview": "Under Review",
-      "approved": "Approved",
-      "rejected": "Rejected"
-    },
-    "searchPlaceholder": "Search by ID, type, user...",
-    "safety": {
-      "title": "Admin Safety Check",
-      "description": "This area is reserved for Qazi / Admin only. Type \"QAZI\" to proceed.",
-      "placeholder": "Enter \"QAZI\" to continue",
-      "button": "Continue to Admin Panel"
-    },
-    "disclaimer": "Final decisions are issued by qualified Islamic authorities.",
-    "caseId": "Case ID",
-    "details": {
-      "address": "Address",
-      "agreement": "Agreement"
-    },
-    "documents": {
-      "viewOnly": "View only",
-      "noDocs": "No documents uploaded.",
-      "note": "Documents are uploaded by applicants to Cloudinary (unsigned). We only read the stored secure_url. If a link opens, Cloudinary is working; if it fails, check credentials/preset."
-    },
     "actions": {
-      "title": "Qazi Actions",
-      "approve": "Approve (lock case)",
-      "rejectReason": "Reason for rejection (required)",
-      "reject": "Reject with reason",
-      "correctionNote": "Notes for correction (will be visible to applicant)",
-      "sendBack": "Send back for correction"
-    },
-    "notifications": {
-      "approved": {
-        "title": "Your case has been approved",
-        "body": "الحمدللہ، your case has been approved by the Qazi. You may now download your certificate from the dashboard once it is available."
-      },
-      "rejected": {
-        "title": "Your case requires attention",
-        "body": "Your case has been rejected or requires correction. Please review the details and, if allowed, submit a corrected application."
-      },
-      "update": {
-        "title": "Case update from Dar-ul-Qaza",
-        "body": "There has been an update to your case status."
-      }
+      "approve": "Approve Darkhast",
+      "reject": "Reject Application",
+      "sendBack": "Send for Correction"
     }
   },
   "notice": {
@@ -293,8 +260,6 @@
     "attendance": "Attendance Form (Hazri)",
     "statements": "Hearing Statements",
     "qaziNotes": "Judicial Notes (Qazi)",
-    "applicantStatement": "Applicant's Statement",
-    "respondentStatement": "Respondent's Statement",
     "present": "PRESENT",
     "absent": "ABSENT",
     "noStatement": "No statement recorded."
@@ -302,11 +267,6 @@
   "arbitration": {
     "title": "Compulsory Arbitration (Sulh)",
     "subtitle": "Mandatory reconciliation attempt as required by Shariah Law.",
-    "attempt": "Reconciliation Attempt",
-    "status": "Result / Status",
-    "notes": "Qazi's Arbitration Summary",
-    "waiting": "Awaiting Arbitration Report",
-    "waitingText": "The arbitration process is currently being documented by the assigned Sulh representative.",
     "reconciled": "Reconciled Amicably",
     "failed": "Reconciliation Failed",
     "success": "The parties have mutually agreed to reconcile. The case has been closed as successful Sulh."
@@ -322,9 +282,20 @@
     "qaziSignature": "Official Qazi Signature",
     "seal": "Seal of Dar-ul-Qaza",
     "awaiting": "Awaiting Final Decision",
-    "awaitingText": "The Qazi is preparing the final Order Sheet (Faisla). Please wait.",
     "downloadTitle": "Download Certificate",
     "downloadText": "Your final judgment has been formalized. You may now download your Shariah-compliant divorce certificate.",
     "downloadButton": "Get PDF Certificate"
+  },
+  "footer": {
+    "jurisdiction": "Jurisdiction & Legality",
+    "jurisdictionText": "Dar-ul-Qaza operates within the framework of Muslim Personal Law (Shariat) Application Act. Decisions are binding within the community consensus and provide a documented basis for civil legal recognition where applicable.",
+    "links": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
+      "contact": "Contact Registry",
+      "about": "About the Court"
+    },
+    "address": "Dar-ul-Qaza Central Registry, Lahore, Pakistan",
+    "copyright": "© {{year}} Dar-ul-Qaza Digital Portal. All rights reserved."
   }
 }

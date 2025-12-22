@@ -86,11 +86,10 @@ export default function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled
+      className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
           ? "bg-white/90 backdrop-blur-xl shadow-xl ring-1 ring-gray-200 text-gray-800"
           : "bg-gradient-to-r from-islamicGreen via-emerald-700 to-emerald-800 text-white shadow-xl"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
@@ -100,17 +99,15 @@ export default function Navbar() {
             onClick={() => navigate("/")}
           >
             <h1
-              className={`text-xl sm:text-2xl lg:text-3xl font-serif tracking-wide flex items-center gap-2 ${
-                scrolled ? "text-islamicGreen" : "text-white"
-              }`}
-            >
-              <span className="text-3xl sm:text-4xl lg:text-[38px] leading-none">دار القضاء</span>
-              <span
-                className={`text-sm sm:text-base lg:text-lg font-semibold ${
-                  scrolled ? "text-islamicGreen" : "text-islamicGold"
+              className={`text-xl sm:text-2xl lg:text-3xl font-serif tracking-wide flex items-center gap-2 ${scrolled ? "text-islamicGreen" : "text-white"
                 }`}
+            >
+              <span className="text-3xl sm:text-4xl lg:text-[38px] leading-none">{t("common.brandUrdu")}</span>
+              <span
+                className={`text-sm sm:text-base lg:text-lg font-semibold ${scrolled ? "text-islamicGreen" : "text-white opacity-90"
+                  }`}
               >
-                Darul Qaza
+                {t("common.brandEnglish")}
               </span>
             </h1>
           </div>
@@ -122,15 +119,14 @@ export default function Navbar() {
             <SignedIn>
               <button
                 onClick={() => navigate("/dashboard")}
-                className={`relative px-4 lg:px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 shadow-sm border ${
-                  isActive("/dashboard")
+                className={`relative px-4 lg:px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 shadow-sm border ${isActive("/dashboard")
                     ? scrolled
                       ? "bg-islamicGreen text-white border-islamicGreen shadow-md"
                       : "bg-white text-islamicGreen border-white shadow-md"
                     : scrolled
                       ? "bg-white/90 text-gray-800 border-gray-200 hover:shadow"
                       : "bg-white/15 text-white border-white/30 hover:bg-white/25"
-                }`}
+                  }`}
               >
                 <span>{t("common.dashboard")}</span>
                 {unreadCount > 0 && (
@@ -143,11 +139,10 @@ export default function Navbar() {
                 <div className="relative">
                   <button
                     onClick={() => setProfileOpen((p) => !p)}
-                    className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border ${
-                      scrolled
+                    className={`flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border ${scrolled
                         ? "bg-white text-gray-800 border-gray-200 hover:shadow"
                         : "bg-white/10 text-white border-white/20 hover:bg-white/20"
-                    }`}
+                      }`}
                     aria-label="User profile"
                   >
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-islamicGreen to-emerald-700 flex items-center justify-center text-white font-bold shadow-inner">
@@ -196,11 +191,10 @@ export default function Navbar() {
             <SignedOut>
               <button
                 onClick={() => navigate("/sign-in")}
-                className={`px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  scrolled
+                className={`px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${scrolled
                     ? "bg-islamicGreen text-white hover:bg-teal-700"
                     : "bg-white/10 hover:bg-white/20 text-white hover:shadow-md"
-                }`}
+                  }`}
               >
                 {t("common.signIn")}
               </button>
@@ -212,9 +206,8 @@ export default function Navbar() {
             <NotificationBell />
             <button
               onClick={() => setMobileMenuOpen((v) => !v)}
-              className={`p-2 rounded-lg transition-all duration-200 ${
-                scrolled ? "text-gray-700 hover:bg-gray-100" : "text-white hover:bg-white/10"
-              }`}
+              className={`p-2 rounded-lg transition-all duration-200 ${scrolled ? "text-gray-700 hover:bg-gray-100" : "text-white hover:bg-white/10"
+                }`}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {mobileMenuOpen ? (
@@ -232,21 +225,18 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden fixed inset-0 z-40 transition-opacity duration-200 ${
-            mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
+          className={`md:hidden fixed inset-0 z-40 transition-opacity duration-200 ${mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+            }`}
         >
           <div
-            className={`absolute inset-0 bg-black/30 transition-opacity duration-200 ${
-              mobileMenuOpen ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute inset-0 bg-black/30 transition-opacity duration-200 ${mobileMenuOpen ? "opacity-100" : "opacity-0"
+              }`}
             onClick={() => setMobileMenuOpen(false)}
             role="presentation"
           />
           <div
-            className={`absolute left-4 right-4 top-16 sm:top-20 max-w-sm mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 transition-transform duration-300 transition-opacity ${
-              mobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-3 opacity-0"
-            }`}
+            className={`absolute left-4 right-4 top-16 sm:top-20 max-w-sm mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 transition-transform duration-300 transition-opacity ${mobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-3 opacity-0"
+              }`}
           >
             <nav className="flex flex-col p-4 space-y-3 max-h-[70vh] overflow-y-auto">
               <div className="flex items-center justify-between gap-2">
@@ -255,9 +245,8 @@ export default function Navbar() {
               <SignedIn>
                 <button
                   onClick={() => handleNavClick("/dashboard")}
-                  className={`text-left px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                    isActive("/dashboard") ? "bg-islamicGreen text-white shadow-md" : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                  className={`text-left px-4 py-3 rounded-lg font-medium transition-all duration-200 ${isActive("/dashboard") ? "bg-islamicGreen text-white shadow-md" : "text-gray-700 hover:bg-gray-100"
+                    }`}
                 >
                   {t("common.dashboard")}
                 </button>
