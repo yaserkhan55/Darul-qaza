@@ -4,7 +4,7 @@ import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 import { useTranslation } from "react-i18next";
 import { getMyMessages, markMessageRead } from "../api/message.api";
 
-import { FileText, Handshake, ScrollText, FileSignature, Gavel, BadgeCheck } from "lucide-react";
+import { FileText, Handshake, ScrollText, FileSignature, Gavel, BadgeCheck, Scale } from "lucide-react";
 
 export default function Home() {
   const navigate = useNavigate();
