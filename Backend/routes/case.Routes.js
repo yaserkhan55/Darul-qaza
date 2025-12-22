@@ -1,10 +1,14 @@
-import express from "express";
 import {
-  startCase,
-  saveDraft,
-  getDraft,
-  submitCase,
-  transitionCase,
+  submitDarkhast,
+  approveDarkhast,
+  selectCaseType,
+  issueNotice,
+  startHearing,
+  recordAttendance,
+  recordStatement,
+  recordArbitration,
+  issueFaisla,
+  closeCase,
   getMyCases,
   getAllCases,
 } from "../controllers/case.controller.js";
@@ -17,24 +21,29 @@ import rateLimit from "express-rate-limit";
 const createCaseLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5, // Limit each IP to 5 case creation requests per hour
-  message: "Too many cases created from this IP, please try again after an hour",
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: "Too many requests, please try again after an hour",
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // USER ROUTES (Protected)
 router.use(protect);
 
-router.post("/start", createCaseLimiter, startCase); // Rate Limited
-router.get("/:id/draft", getDraft); // Get specific draft (resume)
-router.post("/:id/draft", saveDraft); // Auto-save
-router.post("/:id/submit", submitCase); // Submit (CREATED/STARTED/DRAFT -> FORM_COMPLETED)
+router.post("/darkhast", createCaseLimiter, submitDarkhast);
+router.put("/:id/select-type", selectCaseType);
 router.get("/my", getMyCases);
 router.get("/:id/certificate/pdf", generateCertificatePDF);
 
-// ADMIN / QAZI transitions
-// Ideally checking role here too, but start with protect
+// ADMIN / QAZI ROUTES
 router.get("/admin/all", getAllCases);
-router.patch("/:id/transition", transitionCase); // handles workflow steps
+router.put("/:id/approve-darkhast", approveDarkhast);
+router.put("/:id/issue-notice", issueNotice);
+router.put("/:id/start-hearing", startHearing);
+router.put("/:id/record-attendance", recordAttendance);
+router.put("/:id/record-statement", recordStatement);
+router.put("/:id/record-arbitration", recordArbitration);
+router.put("/:id/issue-faisla", issueFaisla);
+router.put("/:id/close", closeCase);
 
 export default router;
+
