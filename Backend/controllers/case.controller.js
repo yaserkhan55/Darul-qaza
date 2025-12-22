@@ -7,11 +7,11 @@ const getUserId = (req) => req.auth?.userId || req.user?.id || req.body.createdB
 const CASE_FLOW = {
   DARKHAST_SUBMITTED: "DARKHAST",
   DARKHAST_APPROVED: "CASE_TYPE_SELECTION",
-  NOTICE_SENT: "NOTICE",
-  HEARING_IN_PROGRESS: "HEARING",
+  NOTICE_ISSUED: "NOTICE",
+  HEARING_SCHEDULED: "HEARING",
+  HEARING_COMPLETED: "ARBITRATION",
   ARBITRATION_IN_PROGRESS: "ARBITRATION",
   DECISION_PENDING: "DECISION",
-  DECISION_APPROVED: "CERTIFICATE",
   CASE_CLOSED: "CLOSED",
 };
 import { createNotification } from "./notification.controller.js";
@@ -19,12 +19,12 @@ import { createNotification } from "./notification.controller.js";
 // Strict State Transitions
 const transitions = {
   DARKHAST_SUBMITTED: ["DARKHAST_APPROVED", "CASE_CLOSED"],
-  DARKHAST_APPROVED: ["NOTICE_SENT"],
-  NOTICE_SENT: ["HEARING_IN_PROGRESS"],
-  HEARING_IN_PROGRESS: ["ARBITRATION_IN_PROGRESS"],
+  DARKHAST_APPROVED: ["NOTICE_ISSUED"],
+  NOTICE_ISSUED: ["HEARING_SCHEDULED"],
+  HEARING_SCHEDULED: ["HEARING_COMPLETED"],
+  HEARING_COMPLETED: ["ARBITRATION_IN_PROGRESS"],
   ARBITRATION_IN_PROGRESS: ["DECISION_PENDING", "CASE_CLOSED"],
-  DECISION_PENDING: ["DECISION_APPROVED", "CASE_CLOSED"],
-  DECISION_APPROVED: ["CASE_CLOSED"],
+  DECISION_PENDING: ["CASE_CLOSED"],
   CASE_CLOSED: [],
 };
 
@@ -63,10 +63,20 @@ export const submitDarkhast = async (req, res) => {
       });
     }
 
+    // Annual Reset Logic for Case ID
+    const currentYear = new Date().getFullYear();
+    const lastCase = await Case.findOne({ year: currentYear }).sort({ sequentialId: -1 });
+    const nextId = (lastCase?.sequentialId || 0) + 1;
+    const displayId = `DQ/${currentYear}/${nextId.toString().padStart(3, '0')}`;
+
     const newCase = await Case.create({
       createdBy,
       status: "DARKHAST_SUBMITTED",
       darkhast,
+      sequentialId: nextId,
+      year: currentYear,
+      displayId,
+      caseId: displayId,
       history: [
         { status: "DARKHAST_SUBMITTED", changedBy: createdBy, note: "Darkhast submitted" },
       ],
@@ -121,7 +131,6 @@ export const selectCaseType = async (req, res) => {
     }
 
     caseData.type = type;
-    // Note: User doesn't change status, admin changes it by issuing notice
     await caseData.save();
     res.json(caseData);
   } catch (err) {
@@ -142,12 +151,33 @@ export const issueNotice = async (req, res) => {
       return res.status(400).json({ message: "Case type must be selected before issuing notice" });
     }
 
-    caseData.status = "NOTICE_SENT";
+    caseData.status = "NOTICE_ISSUED";
     caseData.notice = { issuedAt: new Date(), hearingDate, notes };
-    addHistory(caseData, "NOTICE_SENT", getUserId(req), "Notice issued, hearing date fixed");
+    addHistory(caseData, "NOTICE_ISSUED", getUserId(req), "Notice issued, hearing date fixed");
     await caseData.save();
 
     createNotification(caseData.createdBy, `Notice issued. Hearing scheduled for ${new Date(hearingDate).toLocaleDateString()}`, "INFO", caseData._id);
+    res.json(caseData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * ADMIN: SCHEDULE HEARING
+ */
+export const scheduleHearing = async (req, res) => {
+  try {
+    const caseData = await Case.findById(req.params.id);
+    if (!caseData) return res.status(404).json({ message: "Case not found" });
+
+    if (!canTransition(caseData.status, "HEARING_SCHEDULED")) {
+      return res.status(400).json({ message: "Invalid transition" });
+    }
+
+    caseData.status = "HEARING_SCHEDULED";
+    addHistory(caseData, "HEARING_SCHEDULED", getUserId(req), "Hearing scheduled");
+    await caseData.save();
     res.json(caseData);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -162,12 +192,14 @@ export const startHearing = async (req, res) => {
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
-    if (!canTransition(caseData.status, "HEARING_IN_PROGRESS")) {
-      return res.status(400).json({ message: "Invalid transition" });
+    // Transition from NOTICE_ISSUED or HEARING_SCHEDULED to HEARING_SCHEDULED (logic depends on how detailed we want)
+    // Actually user wants HEARING_SCHEDULED -> HEARING_COMPLETED flow implicitly or explicitly.
+    // Let's allow NOTICE_ISSUED -> HEARING_SCHEDULED
+    if (caseData.status === "NOTICE_ISSUED") {
+      caseData.status = "HEARING_SCHEDULED";
+      addHistory(caseData, "HEARING_SCHEDULED", getUserId(req), "Hearing session initialized");
     }
 
-    caseData.status = "HEARING_IN_PROGRESS";
-    addHistory(caseData, "HEARING_IN_PROGRESS", getUserId(req), "Hearing started");
     await caseData.save();
     res.json(caseData);
   } catch (err) {
@@ -177,7 +209,7 @@ export const startHearing = async (req, res) => {
 
 export const recordAttendance = async (req, res) => {
   try {
-    const { hazri } = req.body; // { applicantPresent, respondentPresent, qaziRemarks, signatureHash }
+    const { hazri } = req.body; // { presentParties, signatures, qaziRemarks }
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
@@ -196,6 +228,15 @@ export const recordStatement = async (req, res) => {
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
     caseData.hearingStatements.push(statement);
+
+    // If statements recorded, we can move to HEARING_COMPLETED if Qazi decides
+    // But let's allow it to be manual via separate call or just auto-transition if needed.
+    // User wants: HEARING_SCHEDULED -> HEARING_COMPLETED
+    if (caseData.status === "HEARING_SCHEDULED") {
+      caseData.status = "HEARING_COMPLETED";
+      addHistory(caseData, "HEARING_COMPLETED", getUserId(req), "Hearing records finalized");
+    }
+
     await caseData.save();
     res.json(caseData);
   } catch (err) {
@@ -212,14 +253,20 @@ export const recordArbitration = async (req, res) => {
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
+    // Ensure we are in a state to record arbitration
+    // HEARING_COMPLETED -> ARBITRATION_IN_PROGRESS
+    if (caseData.status === "HEARING_COMPLETED") {
+      caseData.status = "ARBITRATION_IN_PROGRESS";
+    }
+
     caseData.arbitration = { date: new Date(), result, notes };
 
     if (result === "SUCCESS") {
       caseData.status = "CASE_CLOSED";
-      addHistory(caseData, "CASE_CLOSED", getUserId(req), "Arbitration successful, case closed");
+      addHistory(caseData, "CASE_CLOSED", getUserId(req), "Arbitration successful (Sulh), case closed");
     } else {
       caseData.status = "DECISION_PENDING";
-      addHistory(caseData, "DECISION_PENDING", getUserId(req), "Arbitration failed, moving to decision");
+      addHistory(caseData, "DECISION_PENDING", getUserId(req), "Arbitration failed, moving to final decision");
     }
 
     await caseData.save();
@@ -239,8 +286,8 @@ export const issueFaisla = async (req, res) => {
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
     caseData.faisla = { ...faisla, decisionDate: new Date() };
-    caseData.status = "DECISION_APPROVED";
-    addHistory(caseData, "DECISION_APPROVED", getUserId(req), "Final Faisla issued");
+    caseData.status = "CASE_CLOSED";
+    addHistory(caseData, "CASE_CLOSED", getUserId(req), "Final Faisla issued, case closed");
     await caseData.save();
 
     res.json(caseData);
@@ -250,15 +297,17 @@ export const issueFaisla = async (req, res) => {
 };
 
 /**
- * ADMIN: CLOSE CASE (Generate Certificate)
+ * ADMIN: CLOSE CASE (Manual/Withdrawal)
  */
 export const closeCase = async (req, res) => {
   try {
-    const caseData = await Case.findById(req.params.id);
+    const { id } = req.params;
+    const { note } = req.body;
+    const caseData = await Case.findById(id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
     caseData.status = "CASE_CLOSED";
-    addHistory(caseData, "CASE_CLOSED", getUserId(req), "Case closed and certificate generated");
+    addHistory(caseData, "CASE_CLOSED", getUserId(req), note || "Case closed by Qazi");
     await caseData.save();
 
     res.json(caseData);
@@ -266,7 +315,6 @@ export const closeCase = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 /**
  * GET MY CASES

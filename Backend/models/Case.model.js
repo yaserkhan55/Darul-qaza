@@ -5,28 +5,27 @@ export const CASE_TYPES = [
   "Talaq",
   "Khula",
   "Faskh-e-Nikah",
-  "Talaq-e-Zaujiyat",
-  "Wifa Sat",
-  "Zawal Nama"
+  "Talaq-e-Zainiyat",
+  "Vina Sat",
+  "Zauj Nama Dispute"
 ];
 
 export const CASE_STATUSES = [
   "DARKHAST_SUBMITTED",
   "DARKHAST_APPROVED",
-  "NOTICE_SENT",
-  "HEARING_IN_PROGRESS",
+  "NOTICE_ISSUED",
+  "HEARING_SCHEDULED",
+  "HEARING_COMPLETED",
   "ARBITRATION_IN_PROGRESS",
   "DECISION_PENDING",
-  "DECISION_APPROVED",
   "CASE_CLOSED"
 ];
 
 const hazriSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now },
-  applicantPresent: { type: Boolean, default: false },
-  respondentPresent: { type: Boolean, default: false },
-  qaziRemarks: String,
-  signatureHash: String // Text-based confirmation
+  presentParties: [String], // Names of present parties
+  signatures: String, // Text-based confirmation/signatures
+  qaziRemarks: String
 }, { _id: false });
 
 const hearingStatementSchema = new mongoose.Schema({
@@ -44,7 +43,7 @@ const historyEntrySchema = new mongoose.Schema(
       required: true,
     },
     changedBy: {
-      type: String, // Clerk userId or admin identifier
+      type: String,
       required: true,
     },
     note: String,
@@ -60,20 +59,21 @@ const caseSchema = new mongoose.Schema(
   {
     caseId: {
       type: String,
-      default: () => uuidv4(),
       unique: true,
     },
+    sequentialId: Number, // For annual reset logic
+    year: Number,        // For annual reset logic
+    displayId: String,   // e.g. DQ/2024/001
     type: {
       type: String,
       enum: CASE_TYPES,
-      // Required only after DARKHAST_APPROVED
     },
     createdBy: {
-      type: String, // Clerk userId
+      type: String,
       required: true,
     },
     assignedQazi: {
-      type: String, // Clerk admin/Qazi userId
+      type: String,
     },
     status: {
       type: String,
@@ -83,10 +83,11 @@ const caseSchema = new mongoose.Schema(
     },
     darkhast: {
       applicantName: String,
-      fatherHusbandName: String,
+      fatherGuardianName: String,
       cnic: String,
       address: String,
       respondentName: String,
+      respondentFatherName: String,
       respondentAddress: String,
       nikahDate: Date,
       nikahPlace: String,
@@ -111,11 +112,17 @@ const caseSchema = new mongoose.Schema(
       finalOrderText: String,
       qaziSignature: String,
       courtSealRef: String,
-      decisionType: String
+      decisionType: {
+        type: String,
+        enum: ["Talaq confirmed", "Khula granted", "Faskh-e-Nikah granted", "Case dismissed"]
+      }
     },
     faskhDetails: {
-      grounds: [String],
-      evidence: [String] // URLs
+      grounds: {
+        type: String,
+        enum: ["Husband missing", "No maintenance", "Cruelty", "Impotence", "Long absence", "Other valid Shariah reason"]
+      },
+      evidenceUrl: String // Reference to uploaded evidence
     },
     history: {
       type: [historyEntrySchema],
