@@ -69,9 +69,9 @@ export default function Footer() {
             {t("footer.copyright", { year: currentYear })}
           </p>
           <div className="flex items-center gap-6">
-            <span className="text-[10px] font-black text-islamicGreen uppercase tracking-widest">Lahore</span>
-            <span className="text-[10px] font-black text-islamicGreen uppercase tracking-widest">Karachi</span>
-            <span className="text-[10px] font-black text-islamicGreen uppercase tracking-widest">Islamabad</span>
+            <span className="text-[10px] font-black text-islamicGreen uppercase tracking-widest">Nanded</span>
+            <span className="text-[10px] font-black text-islamicGreen uppercase tracking-widest">Maharashtra</span>
+            <span className="text-[10px] font-black text-islamicGreen uppercase tracking-widest">India</span>
           </div>
         </div>
       </div>

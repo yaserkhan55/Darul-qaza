@@ -244,7 +244,7 @@
     "body": "By order of the Qazi, a notice is hereby issued in the case of {{type}}. The parties are directed to appear before this court for the scheduled hearing as stated below.",
     "schedule": "Hearing Schedule",
     "venue": "Venue",
-    "venueDetails": "Dar-ul-Qaza Lahore • Main Court Room",
+    "venueDetails": "Dar-ul-Qaza Nanded • Main Court Room",
     "instructions": "Qazi's Instructions",
     "issued": "Issued",
     "authenticated": "Digital Court Authenticated",
@@ -273,7 +273,7 @@
   },
   "faisla": {
     "title": "Order Sheet",
-    "subtitle": "Official Judicial Record • Dar-ul-Qaza Lahore",
+    "subtitle": "Official Judicial Record • Dar-ul-Qaza Nanded",
     "caseNumber": "Case Number",
     "matter": "Marriage Matter",
     "date": "Date of Faisla",
@@ -295,7 +295,7 @@
       "contact": "Contact Registry",
       "about": "About the Court"
     },
-    "address": "Dar-ul-Qaza Central Registry, Lahore, Pakistan",
+    "address": "Dar-ul-Qaza Central Registry, Nanded, Maharashtra, India",
     "copyright": "© {{year}} Dar-ul-Qaza Digital Portal. All rights reserved."
   }
 }
