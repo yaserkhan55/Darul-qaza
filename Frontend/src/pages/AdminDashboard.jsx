@@ -239,8 +239,13 @@ export default function AdminDashboard() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                           <DataItem label="Applicant Name" value={selectedCase.darkhast?.applicantName} />
                           <DataItem label="Father/Guardian" value={selectedCase.darkhast?.fatherGuardianName} />
+                          <DataItem label="Gender" value={selectedCase.darkhast?.applicantGender} />
+                          <DataItem label="Age" value={selectedCase.darkhast?.applicantAge} />
+                          <DataItem label="Mobile Number" value={selectedCase.darkhast?.applicantMobile} />
                           <DataItem label="CNIC / ID" value={selectedCase.darkhast?.cnic} />
                           <DataItem label="Current Address" value={selectedCase.darkhast?.address} />
+                          <DataItem label="District" value={selectedCase.darkhast?.district} />
+                          <DataItem label="State" value={selectedCase.darkhast?.state} />
                           <div className="sm:col-span-2 border-t border-gray-200 mt-2 pt-4"></div>
                           <DataItem label="Respondent Name" value={selectedCase.darkhast?.respondentName} />
                           <DataItem label="Respondent Father" value={selectedCase.darkhast?.respondentFatherName} />
@@ -284,9 +289,10 @@ export default function AdminDashboard() {
                       <div className="bg-islamicGreen/5 p-6 rounded-2xl border-2 border-islamicGreen/10 space-y-4">
                         <h3 className="text-[10px] font-black text-islamicGreen uppercase tracking-widest">Administrative Info</h3>
                         <div className="space-y-3">
+                          <DataItem label="Application Number" value={selectedCase.displayId} accent />
+                          <DataItem label="File Number" value={selectedCase.fileNumber || "Pending Approval"} accent={!!selectedCase.fileNumber} />
                           <DataItem label="Creator ID" value={selectedCase.createdBy} />
                           <DataItem label="Record Created" value={new Date(selectedCase.createdAt).toLocaleString()} />
-                          <DataItem label="Official ID" value={selectedCase.displayId} accent />
                         </div>
                       </div>
 

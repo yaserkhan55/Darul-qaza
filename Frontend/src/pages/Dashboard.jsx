@@ -8,7 +8,7 @@ import StatusBadge from "../components/StatusBadge";
 import CaseSteps from "../components/CaseSteps";
 import CaseTimeline from "../components/CaseTimeline";
 import LoadingSpinner from "../components/LoadingSpinner";
-import DarkhastForm from "../components/case-steps/DarkhastForm";
+import MandatoryDarkhastForm from "../components/case-steps/MandatoryDarkhastForm";
 
 
 const STEP_LABELS = {
@@ -320,10 +320,9 @@ export default function Dashboard() {
           className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-2xl shadow-2xl border border-gray-100 min-h-[500px]"
         >
           {showDarkhastForm ? (
-            <DarkhastForm
+            <MandatoryDarkhastForm
               onSubmitted={() => loadCases(true)}
               onCancel={() => setShowDarkhastForm(false)}
-              preselectedType={selectedType}
             />
           ) : activeCase ? (
             <CaseSteps caseData={activeCase} onUpdated={loadCases} />
