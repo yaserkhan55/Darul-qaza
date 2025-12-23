@@ -68,7 +68,14 @@ export default function DarkhastForm({ onSubmitted, onCancel, preselectedType })
         <div className="bg-white rounded-3xl shadow-2xl border border-emerald-50 overflow-hidden animate-fade-in-up">
             <div className="bg-gradient-to-r from-islamicGreen to-emerald-700 p-8 text-center">
                 <h2 className="text-3xl font-black text-white tracking-tight uppercase">Dar-ul-Qaza</h2>
-                <p className="text-emerald-100 font-bold text-xs uppercase tracking-[0.3em] mt-2">{t("form.submitDarkhast")}</p>
+                <div className="flex flex-col items-center gap-1 mt-2">
+                    {preselectedType && (
+                        <span className="bg-white/20 text-white px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase mb-1">
+                            {preselectedType === "Talaq-e-Zaujiyat" ? "Talaq-e-Zaujiyat" : preselectedType.replace(/-/g, ' ')}
+                        </span>
+                    )}
+                    <p className="text-emerald-100 font-bold text-xs uppercase tracking-[0.3em]">{t("form.submitDarkhast")}</p>
+                </div>
             </div>
 
             <div className="p-8 sm:p-12">
@@ -291,12 +298,12 @@ function SpecializedSection({ type, formData, handleChange, t }) {
             </div>
         );
     }
-    if (type === "Vina Sat") {
+    if (type === "Virasat") {
         return (
             <div className="space-y-6 animate-fade-in">
                 <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
                     <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                    {t("form.sections.vinasat")}
+                    {t("form.sections.virasat")}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <InputField label={t("form.fields.maintenanceAmount")} name="maintenanceAmount" value={formData.maintenanceAmount} onChange={handleChange} required />

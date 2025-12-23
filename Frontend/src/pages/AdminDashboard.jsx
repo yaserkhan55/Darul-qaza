@@ -64,7 +64,7 @@ export default function AdminDashboard() {
     setFaislaData({
       finalOrderText: "",
       qaziSignature: user?.fullName || "Qazi Dar-ul-Qaza",
-      courtSealRef: `DQ/LHR/${new Date().getFullYear()}/${c.caseId?.slice(-4).toUpperCase() || "X"}`,
+      courtSealRef: `DQ/NDD/${new Date().getFullYear()}/${c.caseId?.slice(-4).toUpperCase() || "X"}`,
       decisionType: c.type
     });
   };

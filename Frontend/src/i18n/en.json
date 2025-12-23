@@ -96,15 +96,15 @@
         "description": "Judicial Dissolution",
         "details": "Dissolution ordered by Qazi based on valid grounds."
       },
-      "zainiyat": {
-        "title": "Talaq-e-Zainiyat",
-        "description": "Zainiyat Protocol",
+      "zaujiyat": {
+        "title": "Talaq-e-Zaujiyat",
+        "description": "Zaujiyat Protocol",
         "details": "Specialized divorce proceeding for specific marital cases."
       },
-      "vinasat": {
-        "title": "Vina Sat",
-        "description": "Marital Rights",
-        "details": "Resolution of disputes regarding living and maintenance."
+      "virasat": {
+        "title": "Virasat",
+        "description": "Inheritance Rights",
+        "details": "Resolution of disputes regarding inheritance and maintenance."
       },
       "zauj_nama": {
         "title": "Zauj Nama",
@@ -156,13 +156,13 @@
       "name": "Faskh-e-Nikah (Judicial Dissolution)",
       "description": "Dissolution of marriage by order of the Qazi based on valid grounds."
     },
-    "Talaq-e-Zainiyat": {
-      "name": "Talaq-e-Zainiyat",
+    "Talaq-e-Zaujiyat": {
+      "name": "Talaq-e-Zaujiyat",
       "description": "Specific divorce proceeding handled via Shariah protocols."
     },
-    "Vina Sat": {
-      "name": "Vina Sat",
-      "description": "Judicial matter relating to marital rights and formal proceedings."
+    "Virasat": {
+      "name": "Virasat",
+      "description": "Judicial matter relating to inheritance rights and formal proceedings."
     },
     "Zauj Nama Dispute": {
       "name": "Zauj Nama Dispute",
@@ -177,7 +177,7 @@
       "talaq": "Talaq Declaration Details",
       "khula": "Khula Request Details",
       "faskh": "Faskh-e-Nikah Grounds",
-      "vinasat": "Marital Rights & Vina Sat",
+      "virasat": "Inheritance & Virasat",
       "zaujnama": "Nikahnama Discrepancy"
     },
     "fields": {
