@@ -1,4 +1,5 @@
 import Case, { CASE_STATUSES, CASE_TYPES } from "../models/Case.model.js";
+import Message from "../models/Message.model.js";
 
 // Helper to get user ID from either Clerk (req.auth.userId) or Legacy (req.user.id)
 const getUserId = (req) => req.auth?.userId || req.user?.id || req.body.createdBy || "anonymous";
@@ -18,7 +19,8 @@ import { createNotification } from "./notification.controller.js";
 
 // Strict State Transitions
 const transitions = {
-  DARKHAST_SUBMITTED: ["DARKHAST_APPROVED", "CASE_CLOSED"],
+  DARKHAST_SUBMITTED: ["DARKHAST_APPROVED", "DARKHAST_REJECTED", "CASE_CLOSED"],
+  DARKHAST_REJECTED: ["DARKHAST_APPROVED", "CASE_CLOSED"],
   DARKHAST_APPROVED: ["NOTICE_ISSUED"],
   NOTICE_ISSUED: ["HEARING_SCHEDULED"],
   HEARING_SCHEDULED: ["HEARING_COMPLETED"],
@@ -95,6 +97,7 @@ export const submitDarkhast = async (req, res) => {
 export const approveDarkhast = async (req, res) => {
   try {
     const { id } = req.params;
+    const { adminMessage } = req.body;
     const caseData = await Case.findById(id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
@@ -102,11 +105,62 @@ export const approveDarkhast = async (req, res) => {
       return res.status(400).json({ message: "Invalid transition" });
     }
 
+    const previousStatus = caseData.status;
     caseData.status = "DARKHAST_APPROVED";
-    addHistory(caseData, "DARKHAST_APPROVED", getUserId(req), "Darkhast approved by Qazi");
+    addHistory(caseData, "DARKHAST_APPROVED", getUserId(req), adminMessage || "Darkhast approved by Qazi");
     await caseData.save();
 
-    createNotification(caseData.createdBy, "Your Darkhast has been approved. Please select case type.", "SUCCESS", caseData._id);
+    await createNotification(caseData.createdBy, "Your Darkhast has been approved. Please select case type.", "SUCCESS", caseData._id);
+
+    // If admin provided a specific message, send it as a formal message too
+    if (adminMessage) {
+      await Message.create({
+        caseId: caseData._id,
+        recipientId: caseData.createdBy,
+        title: "Darkhast Approved",
+        body: adminMessage,
+        senderId: getUserId(req),
+        senderName: "Qazi Dar-ul-Qaza"
+      });
+    }
+
+    res.json(caseData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * ADMIN: REJECT DARKHAST
+ */
+export const rejectDarkhast = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminMessage } = req.body;
+    const caseData = await Case.findById(id);
+    if (!caseData) return res.status(404).json({ message: "Case not found" });
+
+    if (!canTransition(caseData.status, "DARKHAST_REJECTED")) {
+      return res.status(400).json({ message: "Invalid transition" });
+    }
+
+    caseData.status = "DARKHAST_REJECTED";
+    addHistory(caseData, "DARKHAST_REJECTED", getUserId(req), adminMessage || "Darkhast rejected for correction");
+    await caseData.save();
+
+    await createNotification(caseData.createdBy, "Your Darkhast needs correction. Please check messages.", "WARNING", caseData._id);
+
+    if (adminMessage) {
+      await Message.create({
+        caseId: caseData._id,
+        recipientId: caseData.createdBy,
+        title: "Darkhast Correction Required",
+        body: adminMessage,
+        senderId: getUserId(req),
+        senderName: "Qazi Dar-ul-Qaza"
+      });
+    }
+
     res.json(caseData);
   } catch (err) {
     res.status(500).json({ error: err.message });

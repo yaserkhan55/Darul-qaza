@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import {
   submitDarkhast,
   approveDarkhast,
+  rejectDarkhast,
   selectCaseType,
   issueNotice,
   startHearing,
@@ -38,6 +39,7 @@ router.get("/:id/certificate/pdf", generateCertificatePDF);
 // ADMIN / QAZI ROUTES
 router.get("/admin/all", getAllCases);
 router.put("/:id/approve-darkhast", approveDarkhast);
+router.put("/:id/reject-darkhast", rejectDarkhast);
 router.put("/:id/issue-notice", issueNotice);
 router.put("/:id/start-hearing", startHearing);
 router.put("/:id/record-attendance", recordAttendance);
