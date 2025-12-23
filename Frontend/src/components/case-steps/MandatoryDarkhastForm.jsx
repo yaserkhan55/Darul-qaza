@@ -69,21 +69,22 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
     };
 
     return (
-        <div className="bg-white rounded-3xl shadow-2xl border border-emerald-50 overflow-hidden animate-fade-in-up">
+        <div className="bg-white rounded-lg shadow-2xl border-2 border-emerald-100 overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-islamicGreen to-emerald-700 p-8 text-center">
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">⚖️</div>
-                <h2 className="text-3xl font-black text-white tracking-tight uppercase">Dar-ul-Qaza</h2>
-                <p className="text-emerald-100 font-bold text-xs uppercase tracking-[0.3em] mt-2">Darkhast (Request Application)</p>
+            <div className="bg-gradient-to-r from-emerald-800 to-emerald-900 p-6 border-b-4 border-emerald-600">
+                <div className="max-w-4xl mx-auto text-center">
+                    <h2 className="text-2xl font-bold text-white tracking-wide mb-1">دار القضاء</h2>
+                    <p className="text-emerald-100 text-sm font-semibold">Darul Qaza All India Muslim Personal Law Board</p>
+                    <p className="text-emerald-200 text-xs mt-1">Dist. Nanded, Maharashtra</p>
+                </div>
             </div>
 
             {/* Mandatory Notice */}
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-b-2 border-amber-300 p-5 animate-pulse-slow">
-                <div className="flex items-center gap-4 max-w-4xl mx-auto">
-                    <span className="text-3xl animate-bounce">⚠️</span>
-                    <p className="text-amber-900 font-bold text-sm leading-relaxed">
-                        <span className="block text-base font-black uppercase tracking-wide">{t('form.sections.mandatoryNotice')}</span>
-                        {t('form.sections.mandatoryMessage')}
+            <div className="bg-amber-50 border-b-2 border-amber-200 p-4">
+                <div className="max-w-4xl mx-auto">
+                    <p className="text-amber-900 font-semibold text-sm text-center">
+                        <span className="block text-sm font-bold uppercase tracking-wide mb-1">{t('form.sections.mandatoryNotice')}</span>
+                        <span className="text-xs">{t('form.sections.mandatoryMessage')}</span>
                     </p>
                 </div>
             </div>

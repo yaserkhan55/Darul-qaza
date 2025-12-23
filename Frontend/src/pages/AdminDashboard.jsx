@@ -103,7 +103,9 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto space-y-6">
         <header className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-emerald-100">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-2xl shadow-inner">⚖️</div>
+            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center shadow-inner border-2 border-emerald-100">
+              <div className="w-6 h-6 border-2 border-islamicGreen rounded-full"></div>
+            </div>
             <div>
               <h1 className="text-2xl font-black text-islamicGreen tracking-tight">Qazi Judicial Panel</h1>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Nanded, Maharashtra • Central Registry</p>
@@ -148,7 +150,7 @@ export default function AdminDashboard() {
               : "text-gray-400 hover:text-islamicGreen hover:bg-emerald-50"
               }`}
           >
-            📋 All Cases
+            All Cases
           </button>
           <button
             onClick={() => setViewMode("darkhast")}
@@ -157,7 +159,7 @@ export default function AdminDashboard() {
               : "text-gray-400 hover:text-islamicGreen hover:bg-emerald-50"
               }`}
           >
-            📝 Request Applications
+            Request Applications
           </button>
         </div>
 
