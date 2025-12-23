@@ -83,10 +83,16 @@ const caseSchema = new mongoose.Schema(
       required: true,
     },
     darkhast: {
+      // Mandatory Darkhast Form Fields
       applicantName: String,
       fatherGuardianName: String,
-      cnic: String,
+      applicantGender: String,
+      applicantAge: Number,
+      applicantMobile: String,
       address: String,
+      district: String,
+      state: String,
+      cnic: String,
       respondentName: String,
       respondentFatherName: String,
       respondentAddress: String,
@@ -95,7 +101,7 @@ const caseSchema = new mongoose.Schema(
       natureOfDispute: String,
       reliefRequested: String,
       statement: String,
-      // Specialized fields
+      // Specialized fields (for later case-type specific forms)
       talaqDate: Date,
       talaqCount: Number,
       mahrStatus: String,
@@ -105,6 +111,10 @@ const caseSchema = new mongoose.Schema(
       residenceStatus: String,
       nikahRegNo: String,
       correctionRequired: String
+    },
+    fileNumber: {
+      type: String,
+      default: null // Assigned after Qazi approval
     },
     notice: {
       issuedAt: Date,

@@ -107,10 +107,16 @@ export const approveDarkhast = async (req, res) => {
 
     const previousStatus = caseData.status;
     caseData.status = "DARKHAST_APPROVED";
+
+    // Auto-generate File Number on approval (format: sequentialId/year)
+    if (!caseData.fileNumber) {
+      caseData.fileNumber = `${caseData.sequentialId}/${caseData.year}`;
+    }
+
     addHistory(caseData, "DARKHAST_APPROVED", getUserId(req), adminMessage || "Darkhast approved by Qazi");
     await caseData.save();
 
-    await createNotification(caseData.createdBy, "Your Darkhast has been approved. Please select case type.", "SUCCESS", caseData._id);
+    await createNotification(caseData.createdBy, `Your Darkhast has been approved. File Number: ${caseData.fileNumber}`, "SUCCESS", caseData._id);
 
     // If admin provided a specific message, send it as a formal message too
     if (adminMessage) {
