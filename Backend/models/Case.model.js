@@ -5,8 +5,8 @@ export const CASE_TYPES = [
   "Talaq",
   "Khula",
   "Faskh-e-Nikah",
-  "Talaq-e-Zainiyat",
-  "Vina Sat",
+  "Talaq-e-Zaujiyat",
+  "Virasat",
   "Zauj Nama Dispute"
 ];
 
