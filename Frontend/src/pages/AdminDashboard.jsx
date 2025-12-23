@@ -51,7 +51,9 @@ export default function AdminDashboard() {
         term === "" ||
         (c.type || "").toLowerCase().includes(term) ||
         (c.caseId || "").toString().toLowerCase().includes(term) ||
-        (c.darkhast?.applicantName || "").toLowerCase().includes(term);
+        (c.darkhast?.applicantName || "").toLowerCase().includes(term) ||
+        (c.darkhast?.respondentName || "").toLowerCase().includes(term) ||
+        (c.darkhast?.cnic || "").toLowerCase().includes(term);
       return matchesFilter && matchesSearch;
     });
   }, [cases, filter, searchTerm]);
@@ -223,338 +225,363 @@ export default function AdminDashboard() {
               </div>
 
               {/* Modal Content - Scrollable */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col lg:flex-row">
-                {/* Left: Full Application Details */}
-                <div className="w-full lg:w-96 bg-gray-50/50 p-8 border-r border-gray-100 space-y-8">
-                  <div className="space-y-6">
-                    <h3 className="text-xs font-black text-gray-900 uppercase tracking-[0.2em] border-b border-gray-100 pb-2">Full Application Data</h3>
+              {/* Modal Content - Scrollable */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="p-8 space-y-12">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Column 1 & 2: Exhaustive Form Details */}
+                    <div className="lg:col-span-2 space-y-8">
+                      {/* Section A: Identities */}
+                      <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 shadow-sm">
+                        <h3 className="text-[10px] font-black text-islamicGreen uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                          <span className="w-4 h-0.5 bg-islamicGreen"></span> Identity & Contact Details
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          <DataItem label="Applicant Name" value={selectedCase.darkhast?.applicantName} />
+                          <DataItem label="Father/Guardian" value={selectedCase.darkhast?.fatherGuardianName} />
+                          <DataItem label="CNIC / ID" value={selectedCase.darkhast?.cnic} />
+                          <DataItem label="Current Address" value={selectedCase.darkhast?.address} />
+                          <div className="sm:col-span-2 border-t border-gray-200 mt-2 pt-4"></div>
+                          <DataItem label="Respondent Name" value={selectedCase.darkhast?.respondentName} />
+                          <DataItem label="Respondent Father" value={selectedCase.darkhast?.respondentFatherName} />
+                          <DataItem label="Respondent Address" value={selectedCase.darkhast?.respondentAddress} />
+                        </div>
+                      </div>
 
-                    <div className="grid grid-cols-1 gap-4">
-                      <DataItem label="Applicant" value={selectedCase.darkhast?.applicantName} />
-                      <DataItem label="Father/Guardian" value={selectedCase.darkhast?.fatherGuardianName} />
-                      <DataItem label="CNIC / ID" value={selectedCase.darkhast?.applicantCnic} />
-                      <DataItem label="Address" value={selectedCase.darkhast?.applicantAddress} />
+                      {/* Section B: Matrimonial & Specifics */}
+                      <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 shadow-sm">
+                        <h3 className="text-[10px] font-black text-islamicGreen uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                          <span className="w-4 h-0.5 bg-islamicGreen"></span> Marriage & Case Specifics
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          <DataItem label="Nikah Date" value={selectedCase.darkhast?.nikahDate ? new Date(selectedCase.darkhast.nikahDate).toLocaleDateString() : "---"} />
+                          <DataItem label="Nikah Place" value={selectedCase.darkhast?.nikahPlace} />
+                          {/* Specialized Fields Mapping */}
+                          {Object.entries(selectedCase.darkhast || {}).map(([key, value]) => {
+                            const standardKeys = ['applicantName', 'fatherGuardianName', 'cnic', 'address', 'respondentName', 'respondentFatherName', 'respondentAddress', 'nikahDate', 'nikahPlace', 'natureOfDispute', 'statement', 'reliefRequested'];
+                            if (standardKeys.includes(key) || !value || typeof value === 'object') return null;
+                            return <DataItem key={key} label={key.replace(/([A-Z])/g, ' $1').toUpperCase()} value={value} />;
+                          })}
+                        </div>
+                      </div>
 
-                      <div className="h-4"></div>
+                      {/* Section C: Statement & Relief */}
+                      <div className="space-y-6">
+                        <div className="bg-emerald-50/30 p-6 rounded-2xl border border-emerald-100 shadow-sm">
+                          <DataItem label="Actionable Relief Requested" value={selectedCase.darkhast?.reliefRequested} accent />
+                        </div>
+                        <div className="bg-white border-2 border-emerald-50 p-6 rounded-2xl shadow-inner min-h-[160px]">
+                          <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Applicant's Formal Statement</h3>
+                          <p className="text-sm text-gray-700 leading-relaxed font-urdu whitespace-pre-wrap italic">
+                            "{selectedCase.darkhast?.statement || "No detailed statement provided."}"
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-                      <DataItem label="Respondent" value={selectedCase.darkhast?.respondentName} />
-                      <DataItem label="Resp. Father" value={selectedCase.darkhast?.respondentFatherName} />
-                      <DataItem label="Resp. Address" value={selectedCase.darkhast?.respondentAddress} />
-
-                      <div className="h-4"></div>
-
-                      <DataItem label="Nikah Date" value={selectedCase.darkhast?.nikahDate} />
-                      <DataItem label="Nikah Place" value={selectedCase.darkhast?.nikahPlace} />
-                      <DataItem label="Nature" value={selectedCase.type} accent />
-
-                      {/* Specialized Data Rendering */}
-                      {Object.entries(selectedCase.darkhast || {}).map(([key, value]) => {
-                        const standardKeys = ['applicantName', 'fatherGuardianName', 'applicantCnic', 'applicantAddress', 'respondentName', 'respondentFatherName', 'respondentAddress', 'nikahDate', 'nikahPlace', 'natureOfDispute', 'statement', 'reliefRequested'];
-                        if (standardKeys.includes(key) || !value) return null;
-                        return <DataItem key={key} label={key.replace(/([A-Z])/g, ' $1').toUpperCase()} value={value} />;
-                      })}
-
-                      <div className="pt-6 border-t border-gray-100 mt-4">
-                        <h3 className="text-xs font-black text-gray-900 uppercase tracking-[0.2em] mb-4">Application Metadata</h3>
-                        <div className="grid grid-cols-1 gap-3">
+                    {/* Column 3: METADATA & QUICK ACTIONS */}
+                    <div className="space-y-8">
+                      <div className="bg-islamicGreen/5 p-6 rounded-2xl border-2 border-islamicGreen/10 space-y-4">
+                        <h3 className="text-[10px] font-black text-islamicGreen uppercase tracking-widest">Administrative Info</h3>
+                        <div className="space-y-3">
                           <DataItem label="Creator ID" value={selectedCase.createdBy} />
-                          <DataItem label="Case Record Created" value={new Date(selectedCase.createdAt).toLocaleString()} />
-                          <DataItem label="Last Updated" value={new Date(selectedCase.updatedAt).toLocaleString()} />
+                          <DataItem label="Record Created" value={new Date(selectedCase.createdAt).toLocaleString()} />
                           <DataItem label="Official ID" value={selectedCase.displayId} accent />
                         </div>
                       </div>
-                    </div>
 
-                    <div className="pt-6 border-t border-gray-100">
-                      <h4 className="text-[10px] font-black text-gray-400 uppercase mb-2">Detailed Statement</h4>
-                      <div className="p-4 bg-white border border-gray-100 rounded-xl text-sm text-gray-600 italic leading-relaxed font-urdu">
-                        {selectedCase.darkhast?.statement || selectedCase.darkhast?.detailedStatement || "No detailed statement provided."}
+                      <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100 shadow-sm">
+                        <h3 className="text-[10px] font-black text-orange-800 uppercase tracking-widest mb-1">Current State</h3>
+                        <p className="text-xs font-bold text-orange-600">{selectedCase.status.replace(/_/g, ' ')}</p>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Right: Judicial Workflow Actions */}
-                <div className="flex-1 p-8 space-y-12">
-                  {/* Reuse the Section components for stages */}
-                  {/* STAGE 1: DARKHAST REVIEW */}
-                  <Section
-                    title="1. Application (Darkhast) Review"
-                    active={selectedCase.status === 'DARKHAST_SUBMITTED'}
-                    done={selectedCase.status !== 'DARKHAST_SUBMITTED'}
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm">
-                        <DataItem label="Nature of Dispute" value={selectedCase.type} accent />
-                        <div className="mt-4">
-                          <label className="text-[9px] font-black text-gray-300 uppercase block mb-1">Target Relief</label>
-                          <p className="text-xs text-gray-600 font-bold">{selectedCase.darkhast?.reliefRequested || "N/A"}</p>
-                        </div>
-                      </div>
+                  <div className="w-full h-px bg-gray-100 my-12"></div>
 
-                      {selectedCase.status === 'DARKHAST_SUBMITTED' && (
-                        <div className="flex flex-col gap-4">
-                          <button
-                            onClick={() => handleAdminAction(adminApi.approveDarkhast, { adminMessage })}
-                            disabled={actionLoading}
-                            className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
-                          >
-                            <span>✅</span> Accept & Approve
-                          </button>
-                          <button
-                            onClick={() => handleAdminAction(adminApi.rejectDarkhast, { adminMessage })}
-                            disabled={actionLoading}
-                            className="w-full bg-rose-600 text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all flex items-center justify-center gap-2"
-                          >
-                            <span>❌</span> Reject for Correction
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </Section>
-
-                  {/* ADMIN COMMUNICATION BOX (Sticky-like or prominent) */}
-                  <div className="bg-emerald-50/50 border-2 border-emerald-100 rounded-2xl p-6 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-black text-islamicGreen uppercase tracking-widest px-1">Message to Applicant (Notification)</label>
-                      <span className="text-[9px] font-bold text-emerald-400 italic">Goes as a dashboard notification</span>
-                    </div>
-                    <textarea
-                      placeholder="Type a message or reason for approval/rejection here... (Optional)"
-                      value={adminMessage}
-                      onChange={e => setAdminMessage(e.target.value)}
-                      className="w-full bg-white border-2 border-emerald-50 rounded-xl p-4 text-sm focus:border-islamicGreen outline-none transition-all placeholder:text-gray-300"
-                      rows="3"
-                    />
-                  </div>
-
-                  {/* STAGE 2: NOTICE ISSUANCE */}
-                  <Section
-                    title="2. Issue Court Notice"
-                    active={selectedCase.status === 'DARKHAST_APPROVED'}
-                    done={selectedCase.status !== 'DARKHAST_SUBMITTED' && selectedCase.status !== 'DARKHAST_APPROVED'}
-                  >
-                    <div className="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm space-y-4">
-                      {selectedCase.status === 'DARKHAST_APPROVED' ? (
-                        <>
-                          <div className="grid grid-cols-1 gap-4">
-                            <div>
-                              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Hearing Date & Time</label>
-                              <input
-                                type="datetime-local"
-                                className="w-full border-2 border-emerald-50 rounded-xl p-3 focus:border-islamicGreen outline-none transition-all"
-                                value={noticeData.hearingDate}
-                                onChange={e => setNoticeData({ ...noticeData, hearingDate: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Qazi's Remarks for Notice</label>
-                              <textarea
-                                placeholder="Enter specific instructions..."
-                                className="w-full border-2 border-emerald-50 rounded-xl p-3 text-sm h-24 focus:border-islamicGreen outline-none transition-all"
-                                value={noticeData.notes}
-                                onChange={e => setNoticeData({ ...noticeData, notes: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleAdminAction(adminApi.issueNotice, noticeData)}
-                            className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all"
-                          >
-                            Accept & Issue Notice
-                          </button>
-                        </>
-                      ) : selectedCase.notice ? (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
-                            <span className="text-xl">✅</span> Notice Issued
-                          </div>
-                          <p className="text-xs text-gray-500">Scheduled: {new Date(selectedCase.notice.hearingDate).toLocaleString()}</p>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-400 italic">Complete preceding stage first.</p>
-                      )}
-                    </div>
-                  </Section>
-
-                  {/* STAGE 3: HAZRI & HEARING */}
-                  <Section
-                    title="3. Attendance (Hazri) & Hearing"
-                    active={['NOTICE_ISSUED', 'HEARING_SCHEDULED'].includes(selectedCase.status)}
-                    done={!['DARKHAST_SUBMITTED', 'DARKHAST_APPROVED', 'NOTICE_ISSUED', 'HEARING_SCHEDULED'].includes(selectedCase.status)}
-                  >
-                    <div className="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm space-y-6">
-                      {selectedCase.status === 'NOTICE_ISSUED' && (
-                        <button
-                          onClick={() => handleAdminAction(adminApi.startHearing)}
-                          className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg"
-                        >
-                          Initialize Hearing Session
-                        </button>
-                      )}
-
-                      {selectedCase.status === 'HEARING_SCHEDULED' && (
-                        <div className="space-y-6">
-                          <div className="p-4 bg-emerald-50/50 rounded-xl space-y-4">
-                            <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Attendance Sheet</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                              <PresenceToggle label="Applicant" checked={hazriData.applicantPresent} onChange={v => setHazriData({ ...hazriData, applicantPresent: v })} />
-                              <PresenceToggle label="Respondent" checked={hazriData.respondentPresent} onChange={v => setHazriData({ ...hazriData, respondentPresent: v })} />
-                            </div>
-                            <textarea
-                              placeholder="Hazri / Presence Notes..."
-                              className="w-full border-2 border-emerald-50 rounded-xl p-3 text-sm h-20"
-                              value={hazriData.qaziRemarks}
-                              onChange={e => setHazriData({ ...hazriData, qaziRemarks: e.target.value })}
-                            />
-                            <button
-                              onClick={() => handleAdminAction(adminApi.recordAttendance, { hazri: { presentParties: [hazriData.applicantPresent && "Applicant", hazriData.respondentPresent && "Respondent"].filter(Boolean), signatures: "Verified by Qazi", notes: hazriData.qaziRemarks } })}
-                              className="w-full bg-white border-2 border-islamicGreen text-islamicGreen py-2 rounded-lg font-bold text-xs"
-                            >
-                              Record Attendance
-                            </button>
-                          </div>
-
-                          <div className="space-y-4">
-                            <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Hearing Statement</h4>
-                            <textarea
-                              placeholder="Applicant's Statement..."
-                              className="w-full border-2 border-emerald-50 rounded-xl p-3 text-sm h-24"
-                              value={statementData.applicantStatement}
-                              onChange={e => setStatementData({ ...statementData, applicantStatement: e.target.value })}
-                            />
-                            <textarea
-                              placeholder="Respondent's Statement..."
-                              className="w-full border-2 border-emerald-50 rounded-xl p-3 text-sm h-24"
-                              value={statementData.respondentStatement}
-                              onChange={e => setStatementData({ ...statementData, respondentStatement: e.target.value })}
-                            />
-                            <button
-                              onClick={() => handleAdminAction(adminApi.recordStatement, { statement: statementData })}
-                              className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest"
-                            >
-                              Accept & Finalize Hearing
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {['HEARING_COMPLETED', 'ARBITRATION_IN_PROGRESS', 'DECISION_PENDING', 'CASE_CLOSED'].includes(selectedCase.status) && (
-                        <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
-                          <span className="text-xl">✅</span> Hearing Completed
-                        </div>
-                      )}
-                    </div>
-                  </Section>
-
-                  {/* STAGE 4: ARBITRATION (SULH) */}
-                  <Section
-                    title="4. Compulsory Arbitration (Sulh)"
-                    active={selectedCase.status === 'HEARING_COMPLETED' || selectedCase.status === 'ARBITRATION_IN_PROGRESS'}
-                    done={['DECISION_PENDING', 'CASE_CLOSED'].includes(selectedCase.status)}
-                  >
-                    <div className="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm space-y-4">
-                      {(selectedCase.status === 'HEARING_COMPLETED' || selectedCase.status === 'ARBITRATION_IN_PROGRESS') ? (
-                        <div className="space-y-4">
-                          <label className="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-1 block">Arbitration Outcome</label>
-                          <select
-                            className="w-full border-2 border-emerald-50 rounded-xl p-3 focus:border-islamicGreen outline-none"
-                            value={arbitrationData.result}
-                            onChange={e => setArbitrationData({ ...arbitrationData, result: e.target.value })}
-                          >
-                            <option value="FAILED">Reconciliation Failed - Proceed with Divorce</option>
-                            <option value="SUCCESS">Reconciliation Successful - Close Case Amicably</option>
-                          </select>
-                          <textarea
-                            placeholder="Details of Sulh attempt..."
-                            className="w-full border-2 border-emerald-50 rounded-xl p-3 text-sm h-24"
-                            value={arbitrationData.notes}
-                            onChange={e => setArbitrationData({ ...arbitrationData, notes: e.target.value })}
-                          />
-                          <button
-                            onClick={() => handleAdminAction(adminApi.recordArbitration, arbitrationData)}
-                            className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg"
-                          >
-                            Accept Arbitration Result
-                          </button>
-                        </div>
-                      ) : selectedCase.status === 'CASE_CLOSED' && selectedCase.arbitration?.result === 'SUCCESS' ? (
-                        <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
-                          <span className="text-xl">🤝</span> Reconciliation Achieved
-                        </div>
-                      ) : (['DECISION_PENDING', 'CASE_CLOSED'].includes(selectedCase.status)) ? (
-                        <div className="flex items-center gap-2 text-amber-600 font-bold text-sm">
-                          <span className="text-xl">⚖️</span> Proceeding to Decision
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-400 italic">Complete preceding stage first.</p>
-                      )}
-                    </div>
-                  </Section>
-
-                  {/* STAGE 5: FAISLA (ORDER SHEET) */}
-                  <Section
-                    title="5. Faisla (Final Order Sheet)"
-                    active={selectedCase.status === 'DECISION_PENDING'}
-                    done={selectedCase.status === 'CASE_CLOSED'}
-                  >
-                    <div className="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm space-y-4">
-                      {selectedCase.status === 'DECISION_PENDING' ? (
-                        <div className="space-y-4">
-                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Final Judgment Statement</label>
-                          <textarea
-                            placeholder="Enter the formal court decision here..."
-                            className="w-full border-2 border-emerald-50 rounded-2xl p-4 h-64 font-serif text-sm leading-relaxed focus:border-islamicGreen outline-none"
-                            value={faislaData.finalOrderText}
-                            onChange={e => setFaislaData({ ...faislaData, finalOrderText: e.target.value })}
-                          />
-                          <button
-                            onClick={() => handleAdminAction(adminApi.issueFaisla, faislaData)}
-                            className="w-full bg-islamicGreen text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all"
-                          >
-                            Accept & Issue Final Faisla
-                          </button>
-                        </div>
-                      ) : selectedCase.status === 'CASE_CLOSED' ? (
-                        <div className="p-4 bg-emerald-50 rounded-xl text-center">
-                          <p className="font-bold text-islamicGreen uppercase tracking-widest text-xs">Judicial Record Closed</p>
-                          <p className="text-[10px] text-emerald-600 mt-1">Certificate Issued on {new Date(selectedCase.updatedAt).toLocaleDateString()}</p>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-400 italic">Complete preceding stage first.</p>
-                      )}
-                    </div>
-                  </Section>
-
-                  {/* JUDICIAL HISTORY SECTION */}
-                  <div className="pt-8 border-t border-gray-100">
-                    <button
-                      onClick={() => setShowHistory(!showHistory)}
-                      className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-islamicGreen transition-colors"
+                  {/* BOTTOM SECTION: JUDICIAL WORKFLOW ACTIONS */}
+                  <div className="max-w-4xl mx-auto space-y-12">
+                    {/* Stage Headers/Sections continue below... */}
+                    {/* Reuse the Section components for stages */}
+                    {/* STAGE 1: DARKHAST REVIEW */}
+                    <Section
+                      title="1. Application (Darkhast) Review"
+                      active={selectedCase.status === 'DARKHAST_SUBMITTED'}
+                      done={selectedCase.status !== 'DARKHAST_SUBMITTED'}
                     >
-                      {showHistory ? '▼' : '▶'} Judicial Action History
-                    </button>
-                    {showHistory && (
-                      <div className="mt-4 space-y-3">
-                        {selectedCase.history?.length > 0 ? (
-                          selectedCase.history.slice().reverse().map((h, i) => (
-                            <div key={i} className="flex gap-4 items-start p-3 bg-gray-50 rounded-xl border border-gray-100">
-                              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full mt-1.5 shrink-0"></div>
-                              <div className="flex-1">
-                                <div className="flex justify-between items-start">
-                                  <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">{h.status.replace(/_/g, ' ')}</span>
-                                  <span className="text-[9px] font-bold text-gray-400">{new Date(h.timestamp).toLocaleString()}</span>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-0.5">{h.note}</p>
-                                <p className="text-[8px] font-black text-gray-300 uppercase mt-1">BY: {h.changedBy}</p>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-xs text-gray-400 italic">No history records found.</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm">
+                          <DataItem label="Nature of Dispute" value={selectedCase.type} accent />
+                          <div className="mt-4">
+                            <label className="text-[9px] font-black text-gray-300 uppercase block mb-1">Target Relief</label>
+                            <p className="text-xs text-gray-600 font-bold">{selectedCase.darkhast?.reliefRequested || "N/A"}</p>
+                          </div>
+                        </div>
+
+                        {selectedCase.status === 'DARKHAST_SUBMITTED' && (
+                          <div className="flex flex-col gap-4">
+                            <button
+                              onClick={() => handleAdminAction(adminApi.approveDarkhast, { adminMessage })}
+                              disabled={actionLoading}
+                              className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
+                            >
+                              <span>✅</span> Accept & Approve
+                            </button>
+                            <button
+                              onClick={() => handleAdminAction(adminApi.rejectDarkhast, { adminMessage })}
+                              disabled={actionLoading}
+                              className="w-full bg-rose-600 text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all flex items-center justify-center gap-2"
+                            >
+                              <span>❌</span> Reject for Correction
+                            </button>
+                          </div>
                         )}
                       </div>
-                    )}
+                    </Section>
+
+                    {/* ADMIN COMMUNICATION BOX (Sticky-like or prominent) */}
+                    <div className="bg-emerald-50/50 border-2 border-emerald-100 rounded-2xl p-6 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-black text-islamicGreen uppercase tracking-widest px-1">Message to Applicant (Notification)</label>
+                        <span className="text-[9px] font-bold text-emerald-400 italic">Goes as a dashboard notification</span>
+                      </div>
+                      <textarea
+                        placeholder="Type a message or reason for approval/rejection here... (Optional)"
+                        value={adminMessage}
+                        onChange={e => setAdminMessage(e.target.value)}
+                        className="w-full bg-white border-2 border-emerald-50 rounded-xl p-4 text-sm focus:border-islamicGreen outline-none transition-all placeholder:text-gray-300"
+                        rows="3"
+                      />
+                    </div>
+
+                    {/* STAGE 2: NOTICE ISSUANCE */}
+                    <Section
+                      title="2. Issue Court Notice"
+                      active={selectedCase.status === 'DARKHAST_APPROVED'}
+                      done={selectedCase.status !== 'DARKHAST_SUBMITTED' && selectedCase.status !== 'DARKHAST_APPROVED'}
+                    >
+                      <div className="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm space-y-4">
+                        {selectedCase.status === 'DARKHAST_APPROVED' ? (
+                          <>
+                            <div className="grid grid-cols-1 gap-4">
+                              <div>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Hearing Date & Time</label>
+                                <input
+                                  type="datetime-local"
+                                  className="w-full border-2 border-emerald-50 rounded-xl p-3 focus:border-islamicGreen outline-none transition-all"
+                                  value={noticeData.hearingDate}
+                                  onChange={e => setNoticeData({ ...noticeData, hearingDate: e.target.value })}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Qazi's Remarks for Notice</label>
+                                <textarea
+                                  placeholder="Enter specific instructions..."
+                                  className="w-full border-2 border-emerald-50 rounded-xl p-3 text-sm h-24 focus:border-islamicGreen outline-none transition-all"
+                                  value={noticeData.notes}
+                                  onChange={e => setNoticeData({ ...noticeData, notes: e.target.value })}
+                                />
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleAdminAction(adminApi.issueNotice, noticeData)}
+                              className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all"
+                            >
+                              Accept & Issue Notice
+                            </button>
+                          </>
+                        ) : selectedCase.notice ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
+                              <span className="text-xl">✅</span> Notice Issued
+                            </div>
+                            <p className="text-xs text-gray-500">Scheduled: {new Date(selectedCase.notice.hearingDate).toLocaleString()}</p>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-400 italic">Complete preceding stage first.</p>
+                        )}
+                      </div>
+                    </Section>
+
+                    {/* STAGE 3: HAZRI & HEARING */}
+                    <Section
+                      title="3. Attendance (Hazri) & Hearing"
+                      active={['NOTICE_ISSUED', 'HEARING_SCHEDULED'].includes(selectedCase.status)}
+                      done={!['DARKHAST_SUBMITTED', 'DARKHAST_APPROVED', 'NOTICE_ISSUED', 'HEARING_SCHEDULED'].includes(selectedCase.status)}
+                    >
+                      <div className="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm space-y-6">
+                        {selectedCase.status === 'NOTICE_ISSUED' && (
+                          <button
+                            onClick={() => handleAdminAction(adminApi.startHearing)}
+                            className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg"
+                          >
+                            Initialize Hearing Session
+                          </button>
+                        )}
+
+                        {selectedCase.status === 'HEARING_SCHEDULED' && (
+                          <div className="space-y-6">
+                            <div className="p-4 bg-emerald-50/50 rounded-xl space-y-4">
+                              <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Attendance Sheet</h4>
+                              <div className="grid grid-cols-2 gap-4">
+                                <PresenceToggle label="Applicant" checked={hazriData.applicantPresent} onChange={v => setHazriData({ ...hazriData, applicantPresent: v })} />
+                                <PresenceToggle label="Respondent" checked={hazriData.respondentPresent} onChange={v => setHazriData({ ...hazriData, respondentPresent: v })} />
+                              </div>
+                              <textarea
+                                placeholder="Hazri / Presence Notes..."
+                                className="w-full border-2 border-emerald-50 rounded-xl p-3 text-sm h-20"
+                                value={hazriData.qaziRemarks}
+                                onChange={e => setHazriData({ ...hazriData, qaziRemarks: e.target.value })}
+                              />
+                              <button
+                                onClick={() => handleAdminAction(adminApi.recordAttendance, { hazri: { presentParties: [hazriData.applicantPresent && "Applicant", hazriData.respondentPresent && "Respondent"].filter(Boolean), signatures: "Verified by Qazi", notes: hazriData.qaziRemarks } })}
+                                className="w-full bg-white border-2 border-islamicGreen text-islamicGreen py-2 rounded-lg font-bold text-xs"
+                              >
+                                Record Attendance
+                              </button>
+                            </div>
+
+                            <div className="space-y-4">
+                              <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Hearing Statement</h4>
+                              <textarea
+                                placeholder="Applicant's Statement..."
+                                className="w-full border-2 border-emerald-50 rounded-xl p-3 text-sm h-24"
+                                value={statementData.applicantStatement}
+                                onChange={e => setStatementData({ ...statementData, applicantStatement: e.target.value })}
+                              />
+                              <textarea
+                                placeholder="Respondent's Statement..."
+                                className="w-full border-2 border-emerald-50 rounded-xl p-3 text-sm h-24"
+                                value={statementData.respondentStatement}
+                                onChange={e => setStatementData({ ...statementData, respondentStatement: e.target.value })}
+                              />
+                              <button
+                                onClick={() => handleAdminAction(adminApi.recordStatement, { statement: statementData })}
+                                className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest"
+                              >
+                                Accept & Finalize Hearing
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {['HEARING_COMPLETED', 'ARBITRATION_IN_PROGRESS', 'DECISION_PENDING', 'CASE_CLOSED'].includes(selectedCase.status) && (
+                          <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
+                            <span className="text-xl">✅</span> Hearing Completed
+                          </div>
+                        )}
+                      </div>
+                    </Section>
+
+                    {/* STAGE 4: ARBITRATION (SULH) */}
+                    <Section
+                      title="4. Compulsory Arbitration (Sulh)"
+                      active={selectedCase.status === 'HEARING_COMPLETED' || selectedCase.status === 'ARBITRATION_IN_PROGRESS'}
+                      done={['DECISION_PENDING', 'CASE_CLOSED'].includes(selectedCase.status)}
+                    >
+                      <div className="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm space-y-4">
+                        {(selectedCase.status === 'HEARING_COMPLETED' || selectedCase.status === 'ARBITRATION_IN_PROGRESS') ? (
+                          <div className="space-y-4">
+                            <label className="text-[10px] font-black text-amber-700 uppercase tracking-widest mb-1 block">Arbitration Outcome</label>
+                            <select
+                              className="w-full border-2 border-emerald-50 rounded-xl p-3 focus:border-islamicGreen outline-none"
+                              value={arbitrationData.result}
+                              onChange={e => setArbitrationData({ ...arbitrationData, result: e.target.value })}
+                            >
+                              <option value="FAILED">Reconciliation Failed - Proceed with Divorce</option>
+                              <option value="SUCCESS">Reconciliation Successful - Close Case Amicably</option>
+                            </select>
+                            <textarea
+                              placeholder="Details of Sulh attempt..."
+                              className="w-full border-2 border-emerald-50 rounded-xl p-3 text-sm h-24"
+                              value={arbitrationData.notes}
+                              onChange={e => setArbitrationData({ ...arbitrationData, notes: e.target.value })}
+                            />
+                            <button
+                              onClick={() => handleAdminAction(adminApi.recordArbitration, arbitrationData)}
+                              className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg"
+                            >
+                              Accept Arbitration Result
+                            </button>
+                          </div>
+                        ) : selectedCase.status === 'CASE_CLOSED' && selectedCase.arbitration?.result === 'SUCCESS' ? (
+                          <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
+                            <span className="text-xl">🤝</span> Reconciliation Achieved
+                          </div>
+                        ) : (['DECISION_PENDING', 'CASE_CLOSED'].includes(selectedCase.status)) ? (
+                          <div className="flex items-center gap-2 text-amber-600 font-bold text-sm">
+                            <span className="text-xl">⚖️</span> Proceeding to Decision
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-400 italic">Complete preceding stage first.</p>
+                        )}
+                      </div>
+                    </Section>
+
+                    {/* STAGE 5: FAISLA (ORDER SHEET) */}
+                    <Section
+                      title="5. Faisla (Final Order Sheet)"
+                      active={selectedCase.status === 'DECISION_PENDING'}
+                      done={selectedCase.status === 'CASE_CLOSED'}
+                    >
+                      <div className="bg-white border border-emerald-100 rounded-2xl p-6 shadow-sm space-y-4">
+                        {selectedCase.status === 'DECISION_PENDING' ? (
+                          <div className="space-y-4">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Final Judgment Statement</label>
+                            <textarea
+                              placeholder="Enter the formal court decision here..."
+                              className="w-full border-2 border-emerald-50 rounded-2xl p-4 h-64 font-serif text-sm leading-relaxed focus:border-islamicGreen outline-none"
+                              value={faislaData.finalOrderText}
+                              onChange={e => setFaislaData({ ...faislaData, finalOrderText: e.target.value })}
+                            />
+                            <button
+                              onClick={() => handleAdminAction(adminApi.issueFaisla, faislaData)}
+                              className="w-full bg-islamicGreen text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all"
+                            >
+                              Accept & Issue Final Faisla
+                            </button>
+                          </div>
+                        ) : selectedCase.status === 'CASE_CLOSED' ? (
+                          <div className="p-4 bg-emerald-50 rounded-xl text-center">
+                            <p className="font-bold text-islamicGreen uppercase tracking-widest text-xs">Judicial Record Closed</p>
+                            <p className="text-[10px] text-emerald-600 mt-1">Certificate Issued on {new Date(selectedCase.updatedAt).toLocaleDateString()}</p>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-400 italic">Complete preceding stage first.</p>
+                        )}
+                      </div>
+                    </Section>
+
+                    {/* JUDICIAL HISTORY SECTION */}
+                    <div className="pt-8 border-t border-gray-100">
+                      <button
+                        onClick={() => setShowHistory(!showHistory)}
+                        className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-islamicGreen transition-colors"
+                      >
+                        {showHistory ? '▼' : '▶'} Judicial Action History
+                      </button>
+                      {showHistory && (
+                        <div className="mt-4 space-y-3">
+                          {selectedCase.history?.length > 0 ? (
+                            selectedCase.history.slice().reverse().map((h, i) => (
+                              <div key={i} className="flex gap-4 items-start p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full mt-1.5 shrink-0"></div>
+                                <div className="flex-1">
+                                  <div className="flex justify-between items-start">
+                                    <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">{h.status.replace(/_/g, ' ')}</span>
+                                    <span className="text-[9px] font-bold text-gray-400">{new Date(h.timestamp).toLocaleString()}</span>
+                                  </div>
+                                  <p className="text-xs text-gray-500 mt-0.5">{h.note}</p>
+                                  <p className="text-[8px] font-black text-gray-300 uppercase mt-1">BY: {h.changedBy}</p>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-xs text-gray-400 italic">No history records found.</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
