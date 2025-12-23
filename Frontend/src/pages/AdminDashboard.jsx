@@ -273,85 +273,35 @@ export default function AdminDashboard() {
               </div>
 
               {/* Modal Content - Scrollable */}
-              {/* Modal Content - Scrollable */}
               <div className="flex-1 overflow-y-auto custom-scrollbar">
-                <div className="p-8 space-y-12">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Column 1 & 2: Exhaustive Form Details */}
-                    <div className="lg:col-span-2 space-y-8">
-                      {/* Section A: Identities */}
-                      <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <h3 className="text-[10px] font-black text-islamicGreen uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                          <span className="w-4 h-0.5 bg-islamicGreen"></span> Identity & Contact Details
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                          <DataItem label="Applicant Name" value={selectedCase.darkhast?.applicantName} />
-                          <DataItem label="Father/Guardian" value={selectedCase.darkhast?.fatherGuardianName} />
-                          <DataItem label="Gender" value={selectedCase.darkhast?.applicantGender} />
-                          <DataItem label="Age" value={selectedCase.darkhast?.applicantAge} />
-                          <DataItem label="Mobile Number" value={selectedCase.darkhast?.applicantMobile} />
-                          <DataItem label="CNIC / ID" value={selectedCase.darkhast?.cnic} />
-                          <DataItem label="Current Address" value={selectedCase.darkhast?.address} />
-                          <DataItem label="District" value={selectedCase.darkhast?.district} />
-                          <DataItem label="State" value={selectedCase.darkhast?.state} />
-                          <div className="sm:col-span-2 border-t border-gray-200 mt-2 pt-4"></div>
-                          <DataItem label="Respondent Name" value={selectedCase.darkhast?.respondentName} />
-                          <DataItem label="Respondent Father" value={selectedCase.darkhast?.respondentFatherName} />
-                          <DataItem label="Respondent Address" value={selectedCase.darkhast?.respondentAddress} />
-                        </div>
-                      </div>
-
-                      {/* Section B: Matrimonial & Specifics */}
-                      <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <h3 className="text-[10px] font-black text-islamicGreen uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                          <span className="w-4 h-0.5 bg-islamicGreen"></span> Marriage & Case Specifics
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                          <DataItem label="Nikah Date" value={selectedCase.darkhast?.nikahDate ? new Date(selectedCase.darkhast.nikahDate).toLocaleDateString() : "---"} />
-                          <DataItem label="Nikah Place" value={selectedCase.darkhast?.nikahPlace} />
-                          {/* Specialized Fields Mapping */}
-                          {Object.entries(selectedCase.darkhast || {}).map(([key, value]) => {
-                            const standardKeys = ['applicantName', 'fatherGuardianName', 'cnic', 'address', 'respondentName', 'respondentFatherName', 'respondentAddress', 'nikahDate', 'nikahPlace', 'natureOfDispute', 'statement', 'reliefRequested'];
-                            if (standardKeys.includes(key) || !value || typeof value === 'object') return null;
-                            return <DataItem key={key} label={key.replace(/([A-Z])/g, ' $1').toUpperCase()} value={value} />;
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Section C: Statement & Relief */}
-                      <div className="space-y-6">
-                        <div className="bg-emerald-50/30 p-6 rounded-2xl border border-emerald-100 shadow-sm">
-                          <DataItem label="Actionable Relief Requested" value={selectedCase.darkhast?.reliefRequested} accent />
-                        </div>
-                        <div className="bg-white border-2 border-emerald-50 p-6 rounded-2xl shadow-inner min-h-[160px]">
-                          <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Applicant's Formal Statement</h3>
-                          <p className="text-sm text-gray-700 leading-relaxed font-urdu whitespace-pre-wrap italic">
-                            "{selectedCase.darkhast?.statement || "No detailed statement provided."}"
-                          </p>
-                        </div>
+                <div className="p-8 space-y-8">
+                  {/* Simple Case Details Section */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Basic Information */}
+                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                      <h3 className="text-sm font-bold text-islamicGreen mb-4">Case Information</h3>
+                      <div className="space-y-3">
+                        <DataItem label="Application Number" value={selectedCase.displayId} />
+                        <DataItem label="File Number" value={selectedCase.fileNumber || "Pending Approval"} />
+                        <DataItem label="Case Type" value={selectedCase.type} />
+                        <DataItem label="Status" value={selectedCase.status.replace(/_/g, ' ')} />
+                        <DataItem label="Created" value={new Date(selectedCase.createdAt).toLocaleDateString()} />
                       </div>
                     </div>
 
-                    {/* Column 3: METADATA & QUICK ACTIONS */}
-                    <div className="space-y-8">
-                      <div className="bg-islamicGreen/5 p-6 rounded-2xl border-2 border-islamicGreen/10 space-y-4">
-                        <h3 className="text-[10px] font-black text-islamicGreen uppercase tracking-widest">Administrative Info</h3>
-                        <div className="space-y-3">
-                          <DataItem label="Application Number" value={selectedCase.displayId} accent />
-                          <DataItem label="File Number" value={selectedCase.fileNumber || "Pending Approval"} accent={!!selectedCase.fileNumber} />
-                          <DataItem label="Creator ID" value={selectedCase.createdBy} />
-                          <DataItem label="Record Created" value={new Date(selectedCase.createdAt).toLocaleString()} />
-                        </div>
-                      </div>
-
-                      <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100 shadow-sm">
-                        <h3 className="text-[10px] font-black text-orange-800 uppercase tracking-widest mb-1">Current State</h3>
-                        <p className="text-xs font-bold text-orange-600">{selectedCase.status.replace(/_/g, ' ')}</p>
+                    {/* Party Details */}
+                    <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                      <h3 className="text-sm font-bold text-islamicGreen mb-4">Party Details</h3>
+                      <div className="space-y-3">
+                        <DataItem label="Applicant" value={selectedCase.darkhast?.applicantName || selectedCase.darkhast?.firstPartyName} />
+                        <DataItem label="CNIC" value={selectedCase.darkhast?.applicantCnic || selectedCase.darkhast?.cnic} />
+                        <DataItem label="Respondent" value={selectedCase.darkhast?.respondentName || selectedCase.darkhast?.secondPartyName} />
+                        <DataItem label="Relief Requested" value={selectedCase.darkhast?.reliefRequested} />
                       </div>
                     </div>
                   </div>
 
-                  <div className="w-full h-px bg-gray-100 my-12"></div>
+                  <div className="w-full h-px bg-gray-200"></div>
 
                   {/* BOTTOM SECTION: JUDICIAL WORKFLOW ACTIONS */}
                   <div className="max-w-4xl mx-auto space-y-12">
