@@ -24,6 +24,8 @@ export default function AdminDashboard() {
   const [statementData, setStatementData] = useState({ applicantStatement: "", respondentStatement: "", qaziNotes: "" });
   const [arbitrationData, setArbitrationData] = useState({ result: "FAILED", notes: "" });
   const [faislaData, setFaislaData] = useState({ finalOrderText: "", qaziSignature: "", courtSealRef: "", decisionType: "" });
+  const [adminMessage, setAdminMessage] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     loadCases();
@@ -60,6 +62,7 @@ export default function AdminDashboard() {
     setNoticeData({ hearingDate: "", notes: "" });
     setHazriData({ applicantPresent: true, respondentPresent: true, qaziRemarks: "" });
     setStatementData({ applicantStatement: "", respondentStatement: "", qaziNotes: "" });
+    setAdminMessage("");
     setArbitrationData({ result: "FAILED", notes: "" });
     setFaislaData({
       finalOrderText: "",
@@ -114,6 +117,7 @@ export default function AdminDashboard() {
             >
               <option value="ALL">All Status</option>
               <option value="DARKHAST_SUBMITTED">Submitted</option>
+              <option value="DARKHAST_REJECTED">Rejected</option>
               <option value="DARKHAST_APPROVED">Approved</option>
               <option value="NOTICE_ISSUED">Notice Issued</option>
               <option value="HEARING_SCHEDULED">Hearing</option>
@@ -249,6 +253,16 @@ export default function AdminDashboard() {
                         if (standardKeys.includes(key) || !value) return null;
                         return <DataItem key={key} label={key.replace(/([A-Z])/g, ' $1').toUpperCase()} value={value} />;
                       })}
+
+                      <div className="pt-6 border-t border-gray-100 mt-4">
+                        <h3 className="text-xs font-black text-gray-900 uppercase tracking-[0.2em] mb-4">Application Metadata</h3>
+                        <div className="grid grid-cols-1 gap-3">
+                          <DataItem label="Creator ID" value={selectedCase.createdBy} />
+                          <DataItem label="Case Record Created" value={new Date(selectedCase.createdAt).toLocaleString()} />
+                          <DataItem label="Last Updated" value={new Date(selectedCase.updatedAt).toLocaleString()} />
+                          <DataItem label="Official ID" value={selectedCase.displayId} accent />
+                        </div>
+                      </div>
                     </div>
 
                     <div className="pt-6 border-t border-gray-100">
@@ -279,18 +293,40 @@ export default function AdminDashboard() {
                       </div>
 
                       {selectedCase.status === 'DARKHAST_SUBMITTED' && (
-                        <div className="flex flex-col justify-center">
+                        <div className="flex flex-col gap-4">
                           <button
-                            onClick={() => handleAdminAction(adminApi.approveDarkhast)}
+                            onClick={() => handleAdminAction(adminApi.approveDarkhast, { adminMessage })}
                             disabled={actionLoading}
-                            className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all"
+                            className="w-full bg-islamicGreen text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
                           >
-                            Accept & Approve Darkhast
+                            <span>✅</span> Accept & Approve
+                          </button>
+                          <button
+                            onClick={() => handleAdminAction(adminApi.rejectDarkhast, { adminMessage })}
+                            disabled={actionLoading}
+                            className="w-full bg-rose-600 text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all flex items-center justify-center gap-2"
+                          >
+                            <span>❌</span> Reject for Correction
                           </button>
                         </div>
                       )}
                     </div>
                   </Section>
+
+                  {/* ADMIN COMMUNICATION BOX (Sticky-like or prominent) */}
+                  <div className="bg-emerald-50/50 border-2 border-emerald-100 rounded-2xl p-6 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-black text-islamicGreen uppercase tracking-widest px-1">Message to Applicant (Notification)</label>
+                      <span className="text-[9px] font-bold text-emerald-400 italic">Goes as a dashboard notification</span>
+                    </div>
+                    <textarea
+                      placeholder="Type a message or reason for approval/rejection here... (Optional)"
+                      value={adminMessage}
+                      onChange={e => setAdminMessage(e.target.value)}
+                      className="w-full bg-white border-2 border-emerald-50 rounded-xl p-4 text-sm focus:border-islamicGreen outline-none transition-all placeholder:text-gray-300"
+                      rows="3"
+                    />
+                  </div>
 
                   {/* STAGE 2: NOTICE ISSUANCE */}
                   <Section
@@ -489,6 +525,37 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   </Section>
+
+                  {/* JUDICIAL HISTORY SECTION */}
+                  <div className="pt-8 border-t border-gray-100">
+                    <button
+                      onClick={() => setShowHistory(!showHistory)}
+                      className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-islamicGreen transition-colors"
+                    >
+                      {showHistory ? '▼' : '▶'} Judicial Action History
+                    </button>
+                    {showHistory && (
+                      <div className="mt-4 space-y-3">
+                        {selectedCase.history?.length > 0 ? (
+                          selectedCase.history.slice().reverse().map((h, i) => (
+                            <div key={i} className="flex gap-4 items-start p-3 bg-gray-50 rounded-xl border border-gray-100">
+                              <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full mt-1.5 shrink-0"></div>
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start">
+                                  <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">{h.status.replace(/_/g, ' ')}</span>
+                                  <span className="text-[9px] font-bold text-gray-400">{new Date(h.timestamp).toLocaleString()}</span>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-0.5">{h.note}</p>
+                                <p className="text-[8px] font-black text-gray-300 uppercase mt-1">BY: {h.changedBy}</p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-xs text-gray-400 italic">No history records found.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

@@ -2,6 +2,7 @@ export default function StatusBadge({ status }) {
   const colors = {
     DARKHAST_SUBMITTED: "bg-blue-100 text-blue-700",
     DARKHAST_APPROVED: "bg-emerald-100 text-emerald-700",
+    DARKHAST_REJECTED: "bg-rose-100 text-rose-600",
     NOTICE_SENT: "bg-indigo-100 text-indigo-700",
     HEARING_IN_PROGRESS: "bg-amber-100 text-amber-700",
     ARBITRATION_IN_PROGRESS: "bg-purple-100 text-purple-700",

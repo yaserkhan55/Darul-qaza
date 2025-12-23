@@ -5,8 +5,13 @@ export const getAllCases = async (params = {}) => {
   return res.data;
 };
 
-export const approveDarkhast = async (caseId) => {
-  const res = await api.put(`/cases/${caseId}/approve-darkhast`);
+export const approveDarkhast = async (caseId, payload) => {
+  const res = await api.put(`/cases/${caseId}/approve-darkhast`, payload);
+  return res.data;
+};
+
+export const rejectDarkhast = async (caseId, payload) => {
+  const res = await api.put(`/cases/${caseId}/reject-darkhast`, payload);
   return res.data;
 };
 
