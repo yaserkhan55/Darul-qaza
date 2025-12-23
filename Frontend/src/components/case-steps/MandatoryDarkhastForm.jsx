@@ -7,32 +7,20 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [formData, setFormData] = useState({
-        // Court info
-        courtName: "Dar-ul-Qaza, Nanded, Maharashtra",
-        district: "",
-        state: "",
+        // Date
+        date: new Date().toISOString().split('T')[0],
 
-        // Applicant (First Party)
-        applicantName: "",
-        fatherGuardianName: "",
-        applicantGender: "",
-        applicantAge: "",
-        address: "",
-        applicantMobile: "",
-        cnic: "",
+        // First Party (Applicant)
+        firstPartyName: "",
+        firstPartyFatherName: "",
+        firstPartyResidence: "",
+        firstPartyDistrict: "",
 
-        // Respondent (Second Party)
-        respondentName: "",
-        respondentFatherName: "",
-        respondentAddress: "",
-
-        // Case Details
-        nikahDate: "",
-        nikahPlace: "",
-        natureOfDispute: "",
-
-        // Darkhast Statement
-        statement: ""
+        // Second Party (Respondent)
+        secondPartyName: "",
+        secondPartyFatherName: "",
+        secondPartyResidence: "",
+        secondPartyDistrict: ""
     });
 
     const handleChange = (e) => {
@@ -48,10 +36,8 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
         try {
             // Validate required fields
             const requiredFields = [
-                "district", "state", "applicantName", "fatherGuardianName",
-                "applicantGender", "applicantAge", "address", "applicantMobile",
-                "respondentName", "respondentFatherName", "respondentAddress",
-                "nikahDate", "nikahPlace", "natureOfDispute", "statement"
+                "firstPartyName", "firstPartyFatherName", "firstPartyResidence", "firstPartyDistrict",
+                "secondPartyName", "secondPartyFatherName", "secondPartyResidence", "secondPartyDistrict"
             ];
 
             const missing = requiredFields.filter(field => !formData[field]?.toString().trim());
@@ -63,22 +49,15 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
 
             // Submit to backend
             await submitDarkhast({
-                applicantName: formData.applicantName,
-                fatherGuardianName: formData.fatherGuardianName,
-                applicantGender: formData.applicantGender,
-                applicantAge: parseInt(formData.applicantAge),
-                applicantMobile: formData.applicantMobile,
-                address: formData.address,
-                district: formData.district,
-                state: formData.state,
-                cnic: formData.cnic,
-                respondentName: formData.respondentName,
-                respondentFatherName: formData.respondentFatherName,
-                respondentAddress: formData.respondentAddress,
-                nikahDate: formData.nikahDate,
-                nikahPlace: formData.nikahPlace,
-                natureOfDispute: formData.natureOfDispute,
-                statement: formData.statement
+                date: formData.date,
+                firstPartyName: formData.firstPartyName,
+                firstPartyFatherName: formData.firstPartyFatherName,
+                firstPartyResidence: formData.firstPartyResidence,
+                firstPartyDistrict: formData.firstPartyDistrict,
+                secondPartyName: formData.secondPartyName,
+                secondPartyFatherName: formData.secondPartyFatherName,
+                secondPartyResidence: formData.secondPartyResidence,
+                secondPartyDistrict: formData.secondPartyDistrict
             });
 
             onSubmitted();
@@ -99,11 +78,12 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
             </div>
 
             {/* Mandatory Notice */}
-            <div className="bg-amber-50 border-b-2 border-amber-200 p-4">
-                <div className="flex items-center gap-3 max-w-4xl mx-auto">
-                    <span className="text-2xl">📋</span>
-                    <p className="text-amber-900 font-bold text-sm">
-                        Darkhast (Request Application) is mandatory. Please complete this form first to proceed further.
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-b-2 border-amber-300 p-5 animate-pulse-slow">
+                <div className="flex items-center gap-4 max-w-4xl mx-auto">
+                    <span className="text-3xl animate-bounce">⚠️</span>
+                    <p className="text-amber-900 font-bold text-sm leading-relaxed">
+                        <span className="block text-base font-black uppercase tracking-wide">Important Notice</span>
+                        The Darkhast (Request Application) is a mandatory prerequisite. Kindly complete this form to proceed with your case submission.
                     </p>
                 </div>
             </div>
@@ -116,235 +96,98 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-10">
-                    {/* Court Information */}
+                    {/* Date Section */}
                     <div className="space-y-6">
                         <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
                             <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                            Court Information
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <InputField
-                                label="Court Name"
-                                name="courtName"
-                                value={formData.courtName}
-                                onChange={handleChange}
-                                disabled
-                                readOnly
-                            />
-                            <InputField
-                                label="District / City"
-                                name="district"
-                                value={formData.district}
-                                onChange={handleChange}
-                                required
-                                placeholder="e.g., Nanded"
-                            />
-                            <InputField
-                                label="State"
-                                name="state"
-                                value={formData.state}
-                                onChange={handleChange}
-                                required
-                                placeholder="e.g., Maharashtra"
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
-                                    Application Number
-                                </label>
-                                <div className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-gray-500 font-medium italic">
-                                    Auto-generated on submit
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
-                                    File Number
-                                </label>
-                                <div className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-gray-500 font-medium italic">
-                                    Assigned after approval
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
-                                    Date of Submission
-                                </label>
-                                <div className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-4 text-gray-500 font-medium italic">
-                                    {new Date().toLocaleDateString()}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Applicant (First Party) */}
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
-                            <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                            Applicant (First Party)
+                            تاریخ / Date
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField
-                                label="Name"
-                                name="applicantName"
-                                value={formData.applicantName}
-                                onChange={handleChange}
-                                required
-                            />
-                            <InputField
-                                label="Father / Guardian Name"
-                                name="fatherGuardianName"
-                                value={formData.fatherGuardianName}
-                                onChange={handleChange}
-                                required
-                            />
-                            <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
-                                    Gender <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    name="applicantGender"
-                                    value={formData.applicantGender}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full bg-emerald-50/30 border-2 border-emerald-50 rounded-2xl px-6 py-4 text-gray-900 font-medium focus:border-islamicGreen focus:bg-white outline-none transition-all"
-                                >
-                                    <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
-                            </div>
-                            <InputField
-                                label="Age"
-                                name="applicantAge"
-                                type="number"
-                                value={formData.applicantAge}
-                                onChange={handleChange}
-                                required
-                                min="18"
-                            />
-                            <InputField
-                                label="Full Address"
-                                name="address"
-                                value={formData.address}
-                                onChange={handleChange}
-                                required
-                            />
-                            <InputField
-                                label="Mobile Number"
-                                name="applicantMobile"
-                                type="tel"
-                                value={formData.applicantMobile}
-                                onChange={handleChange}
-                                required
-                                placeholder="10-digit mobile number"
-                            />
-                            <InputField
-                                label="CNIC / Aadhar (Optional)"
-                                name="cnic"
-                                value={formData.cnic}
-                                onChange={handleChange}
-                                placeholder="00000-0000000-0"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Respondent (Second Party) */}
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
-                            <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                            Respondent (Second Party)
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField
-                                label="Name"
-                                name="respondentName"
-                                value={formData.respondentName}
-                                onChange={handleChange}
-                                required
-                            />
-                            <InputField
-                                label="Father Name"
-                                name="respondentFatherName"
-                                value={formData.respondentFatherName}
-                                onChange={handleChange}
-                                required
-                            />
-                            <div className="md:col-span-2">
-                                <InputField
-                                    label="Full Address"
-                                    name="respondentAddress"
-                                    value={formData.respondentAddress}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Case Details */}
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
-                            <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                            Case Details
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <InputField
-                                label="Nikah Date"
-                                name="nikahDate"
+                                label="Date (تاریخ)"
+                                name="date"
                                 type="date"
-                                value={formData.nikahDate}
+                                value={formData.date}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    {/* First Party (Applicant) */}
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
+                            <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
+                            فریق اول / First Party (Applicant)
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <InputField
+                                label="Name (نام)"
+                                name="firstPartyName"
+                                value={formData.firstPartyName}
+                                onChange={handleChange}
+                                required
+                                placeholder="فریق اول ساہب"
+                            />
+                            <InputField
+                                label="Father/Guardian Name (ولد / بنت)"
+                                name="firstPartyFatherName"
+                                value={formData.firstPartyFatherName}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label="Nikah Place"
-                                name="nikahPlace"
-                                value={formData.nikahPlace}
+                                label="Residence (مقام)"
+                                name="firstPartyResidence"
+                                value={formData.firstPartyResidence}
                                 onChange={handleChange}
                                 required
                             />
-                            <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
-                                    Matter Type <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    name="natureOfDispute"
-                                    value={formData.natureOfDispute}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full bg-emerald-50/30 border-2 border-emerald-50 rounded-2xl px-6 py-4 text-gray-900 font-medium focus:border-islamicGreen focus:bg-white outline-none transition-all"
-                                >
-                                    <option value="">Select Matter Type</option>
-                                    <option value="Talaq">Talaq</option>
-                                    <option value="Khula">Khula</option>
-                                    <option value="Faskh-e-Nikah">Faskh-e-Nikah</option>
-                                    <option value="Talaq-e-Zaujiyat">Talaq-e-Zaujiyat</option>
-                                    <option value="Virasat">Virasat</option>
-                                    <option value="Zauj Nama Dispute">Zauj Nama Dispute</option>
-                                </select>
-                            </div>
+                            <InputField
+                                label="District (تعلق)"
+                                name="firstPartyDistrict"
+                                value={formData.firstPartyDistrict}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                     </div>
 
-                    {/* Darkhast Statement */}
+                    {/* Second Party (Respondent) */}
                     <div className="space-y-6">
                         <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
                             <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                            Darkhast Statement
+                            فریق ثانی / Second Party (Respondent)
                         </h3>
-                        <div className="space-y-2">
-                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
-                                Plain Text Complaint <span className="text-red-500">*</span>
-                            </label>
-                            <textarea
-                                name="statement"
-                                rows="8"
-                                value={formData.statement}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <InputField
+                                label="Name (نام)"
+                                name="secondPartyName"
+                                value={formData.secondPartyName}
                                 onChange={handleChange}
                                 required
-                                placeholder="Write your detailed complaint here in plain text..."
-                                className="w-full bg-emerald-50/30 border-2 border-emerald-50 rounded-2xl p-5 text-gray-700 leading-relaxed focus:border-islamicGreen focus:bg-white outline-none transition-all"
-                            ></textarea>
+                            />
+                            <InputField
+                                label="Father Name (ولد / بنت)"
+                                name="secondPartyFatherName"
+                                value={formData.secondPartyFatherName}
+                                onChange={handleChange}
+                                required
+                            />
+                            <InputField
+                                label="Residence (مقام)"
+                                name="secondPartyResidence"
+                                value={formData.secondPartyResidence}
+                                onChange={handleChange}
+                                required
+                            />
+                            <InputField
+                                label="District (تعلق)"
+                                name="secondPartyDistrict"
+                                value={formData.secondPartyDistrict}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
                     </div>
 
@@ -390,8 +233,8 @@ function InputField({ label, name, value, onChange, placeholder, type = "text", 
                 readOnly={readOnly}
                 min={min}
                 className={`w-full border-2 rounded-2xl px-6 py-4 font-medium focus:border-islamicGreen focus:bg-white outline-none transition-all placeholder:text-gray-300 ${disabled || readOnly
-                        ? 'bg-gray-50 border-gray-100 text-gray-500 cursor-not-allowed'
-                        : 'bg-emerald-50/30 border-emerald-50 text-gray-900'
+                    ? 'bg-gray-50 border-gray-100 text-gray-500 cursor-not-allowed'
+                    : 'bg-emerald-50/30 border-emerald-50 text-gray-900'
                     }`}
             />
         </div>
