@@ -83,7 +83,18 @@ const caseSchema = new mongoose.Schema(
       required: true,
     },
     darkhast: {
-      // Mandatory Darkhast Form Fields
+      // Simplified Darkhast Form Fields (New)
+      date: Date,
+      firstPartyName: String,
+      firstPartyFatherName: String,
+      firstPartyResidence: String,
+      firstPartyDistrict: String,
+      secondPartyName: String,
+      secondPartyFatherName: String,
+      secondPartyResidence: String,
+      secondPartyDistrict: String,
+
+      // Legacy Darkhast Form Fields (Old - kept for backward compatibility)
       applicantName: String,
       fatherGuardianName: String,
       applicantGender: String,
