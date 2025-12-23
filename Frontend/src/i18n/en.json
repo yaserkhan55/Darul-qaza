@@ -178,7 +178,12 @@
       "khula": "Khula Request Details",
       "faskh": "Faskh-e-Nikah Grounds",
       "virasat": "Inheritance & Virasat",
-      "zaujnama": "Nikahnama Discrepancy"
+      "zaujnama": "Nikahnama Discrepancy",
+      "darkhastDate": "Date",
+      "firstParty": "First Party (Applicant)",
+      "secondParty": "Second Party (Respondent)",
+      "mandatoryNotice": "Important Notice",
+      "mandatoryMessage": "The Darkhast (Request Application) is a mandatory prerequisite. Kindly complete this form to proceed with your case submission."
     },
     "fields": {
       "applicantName": "Full Name (Applicant)",
@@ -201,7 +206,16 @@
       "maintenanceAmount": "Maintenance Due (if any)",
       "residenceStatus": "Current Living Status",
       "nikahRegNo": "Nikah Registration No.",
-      "correctionRequired": "Correction Required in Nikahnama"
+      "correctionRequired": "Correction Required in Nikahnama",
+      "date": "Date",
+      "firstPartyName": "Name",
+      "firstPartyFatherName": "Father / Guardian Name",
+      "firstPartyResidence": "Residence",
+      "firstPartyDistrict": "District",
+      "secondPartyName": "Name",
+      "secondPartyFatherName": "Father Name",
+      "secondPartyResidence": "Residence",
+      "secondPartyDistrict": "District"
     },
     "faskh": {
       "grounds": "Shariah Grounds for Faskh",

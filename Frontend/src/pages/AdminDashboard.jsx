@@ -17,6 +17,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
   const [authChecked, setAuthChecked] = useState(false);
   const [authCode, setAuthCode] = useState("");
+  const [viewMode, setViewMode] = useState("cases"); // "cases" or "darkhast"
 
   // Form states
   const [noticeData, setNoticeData] = useState({ hearingDate: "", notes: "" });
@@ -45,18 +46,25 @@ export default function AdminDashboard() {
 
   const filteredCases = useMemo(() => {
     return (cases || []).filter((c) => {
+      // Filter by view mode
+      if (viewMode === "darkhast") {
+        // Only show darkhast-related statuses
+        const darkhastStatuses = ["DARKHAST_SUBMITTED", "DARKHAST_APPROVED", "DARKHAST_REJECTED"];
+        if (!darkhastStatuses.includes(c.status)) return false;
+      }
+
       const matchesFilter = filter === "ALL" || c.status === filter;
       const term = searchTerm.trim().toLowerCase();
       const matchesSearch =
         term === "" ||
         (c.type || "").toLowerCase().includes(term) ||
         (c.caseId || "").toString().toLowerCase().includes(term) ||
-        (c.darkhast?.applicantName || "").toLowerCase().includes(term) ||
-        (c.darkhast?.respondentName || "").toLowerCase().includes(term) ||
+        (c.darkhast?.firstPartyName || c.darkhast?.applicantName || "").toLowerCase().includes(term) ||
+        (c.darkhast?.secondPartyName || c.darkhast?.respondentName || "").toLowerCase().includes(term) ||
         (c.darkhast?.cnic || "").toLowerCase().includes(term);
       return matchesFilter && matchesSearch;
     });
-  }, [cases, filter, searchTerm]);
+  }, [cases, filter, searchTerm, viewMode]);
 
   const handleSelect = (c) => {
     setSelectedCase(c);
@@ -131,17 +139,47 @@ export default function AdminDashboard() {
           </div>
         </header>
 
+        {/* VIEW MODE TABS */}
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-2 flex gap-2">
+          <button
+            onClick={() => setViewMode("cases")}
+            className={`flex-1 px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-widest transition-all ${viewMode === "cases"
+              ? "bg-islamicGreen text-white shadow-md"
+              : "text-gray-400 hover:text-islamicGreen hover:bg-emerald-50"
+              }`}
+          >
+            📋 All Cases
+          </button>
+          <button
+            onClick={() => setViewMode("darkhast")}
+            className={`flex-1 px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-widest transition-all ${viewMode === "darkhast"
+              ? "bg-islamicGreen text-white shadow-md"
+              : "text-gray-400 hover:text-islamicGreen hover:bg-emerald-50"
+              }`}
+          >
+            📝 Request Applications
+          </button>
+        </div>
+
         {/* MAIN TABLE VIEW */}
         <div className="bg-white rounded-3xl shadow-xl border border-emerald-50 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-emerald-50/50 border-b border-emerald-100">
-                  <th className="px-6 py-4 text-[10px] font-black text-emerald-800 uppercase tracking-widest">Case ID</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-emerald-800 uppercase tracking-widest">
+                    {viewMode === "darkhast" ? "Application ID" : "Case ID"}
+                  </th>
                   <th className="px-6 py-4 text-[10px] font-black text-emerald-800 uppercase tracking-widest">Date</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-emerald-800 uppercase tracking-widest">Applicant</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-emerald-800 uppercase tracking-widest">Respondent</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-emerald-800 uppercase tracking-widest">Matter Type</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-emerald-800 uppercase tracking-widest">
+                    {viewMode === "darkhast" ? "First Party" : "Applicant"}
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-black text-emerald-800 uppercase tracking-widest">
+                    {viewMode === "darkhast" ? "Second Party" : "Respondent"}
+                  </th>
+                  {viewMode === "cases" && (
+                    <th className="px-6 py-4 text-[10px] font-black text-emerald-800 uppercase tracking-widest">Matter Type</th>
+                  )}
                   <th className="px-6 py-4 text-[10px] font-black text-emerald-800 uppercase tracking-widest">Status</th>
                   <th className="px-6 py-4 text-[10px] font-black text-emerald-800 uppercase tracking-widest text-right">Actions</th>
                 </tr>
@@ -149,7 +187,9 @@ export default function AdminDashboard() {
               <tbody className="divide-y divide-gray-50">
                 {filteredCases.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-12 text-center text-gray-400 italic">No judicial records found matching filters.</td>
+                    <td colSpan={viewMode === "cases" ? "7" : "6"} className="px-6 py-12 text-center text-gray-400 italic">
+                      {viewMode === "darkhast" ? "No request applications found matching filters." : "No judicial records found matching filters."}
+                    </td>
                   </tr>
                 ) : (
                   filteredCases.map((c) => (
@@ -170,18 +210,24 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="text-sm font-bold text-gray-900">{c.darkhast?.applicantName || "Anonymous"}</span>
+                          <span className="text-sm font-bold text-gray-900">
+                            {c.darkhast?.firstPartyName || c.darkhast?.applicantName || "Anonymous"}
+                          </span>
                           <span className="text-[10px] text-gray-400">{c.darkhast?.applicantCnic}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm font-medium text-gray-700">{c.darkhast?.respondentName || "---"}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-xs font-bold text-islamicGreen bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">
-                          {c.type}
+                        <span className="text-sm font-medium text-gray-700">
+                          {c.darkhast?.secondPartyName || c.darkhast?.respondentName || "---"}
                         </span>
                       </td>
+                      {viewMode === "cases" && (
+                        <td className="px-6 py-4">
+                          <span className="text-xs font-bold text-islamicGreen bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">
+                            {c.type}
+                          </span>
+                        </td>
+                      )}
                       <td className="px-6 py-4">
                         <StatusBadge status={c.status} />
                       </td>

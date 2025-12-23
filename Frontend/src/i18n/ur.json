@@ -178,7 +178,12 @@
       "khula": "خلع کی درخواست کی تفصیلات",
       "faskh": "فسخِ نکاح کی وجوہات",
       "virasat": "وراثت اور ازدواجی حقوق",
-      "zaujnama": "نکاح نامہ میں تضاد"
+      "zaujnama": "نکاح نامہ میں تضاد",
+      "darkhastDate": "تاریخ",
+      "firstParty": "فریق اول (درخواست گزار)",
+      "secondParty": "فریق ثانی (مدعا علیہ)",
+      "mandatoryNotice": "اہم اطلاع",
+      "mandatoryMessage": "درخواست (درخواستِ فارم) لازمی ہے۔ براہ کرم اپنے کیس کی پیشکش کے لیے یہ فارم مکمل کریں۔"
     },
     "fields": {
       "applicantName": "پورا نام (درخواست گزار)",
@@ -201,7 +206,16 @@
       "maintenanceAmount": "واجب الادا نان و نفقہ",
       "residenceStatus": "رہائشی صورتحال",
       "nikahRegNo": "نکاح رجسٹریشن نمبر",
-      "correctionRequired": "نکاح نامہ میں تصحیح"
+      "correctionRequired": "نکاح نامہ میں تصحیح",
+      "date": "تاریخ",
+      "firstPartyName": "نام",
+      "firstPartyFatherName": "ولد / بنت",
+      "firstPartyResidence": "مقام",
+      "firstPartyDistrict": "تعلق",
+      "secondPartyName": "نام",
+      "secondPartyFatherName": "ولد / بنت",
+      "secondPartyResidence": "مقام",
+      "secondPartyDistrict": "تعلق"
     },
     "faskh": {
       "grounds": "شرعی وجوہات برائے فسخ",

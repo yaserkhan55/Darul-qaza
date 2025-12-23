@@ -82,8 +82,8 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
                 <div className="flex items-center gap-4 max-w-4xl mx-auto">
                     <span className="text-3xl animate-bounce">⚠️</span>
                     <p className="text-amber-900 font-bold text-sm leading-relaxed">
-                        <span className="block text-base font-black uppercase tracking-wide">Important Notice</span>
-                        The Darkhast (Request Application) is a mandatory prerequisite. Kindly complete this form to proceed with your case submission.
+                        <span className="block text-base font-black uppercase tracking-wide">{t('form.sections.mandatoryNotice')}</span>
+                        {t('form.sections.mandatoryMessage')}
                     </p>
                 </div>
             </div>
@@ -100,11 +100,11 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
                     <div className="space-y-6">
                         <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
                             <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                            تاریخ / Date
+                            {t('form.sections.darkhastDate')}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField
-                                label="Date (تاریخ)"
+                                label={t('form.fields.date')}
                                 name="date"
                                 type="date"
                                 value={formData.date}
@@ -118,33 +118,32 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
                     <div className="space-y-6">
                         <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
                             <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                            فریق اول / First Party (Applicant)
+                            {t('form.sections.firstParty')}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField
-                                label="Name (نام)"
+                                label={t('form.fields.firstPartyName')}
                                 name="firstPartyName"
                                 value={formData.firstPartyName}
                                 onChange={handleChange}
                                 required
-                                placeholder="فریق اول ساہب"
                             />
                             <InputField
-                                label="Father/Guardian Name (ولد / بنت)"
+                                label={t('form.fields.firstPartyFatherName')}
                                 name="firstPartyFatherName"
                                 value={formData.firstPartyFatherName}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label="Residence (مقام)"
+                                label={t('form.fields.firstPartyResidence')}
                                 name="firstPartyResidence"
                                 value={formData.firstPartyResidence}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label="District (تعلق)"
+                                label={t('form.fields.firstPartyDistrict')}
                                 name="firstPartyDistrict"
                                 value={formData.firstPartyDistrict}
                                 onChange={handleChange}
@@ -157,32 +156,32 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
                     <div className="space-y-6">
                         <h3 className="text-lg font-black text-islamicGreen flex items-center gap-3">
                             <span className="w-2 h-6 bg-islamicGreen rounded-full"></span>
-                            فریق ثانی / Second Party (Respondent)
+                            {t('form.sections.secondParty')}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InputField
-                                label="Name (نام)"
+                                label={t('form.fields.secondPartyName')}
                                 name="secondPartyName"
                                 value={formData.secondPartyName}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label="Father Name (ولد / بنت)"
+                                label={t('form.fields.secondPartyFatherName')}
                                 name="secondPartyFatherName"
                                 value={formData.secondPartyFatherName}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label="Residence (مقام)"
+                                label={t('form.fields.secondPartyResidence')}
                                 name="secondPartyResidence"
                                 value={formData.secondPartyResidence}
                                 onChange={handleChange}
                                 required
                             />
                             <InputField
-                                label="District (تعلق)"
+                                label={t('form.fields.secondPartyDistrict')}
                                 name="secondPartyDistrict"
                                 value={formData.secondPartyDistrict}
                                 onChange={handleChange}
@@ -199,7 +198,7 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
                                 onClick={onCancel}
                                 className="w-full sm:w-auto px-8 py-3 text-gray-400 font-bold uppercase tracking-widest hover:text-gray-600 transition"
                             >
-                                Cancel
+                                {t('common.cancel')}
                             </button>
                         )}
                         <button
@@ -207,7 +206,7 @@ export default function MandatoryDarkhastForm({ onSubmitted, onCancel }) {
                             disabled={loading}
                             className="w-full sm:w-auto bg-islamicGreen text-white px-12 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-emerald-200 hover:bg-emerald-700 hover:-translate-y-1 transition-all active:scale-95 disabled:opacity-50"
                         >
-                            {loading ? "Submitting..." : "Submit Darkhast"}
+                            {loading ? "Submitting..." : t('form.submitDarkhast')}
                         </button>
                     </div>
                 </form>
