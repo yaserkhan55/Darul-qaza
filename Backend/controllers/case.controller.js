@@ -8,6 +8,7 @@ const getUserId = (req) => req.auth?.userId || req.user?.id || req.body.createdB
 const CASE_FLOW = {
   DARKHAST_SUBMITTED: "DARKHAST",
   DARKHAST_APPROVED: "CASE_TYPE_SELECTION",
+  FORM_COMPLETED: "FORM",
   NOTICE_ISSUED: "NOTICE",
   HEARING_SCHEDULED: "HEARING",
   HEARING_COMPLETED: "ARBITRATION",
@@ -21,7 +22,8 @@ import { createNotification } from "./notification.controller.js";
 const transitions = {
   DARKHAST_SUBMITTED: ["DARKHAST_APPROVED", "DARKHAST_REJECTED", "CASE_CLOSED"],
   DARKHAST_REJECTED: ["DARKHAST_APPROVED", "CASE_CLOSED"],
-  DARKHAST_APPROVED: ["NOTICE_ISSUED"],
+  DARKHAST_APPROVED: ["FORM_COMPLETED"],
+  FORM_COMPLETED: ["NOTICE_ISSUED"],
   NOTICE_ISSUED: ["HEARING_SCHEDULED"],
   HEARING_SCHEDULED: ["HEARING_COMPLETED"],
   HEARING_COMPLETED: ["ARBITRATION_IN_PROGRESS"],
@@ -199,6 +201,64 @@ export const selectCaseType = async (req, res) => {
 };
 
 /**
+ * SAVE FORM DATA (Talaq/Khula forms)
+ */
+export const saveFormData = async (req, res) => {
+  try {
+    const { formData } = req.body;
+    const caseData = await Case.findById(req.params.id);
+    if (!caseData) return res.status(404).json({ message: "Case not found" });
+
+    if (caseData.status !== "DARKHAST_APPROVED") {
+      return res.status(400).json({ message: "Case must be in DARKHAST_APPROVED status to submit form" });
+    }
+
+    if (!caseData.type) {
+      return res.status(400).json({ message: "Case type must be selected first" });
+    }
+
+    // Ensure darkhast object exists
+    if (!caseData.darkhast) {
+      caseData.darkhast = {};
+    }
+
+    // Save form data to darkhast object
+    if (caseData.type === "Talaq") {
+      caseData.darkhast.husbandName = formData.husbandName;
+      caseData.darkhast.wifeName = formData.wifeName;
+      caseData.darkhast.nikahDate = formData.nikahDate ? new Date(formData.nikahDate) : caseData.darkhast.nikahDate;
+      caseData.darkhast.nikahPlace = formData.nikahPlace;
+      caseData.darkhast.talaqCount = formData.talaqCount;
+      caseData.darkhast.talaqIntentionConfirmed = formData.talaqIntentionConfirmed;
+      caseData.darkhast.iddatAcknowledgement = formData.iddatAcknowledgement;
+      caseData.darkhast.talaqDeclaration = formData.talaqDeclaration;
+    } else if (caseData.type === "Khula") {
+      caseData.darkhast.wifeName = formData.wifeName;
+      caseData.darkhast.husbandName = formData.husbandName;
+      caseData.darkhast.nikahDate = formData.nikahDate ? new Date(formData.nikahDate) : caseData.darkhast.nikahDate;
+      caseData.darkhast.khulaReason = formData.reasonForKhula;
+      caseData.darkhast.mahrReturn = formData.compensationMahrReturn;
+      caseData.darkhast.consentConfirmation = formData.consentConfirmation;
+      caseData.darkhast.khulaDeclaration = formData.khulaDeclaration;
+    }
+
+    // Transition to FORM_COMPLETED
+    if (!canTransition(caseData.status, "FORM_COMPLETED")) {
+      return res.status(400).json({ message: "Invalid transition" });
+    }
+
+    caseData.status = "FORM_COMPLETED";
+    addHistory(caseData, "FORM_COMPLETED", getUserId(req), `${caseData.type} form completed`);
+    await caseData.save();
+
+    createNotification(caseData.createdBy, `Your ${caseData.type} form has been submitted successfully.`, "SUCCESS", caseData._id);
+    res.json(caseData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
  * ADMIN: ISSUE NOTICE
  */
 export const issueNotice = async (req, res) => {
@@ -207,8 +267,12 @@ export const issueNotice = async (req, res) => {
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
-    if (!caseData.type) {
-      return res.status(400).json({ message: "Case type must be selected before issuing notice" });
+    if (caseData.status !== "FORM_COMPLETED") {
+      return res.status(400).json({ message: "Form must be completed before issuing notice" });
+    }
+
+    if (!canTransition(caseData.status, "NOTICE_ISSUED")) {
+      return res.status(400).json({ message: "Invalid transition" });
     }
 
     caseData.status = "NOTICE_ISSUED";

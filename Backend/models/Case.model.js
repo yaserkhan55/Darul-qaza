@@ -14,6 +14,7 @@ export const CASE_STATUSES = [
   "DARKHAST_SUBMITTED",
   "DARKHAST_APPROVED",
   "DARKHAST_REJECTED",
+  "FORM_COMPLETED",
   "NOTICE_ISSUED",
   "HEARING_SCHEDULED",
   "HEARING_COMPLETED",
@@ -115,13 +116,21 @@ const caseSchema = new mongoose.Schema(
       // Specialized fields (for later case-type specific forms)
       talaqDate: Date,
       talaqCount: Number,
+      talaqIntentionConfirmed: Boolean,
+      iddatAcknowledgement: Boolean,
+      talaqDeclaration: String,
       mahrStatus: String,
       khulaReason: String,
       mahrReturn: String,
+      consentConfirmation: Boolean,
+      khulaDeclaration: String,
       maintenanceAmount: String,
       residenceStatus: String,
       nikahRegNo: String,
-      correctionRequired: String
+      correctionRequired: String,
+      // Full names for forms
+      husbandName: String,
+      wifeName: String
     },
     fileNumber: {
       type: String,

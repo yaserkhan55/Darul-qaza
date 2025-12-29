@@ -5,6 +5,7 @@ import {
   approveDarkhast,
   rejectDarkhast,
   selectCaseType,
+  saveFormData,
   issueNotice,
   startHearing,
   recordAttendance,
@@ -33,6 +34,7 @@ router.use(protect);
 
 router.post("/darkhast", createCaseLimiter, submitDarkhast);
 router.put("/:id/select-type", selectCaseType);
+router.put("/:id/save-form", saveFormData);
 router.get("/my", getMyCases);
 router.get("/:id/certificate/pdf", generateCertificatePDF);
 
