@@ -23,10 +23,13 @@ export default function CaseSteps({ caseData, onUpdated }) {
   const STATUS_ADAPTER = {
     DARKHAST_SUBMITTED: "DARKHAST_SUBMITTED",
     DARKHAST_APPROVED: "DARKHAST_APPROVED",
+    DARKHAST_REJECTED: "DARKHAST_REJECTED",
     FORM_COMPLETED: "FORM_COMPLETED",
     NOTICE_ISSUED: "NOTICE_ISSUED",
     NOTICE_SENT: "NOTICE_SENT",
+    HEARING_SCHEDULED: "HEARING_SCHEDULED",
     HEARING_IN_PROGRESS: "HEARING_IN_PROGRESS",
+    HEARING_COMPLETED: "HEARING_COMPLETED",
     ARBITRATION_IN_PROGRESS: "ARBITRATION_IN_PROGRESS",
     DECISION_PENDING: "DECISION_PENDING",
     DECISION_APPROVED: "DECISION_APPROVED",
@@ -39,6 +42,9 @@ export default function CaseSteps({ caseData, onUpdated }) {
     switch (effectiveStatus) {
       case "DARKHAST_SUBMITTED":
         return <DarkhastView caseData={caseData} />;
+
+      case "DARKHAST_REJECTED":
+        return <DarkhastRejectedView caseData={caseData} />;
 
       case "DARKHAST_APPROVED":
         // Show form if type is selected, otherwise show type selection
@@ -56,7 +62,9 @@ export default function CaseSteps({ caseData, onUpdated }) {
       case "NOTICE_SENT":
         return <NoticeView caseData={caseData} />;
 
+      case "HEARING_SCHEDULED":
       case "HEARING_IN_PROGRESS":
+      case "HEARING_COMPLETED":
         return <HearingStep caseData={caseData} onUpdated={onUpdated} />;
 
       case "ARBITRATION_IN_PROGRESS":
@@ -109,6 +117,25 @@ function FormCompletedView({ caseData }) {
         </h3>
         <p className="text-emerald-800 leading-relaxed font-serif">
           Your {caseData?.type} form has been submitted successfully. The Qazi will review your application and issue a notice. Please check back later for updates.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function DarkhastRejectedView({ caseData }) {
+  return (
+    <div className="text-center py-8 sm:py-12">
+      <div className="bg-rose-50 border-2 border-rose-300 rounded-lg p-6 sm:p-8 max-w-md mx-auto shadow-inner">
+        <div className="text-4xl mb-4">⚠️</div>
+        <h3 className="text-xl font-bold text-rose-900 mb-2 uppercase tracking-wide font-serif">
+          Application Returned for Correction
+        </h3>
+        <p className="text-rose-800 leading-relaxed font-serif mb-4">
+          Your application has been returned by the Qazi for correction. Please check your messages for details.
+        </p>
+        <p className="text-sm text-rose-700 italic">
+          Please review the feedback and resubmit your application with the necessary corrections.
         </p>
       </div>
     </div>

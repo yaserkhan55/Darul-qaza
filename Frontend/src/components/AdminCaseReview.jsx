@@ -1,9 +1,7 @@
-import { useState } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { useState, useEffect } from "react";
 import * as adminApi from "../api/admin.api";
 
 export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
-    const { user } = useUser();
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState("");
     const [rejectReason, setRejectReason] = useState("");
@@ -13,7 +11,6 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
     // Generate file number in Serial/Year format
     const generateFileNumber = () => {
         const year = new Date().getFullYear();
-        // Use sequential ID or fallback to a random number
         const serial = caseData.sequentialId || Math.floor(Math.random() * 9000) + 1000;
         return `${serial}/${year}`;
     };
@@ -68,10 +65,30 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
         }
     };
 
-    // Helper to safely display values
-    const display = (value, fallback = "Not Provided") => {
-        return value || fallback;
+    // Helper to safely display values with proper fallbacks
+    const display = (value, fallback = "—") => {
+        if (value === null || value === undefined || value === "") return fallback;
+        return value;
     };
+
+    // Get applicant name (check multiple fields)
+    const getApplicantName = () => {
+        return caseData.darkhast?.firstPartyName || 
+               caseData.darkhast?.applicantName || 
+               caseData.darkhast?.husbandName || 
+               caseData.darkhast?.wifeName || 
+               "—";
+    };
+
+    // Get respondent name (check multiple fields)
+    const getRespondentName = () => {
+        return caseData.darkhast?.secondPartyName || 
+               caseData.darkhast?.respondentName || 
+               (caseData.type === "Talaq" ? caseData.darkhast?.wifeName : caseData.darkhast?.husbandName) ||
+               "—";
+    };
+
+    const darkhast = caseData.darkhast || {};
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/40 backdrop-blur-sm">
@@ -90,6 +107,12 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                     >
                         ✕
                     </button>
+                </div>
+
+                {/* Legal Disclaimer */}
+                <div className="bg-amber-50 border-l-4 border-amber-500 px-6 py-3 text-sm text-amber-900 shrink-0">
+                    <p className="font-semibold">⚠️ Legal Notice:</p>
+                    <p className="text-xs mt-1">Final decisions are issued by qualified Islamic authorities. All case reviews are subject to Shariah compliance verification.</p>
                 </div>
 
                 {/* Scrollable Content */}
@@ -127,51 +150,48 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                         <Section title="📋 Applicant Details">
                             <InfoField
                                 label="Full Name"
-                                value={display(
-                                    caseData.darkhast?.applicantName ||
-                                    caseData.darkhast?.firstPartyName
-                                )}
+                                value={getApplicantName()}
                             />
                             <InfoField
                                 label="Father/Guardian Name"
                                 value={display(
-                                    caseData.darkhast?.fatherGuardianName ||
-                                    caseData.darkhast?.firstPartyFatherName
+                                    darkhast.fatherGuardianName ||
+                                    darkhast.firstPartyFatherName
                                 )}
                             />
                             <InfoField
                                 label="Gender"
-                                value={display(caseData.darkhast?.applicantGender)}
+                                value={display(darkhast.applicantGender)}
                             />
                             <InfoField
                                 label="Age"
-                                value={display(caseData.darkhast?.applicantAge)}
+                                value={display(darkhast.applicantAge)}
                             />
                             <InfoField
                                 label="Mobile Number"
-                                value={display(caseData.darkhast?.applicantMobile)}
+                                value={display(darkhast.applicantMobile)}
                             />
                             <InfoField
                                 label="CNIC"
-                                value={display(caseData.darkhast?.cnic)}
+                                value={display(darkhast.cnic)}
                             />
                             <InfoField
                                 label="Full Address"
                                 value={display(
-                                    caseData.darkhast?.address ||
-                                    caseData.darkhast?.firstPartyResidence
+                                    darkhast.address ||
+                                    darkhast.firstPartyResidence
                                 )}
                             />
                             <InfoField
                                 label="District"
                                 value={display(
-                                    caseData.darkhast?.district ||
-                                    caseData.darkhast?.firstPartyDistrict
+                                    darkhast.district ||
+                                    darkhast.firstPartyDistrict
                                 )}
                             />
                             <InfoField
                                 label="State"
-                                value={display(caseData.darkhast?.state)}
+                                value={display(darkhast.state)}
                             />
                         </Section>
 
@@ -179,92 +199,229 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                         <Section title="👤 Respondent Details">
                             <InfoField
                                 label="Full Name"
-                                value={display(
-                                    caseData.darkhast?.respondentName ||
-                                    caseData.darkhast?.secondPartyName
-                                )}
+                                value={getRespondentName()}
                             />
                             <InfoField
                                 label="Father Name"
                                 value={display(
-                                    caseData.darkhast?.respondentFatherName ||
-                                    caseData.darkhast?.secondPartyFatherName
+                                    darkhast.respondentFatherName ||
+                                    darkhast.secondPartyFatherName
                                 )}
                             />
                             <InfoField
                                 label="Full Address"
                                 value={display(
-                                    caseData.darkhast?.respondentAddress ||
-                                    caseData.darkhast?.secondPartyResidence
+                                    darkhast.respondentAddress ||
+                                    darkhast.secondPartyResidence
                                 )}
                             />
                             <InfoField
                                 label="District"
-                                value={display(caseData.darkhast?.secondPartyDistrict)}
+                                value={display(darkhast.secondPartyDistrict)}
                             />
                         </Section>
                     </div>
+
+                    {/* CASE TYPE SPECIFIC DATA */}
+                    {caseData.type === "Talaq" && (
+                        <Section title="📝 Talaq Form Details">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <InfoField
+                                    label="Husband Name"
+                                    value={display(darkhast.husbandName)}
+                                />
+                                <InfoField
+                                    label="Wife Name"
+                                    value={display(darkhast.wifeName)}
+                                />
+                                <InfoField
+                                    label="Talaq Count"
+                                    value={display(darkhast.talaqCount)}
+                                />
+                                <InfoField
+                                    label="Talaq Intention Confirmed"
+                                    value={darkhast.talaqIntentionConfirmed ? "Yes" : "No"}
+                                />
+                                <InfoField
+                                    label="Iddat Acknowledgement"
+                                    value={darkhast.iddatAcknowledgement ? "Yes" : "No"}
+                                />
+                                {darkhast.talaqDeclaration && (
+                                    <div className="md:col-span-2">
+                                        <InfoField
+                                            label="Declaration"
+                                            value={darkhast.talaqDeclaration}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </Section>
+                    )}
+
+                    {caseData.type === "Khula" && (
+                        <Section title="📝 Khula Form Details">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <InfoField
+                                    label="Wife Name"
+                                    value={display(darkhast.wifeName)}
+                                />
+                                <InfoField
+                                    label="Husband Name"
+                                    value={display(darkhast.husbandName)}
+                                />
+                                <InfoField
+                                    label="Consent Confirmation"
+                                    value={darkhast.consentConfirmation ? "Yes" : "No"}
+                                />
+                                {darkhast.khulaReason && (
+                                    <div className="md:col-span-2">
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">
+                                            Reason for Khula
+                                        </label>
+                                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-700 leading-relaxed">
+                                            {darkhast.khulaReason}
+                                        </div>
+                                    </div>
+                                )}
+                                {darkhast.mahrReturn && (
+                                    <div className="md:col-span-2">
+                                        <InfoField
+                                            label="Compensation / Mahr Return Details"
+                                            value={darkhast.mahrReturn}
+                                        />
+                                    </div>
+                                )}
+                                {darkhast.khulaDeclaration && (
+                                    <div className="md:col-span-2">
+                                        <InfoField
+                                            label="Declaration"
+                                            value={darkhast.khulaDeclaration}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </Section>
+                    )}
 
                     {/* CASE DETAILS */}
                     <Section title="⚖️ Case Details">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <InfoField
                                 label="Nikah Date"
-                                value={caseData.darkhast?.nikahDate
-                                    ? new Date(caseData.darkhast.nikahDate).toLocaleDateString()
-                                    : "Not Provided"
+                                value={darkhast.nikahDate
+                                    ? new Date(darkhast.nikahDate).toLocaleDateString()
+                                    : "—"
                                 }
                             />
                             <InfoField
                                 label="Nikah Place"
-                                value={display(caseData.darkhast?.nikahPlace)}
+                                value={display(darkhast.nikahPlace)}
                             />
                             <InfoField
                                 label="Nature of Dispute"
-                                value={display(caseData.darkhast?.natureOfDispute || caseData.type)}
+                                value={display(darkhast.natureOfDispute || caseData.type)}
                             />
                             <InfoField
                                 label="Relief Requested"
-                                value={display(caseData.darkhast?.reliefRequested)}
+                                value={display(darkhast.reliefRequested)}
                             />
                         </div>
 
-                        {caseData.darkhast?.statement && (
+                        {darkhast.statement && (
                             <div className="mt-4">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">
                                     Darkhast Written Statement
                                 </label>
                                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-700 leading-relaxed">
-                                    {caseData.darkhast.statement}
+                                    {darkhast.statement}
                                 </div>
                             </div>
                         )}
                     </Section>
 
-                    {/* ACCOUNT DETAILS */}
-                    <Section title="👨‍💼 Account Details of Applicant">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InfoField
-                                label="Account Holder Name"
-                                value={display(user?.fullName || caseData.createdBy)}
-                            />
-                            <InfoField
-                                label="Registered Email"
-                                value={display(user?.primaryEmailAddress?.emailAddress)}
-                            />
-                            <InfoField
-                                label="Registered Mobile"
-                                value={display(user?.primaryPhoneNumber?.phoneNumber)}
-                            />
-                            <InfoField
-                                label="Account Creation Date & Time"
-                                value={caseData.createdAt
-                                    ? new Date(caseData.createdAt).toLocaleString()
-                                    : "Not Available"
-                                }
-                            />
-                        </div>
-                    </Section>
+                    {/* ARBITRATION DATA */}
+                    {caseData.arbitration && (
+                        <Section title="🤝 Arbitration (Sulh) Details">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <InfoField
+                                    label="Date"
+                                    value={caseData.arbitration.date
+                                        ? new Date(caseData.arbitration.date).toLocaleDateString()
+                                        : "—"
+                                    }
+                                />
+                                <InfoField
+                                    label="Result"
+                                    value={display(caseData.arbitration.result)}
+                                />
+                                {caseData.arbitration.notes && (
+                                    <div className="md:col-span-2">
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">
+                                            Notes
+                                        </label>
+                                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-700 leading-relaxed">
+                                            {caseData.arbitration.notes}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </Section>
+                    )}
+
+                    {/* AFFIDAVITS / DOCUMENTS */}
+                    {caseData.affidavits && (
+                        <Section title="📄 Documents & Affidavits">
+                            <div className="space-y-4">
+                                {caseData.affidavits.applicantAffidavit?.url && (
+                                    <DocumentItem
+                                        label="Applicant Affidavit"
+                                        url={caseData.affidavits.applicantAffidavit.url}
+                                        name={caseData.affidavits.applicantAffidavit.name || "Applicant Affidavit"}
+                                    />
+                                )}
+                                {caseData.affidavits.respondentAffidavit?.url && (
+                                    <DocumentItem
+                                        label="Respondent Affidavit"
+                                        url={caseData.affidavits.respondentAffidavit.url}
+                                        name={caseData.affidavits.respondentAffidavit.name || "Respondent Affidavit"}
+                                    />
+                                )}
+                                {caseData.affidavits.nikahnama?.url && (
+                                    <DocumentItem
+                                        label="Nikahnama"
+                                        url={caseData.affidavits.nikahnama.url}
+                                        name={caseData.affidavits.nikahnama.name || "Nikahnama"}
+                                    />
+                                )}
+                                {caseData.affidavits.idProof?.url && (
+                                    <DocumentItem
+                                        label="ID Proof"
+                                        url={caseData.affidavits.idProof.url}
+                                        name={caseData.affidavits.idProof.name || "ID Proof"}
+                                    />
+                                )}
+                                {caseData.affidavits.witnessAffidavits && caseData.affidavits.witnessAffidavits.length > 0 && (
+                                    <div>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-2">
+                                            Witness Affidavits
+                                        </label>
+                                        <div className="space-y-2">
+                                            {caseData.affidavits.witnessAffidavits.map((witness, idx) => (
+                                                witness.url && (
+                                                    <DocumentItem
+                                                        key={idx}
+                                                        label={`Witness ${idx + 1} Affidavit`}
+                                                        url={witness.url}
+                                                        name={witness.name || `Witness ${idx + 1} Affidavit`}
+                                                    />
+                                                )
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </Section>
+                    )}
 
                     {/* ADMINISTRATIVE INFO */}
                     <Section title="🏛️ Administrative Information">
@@ -277,7 +434,7 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                                 label="Submission Date"
                                 value={caseData.createdAt
                                     ? new Date(caseData.createdAt).toLocaleDateString()
-                                    : "Not Available"
+                                    : "—"
                                 }
                             />
                             <InfoField
@@ -399,7 +556,31 @@ function InfoField({ label, value, highlight = false }) {
                     ? 'text-islamicGreen bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200'
                     : 'text-gray-900'
                 }`}>
-                {value}
+                {value || "—"}
+            </div>
+        </div>
+    );
+}
+
+function DocumentItem({ label, url, name }) {
+    return (
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-2">
+                {label}
+            </label>
+            <div className="flex items-center gap-3">
+                <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">{name}</p>
+                    <p className="text-xs text-gray-500 truncate">{url}</p>
+                </div>
+                <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-islamicGreen text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors whitespace-nowrap"
+                >
+                    View Document
+                </a>
             </div>
         </div>
     );
