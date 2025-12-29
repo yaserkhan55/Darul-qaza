@@ -1,407 +1,263 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { saveDivorceForm, transitionCase, saveDraft } from "../../api/case.api";
-import SuccessMessage from "../SuccessMessage";
-import DraftStatus from "../DraftStatus";
+import { useState, useEffect } from "react";
+import { saveFormData } from "../../api/case.api";
 
-export default function TalaqForm({ caseData, caseId, onSuccess, onUpdated }) {
-  const { t } = useTranslation();
-  const effectiveCaseId = caseData?._id || caseId;
+export default function TalaqForm({ caseData, onUpdated }) {
+  const effectiveCaseId = caseData?._id;
 
   const [form, setForm] = useState({
-    husbandName: "",
-    husbandCnic: "",
-    wifeName: "",
-    wifeCnic: "",
-    nikahDate: "",
-    nikahPlace: "",
-    nikahRegistrationNo: "",
-    numChildren: "0",
-    mahrAmount: "",
-    talaqIntention: "",
-    reconciliationStatus: "",
-    witness1Name: "",
-    witness1Id: "",
-    witness2Name: "",
-    witness2Id: "",
+    husbandName: caseData?.darkhast?.husbandName || "",
+    wifeName: caseData?.darkhast?.wifeName || "",
+    dateOfNikah: caseData?.darkhast?.nikahDate ? new Date(caseData.darkhast.nikahDate).toISOString().split('T')[0] : "",
+    placeOfNikah: caseData?.darkhast?.nikahPlace || "",
+    talaqIntentionConfirmed: false,
+    talaqCount: "",
+    iddatAcknowledgement: false,
+    talaqDeclaration: "I declare this Talaq in accordance with Islamic law"
   });
-  const [intentConfirmed, setIntentConfirmed] = useState(false);
+
   const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState(caseData?.updatedAt);
 
-  // Auto-save effect
+  // Load existing form data if available
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      // Don't auto-save if empty or submitted
-      if (Object.values(form).every(x => !x) || showSuccess) return;
-      if (caseData.status !== "DRAFT" && caseData.status !== "STARTED" && caseData.status !== "CREATED") return;
-
-      setSaving(true);
-      try {
-        await saveDraft(effectiveCaseId, { details: form });
-        setLastSaved(new Date().toISOString());
-      } catch (err) {
-        console.error("Auto-save failed", err);
-      } finally {
-        setSaving(false);
-      }
-    }, 20000); // Auto-save every 20 seconds
-
-    return () => clearTimeout(timer);
-  }, [form, effectiveCaseId, showSuccess, caseData.status]);
+    if (caseData?.darkhast) {
+      const darkhast = caseData.darkhast;
+      setForm(prev => ({
+        ...prev,
+        husbandName: darkhast.husbandName || prev.husbandName,
+        wifeName: darkhast.wifeName || prev.wifeName,
+        dateOfNikah: darkhast.nikahDate ? new Date(darkhast.nikahDate).toISOString().split('T')[0] : prev.dateOfNikah,
+        placeOfNikah: darkhast.nikahPlace || prev.placeOfNikah,
+        talaqCount: darkhast.talaqCount?.toString() || prev.talaqCount,
+        talaqIntentionConfirmed: darkhast.talaqIntentionConfirmed || false,
+        iddatAcknowledgement: darkhast.iddatAcknowledgement || false,
+        talaqDeclaration: darkhast.talaqDeclaration || prev.talaqDeclaration
+      }));
+    }
+  }, [caseData]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
-
-
-  // ... (keep state) ...
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    // 1. Required Fields Check
-    const requiredFields = [
-      "husbandName", "husbandCnic", "wifeName", "nikahDate", "nikahPlace", "mahrAmount",
-      "talaqIntention", "witness1Name", "witness1Id", "witness2Name", "witness2Id"
-    ];
-
-    // Check if intentional confirmation is checked
-    if (!intentConfirmed) {
-      setError(t("form.errors.required"));
+    // Validation
+    if (!form.husbandName.trim()) {
+      setError("Husband full name is required");
+      return;
+    }
+    if (!form.wifeName.trim()) {
+      setError("Wife full name is required");
+      return;
+    }
+    if (!form.dateOfNikah) {
+      setError("Date of Nikah is required");
+      return;
+    }
+    if (!form.placeOfNikah.trim()) {
+      setError("Place of Nikah is required");
+      return;
+    }
+    if (!form.talaqIntentionConfirmed) {
+      setError("Please confirm your Talaq intention");
+      return;
+    }
+    if (!form.talaqCount) {
+      setError("Please select the Talaq pronouncement count");
+      return;
+    }
+    if (!form.iddatAcknowledgement) {
+      setError("Please acknowledge the Iddat period");
       return;
     }
 
-    const missing = requiredFields.filter(field => !form[field]?.trim());
-    if (missing.length > 0) {
-      setError(t("form.errors.required"));
-      return;
+    setLoading(true);
+    try {
+      await saveFormData(effectiveCaseId, {
+        husbandName: form.husbandName.trim(),
+        wifeName: form.wifeName.trim(),
+        nikahDate: form.dateOfNikah,
+        nikahPlace: form.placeOfNikah.trim(),
+        talaqIntentionConfirmed: form.talaqIntentionConfirmed,
+        talaqCount: parseInt(form.talaqCount),
+        iddatAcknowledgement: form.iddatAcknowledgement,
+        talaqDeclaration: form.talaqDeclaration
+      });
+      onUpdated?.();
+    } catch (err) {
+      setError(err?.response?.data?.message || "Unable to save form. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    // 2. CNIC Validation (Format: 12345-1234567-1)
-    const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
-    if (!cnicRegex.test(form.husbandCnic)) {
-      setError("Invalid Husband CNIC format (e.g. 12345-1234567-1)");
-      return;
-    }
-    if (form.wifeCnic && !cnicRegex.test(form.wifeCnic)) {
-      setError("Invalid Wife CNIC format (e.g. 12345-1234567-1)");
-      return;
-    }
-
-    // 3. Date Validation (No future dates)
-    if (new Date(form.nikahDate) > new Date()) {
-      setError("Marriage date cannot be in the future");
-      return;
-    }
-
-    // ... (keep logic) ...
   };
 
   return (
-    <>
-      {showSuccess && (
-        <SuccessMessage
-          message="Talaq form submitted successfully. Case status updated to FORM_COMPLETED."
-          onClose={handleSuccessClose}
-        />
-      )}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 sm:p-6 lg:p-8 max-w-3xl mx-auto">
-        <div className="mb-6 space-y-2">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-            {t("home.divorceTypes.talaq.title")} {t("home.steps.application.title")}
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600">
-            {t("home.divorceTypes.talaq.description")}
+    <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 sm:p-8 max-w-3xl mx-auto">
+      <div className="mb-6 space-y-2">
+        <h2 className="text-2xl font-bold text-gray-900">Talaq Form (Husband-initiated)</h2>
+        <p className="text-sm text-gray-600">
+          Please fill out all required fields to proceed with your Talaq application.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Husband Full Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Husband Full Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="husbandName"
+            value={form.husbandName}
+            onChange={handleChange}
+            required
+            className="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm"
+            placeholder="Enter husband's full name"
+          />
+        </div>
+
+        {/* Wife Full Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Wife Full Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="wifeName"
+            value={form.wifeName}
+            onChange={handleChange}
+            required
+            className="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm"
+            placeholder="Enter wife's full name"
+          />
+        </div>
+
+        {/* Date of Nikah */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Date of Nikah <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="date"
+            name="dateOfNikah"
+            value={form.dateOfNikah}
+            onChange={handleChange}
+            required
+            max={new Date().toISOString().split('T')[0]}
+            className="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm"
+          />
+        </div>
+
+        {/* Place of Nikah */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Place of Nikah <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="placeOfNikah"
+            value={form.placeOfNikah}
+            onChange={handleChange}
+            required
+            className="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm"
+            placeholder="Enter place of Nikah"
+          />
+        </div>
+
+        {/* Talaq Intention Confirmation */}
+        <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              name="talaqIntentionConfirmed"
+              checked={form.talaqIntentionConfirmed}
+              onChange={handleChange}
+              required
+              className="mt-1 h-5 w-5 rounded border-gray-300 text-islamicGreen focus:ring-islamicGreen"
+            />
+            <div className="flex-1">
+              <span className="block text-sm font-semibold text-gray-900 mb-1">
+                Talaq Intention Confirmation <span className="text-red-500">*</span>
+              </span>
+              <p className="text-xs text-amber-900">
+                <strong>Islamic Warning:</strong> Talaq is a serious matter in Islam. By checking this box, you confirm that you have made a deliberate and considered decision to pronounce Talaq. Please ensure you have exhausted all avenues of reconciliation as encouraged by Islamic teachings.
+              </p>
+            </div>
+          </label>
+        </div>
+
+        {/* Talaq Pronouncement Count */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Talaq Pronouncement Count <span className="text-red-500">*</span>
+          </label>
+          <select
+            name="talaqCount"
+            value={form.talaqCount}
+            onChange={handleChange}
+            required
+            className="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm"
+          >
+            <option value="">Select count</option>
+            <option value="1">1 (First pronouncement)</option>
+            <option value="2">2 (Second pronouncement)</option>
+            <option value="3">3 (Third pronouncement - Final)</option>
+          </select>
+        </div>
+
+        {/* Iddat Acknowledgement */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              name="iddatAcknowledgement"
+              checked={form.iddatAcknowledgement}
+              onChange={handleChange}
+              required
+              className="mt-1 h-5 w-5 rounded border-gray-300 text-islamicGreen focus:ring-islamicGreen"
+            />
+            <div className="flex-1">
+              <span className="block text-sm font-semibold text-gray-900 mb-1">
+                Iddat Acknowledgement <span className="text-red-500">*</span>
+              </span>
+              <p className="text-xs text-gray-700">
+                I acknowledge that the wife must observe the Iddat period as per Islamic law following the pronouncement of Talaq.
+              </p>
+            </div>
+          </label>
+        </div>
+
+        {/* Declaration */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <p className="text-sm text-gray-700 font-medium italic">
+            "{form.talaqDeclaration}"
           </p>
         </div>
 
-        <div className="flex justify-end mb-4">
-          <DraftStatus lastSaved={lastSaved} isSaving={saving} />
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-islamicGreen text-white px-8 py-3 rounded-lg text-sm font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            {loading ? "Submitting..." : "Submit Form"}
+          </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* SECTION: Personal Details */}
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
-            <h3 className="font-semibold text-gray-900 border-b pb-2">
-              {t("form.personalDetails")}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.husbandName")} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="husbandName"
-                  value={form.husbandName}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder={t("form.placeholders.name")}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.husbandCnic")} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="husbandCnic"
-                  value={form.husbandCnic}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder={t("form.placeholders.aadhar")}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.wifeName")} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="wifeName"
-                  value={form.wifeName}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder={t("form.placeholders.name")}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.wifeCnic")} ({t("common.optional", { defaultValue: "Optional" })})
-                </label>
-                <input
-                  type="text"
-                  name="wifeCnic"
-                  value={form.wifeCnic}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder={t("form.placeholders.aadhar")}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* SECTION: Marriage Details */}
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
-            <h3 className="font-semibold text-gray-900 border-b pb-2">
-              {t("form.marriageDetails")}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.nikahDate")} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  name="nikahDate"
-                  value={form.nikahDate}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.nikahPlace")} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="nikahPlace"
-                  value={form.nikahPlace}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                  placeholder={t("form.placeholders.city")}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.nikahRegNo")}
-                </label>
-                <input
-                  type="text"
-                  name="nikahRegistrationNo"
-                  value={form.nikahRegistrationNo}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.numChildren")}
-                </label>
-                <input
-                  type="number"
-                  name="numChildren"
-                  min="0"
-                  value={form.numChildren}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* SECTION: Talaq & Mahr Details */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("form.mahrAmount")} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="mahrAmount"
-                value={form.mahrAmount}
-                onChange={handleChange}
-                required
-                className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                placeholder={t("form.placeholders.amount")}
-              />
-            </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={intentConfirmed}
-                  onChange={(e) => setIntentConfirmed(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-gray-300 text-islamicGreen focus:ring-islamicGreen"
-                  required
-                />
-                <div className="flex-1">
-                  <span className="text-sm font-semibold text-gray-800 block mb-1">
-                    {t("form.talaqIntention")} <span className="text-red-500">*</span>
-                  </span>
-                  <span className="text-xs text-gray-600">
-                    {t("form.talaqConfirmation")}
-                  </span>
-                </div>
-              </label>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("form.talaqIntention")} (Declaration) <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                name="talaqIntention"
-                value={form.talaqIntention}
-                onChange={handleChange}
-                required
-                rows={4}
-                className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                placeholder={t("form.placeholders.notes")}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t("form.reconciliationStatus")}
-              </label>
-              <textarea
-                name="reconciliationStatus"
-                value={form.reconciliationStatus}
-                onChange={handleChange}
-                rows={3}
-                className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                placeholder={t("form.reconciliationPlaceholder")}
-              />
-            </div>
-          </div>
-
-          {/* SECTION: Witness Details */}
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
-            <h3 className="font-semibold text-gray-900 border-b pb-2">
-              {t("form.witnessDetails")}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Witness 1 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.witnessName")} 1 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="witness1Name"
-                  value={form.witness1Name}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.witnessId")} 1 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="witness1Id"
-                  value={form.witness1Id}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                />
-              </div>
-
-              {/* Witness 2 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.witnessName")} 2 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="witness2Name"
-                  value={form.witness2Name}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("form.witnessId")} 2 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="witness2Id"
-                  value={form.witness2Id}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-gray-200 focus:ring-2 focus:ring-islamicGreen focus:border-transparent text-sm p-3"
-                />
-              </div>
-            </div>
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
-              {error}
-            </div>
-          )}
-
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-islamicGreen text-white px-6 py-3 rounded-lg text-sm font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-60 transition"
-            >
-              {loading ? t("common.loading") : t("form.submitTalaq")}
-            </button>
-          </div>
-        </form>
-      </div>
-    </>
+      </form>
+    </div>
   );
 }

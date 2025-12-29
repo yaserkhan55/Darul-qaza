@@ -15,6 +15,11 @@ export const selectCaseType = async (caseId, type) => {
   return res.data;
 };
 
+export const saveFormData = async (caseId, formData) => {
+  const res = await api.put(`/cases/${caseId}/save-form`, { formData });
+  return res.data;
+};
+
 // Admin/Qazi Actions
 export const approveDarkhast = async (caseId) => {
   const res = await api.put(`/cases/${caseId}/approve-darkhast`);

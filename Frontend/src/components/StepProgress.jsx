@@ -5,6 +5,7 @@ export default function StepProgress({ status }) {
 
   const steps = [
     { id: "DARKHAST_SUBMITTED", label: "Darkhast" },
+    { id: "FORM_COMPLETED", label: "Form" },
     { id: "NOTICE_SENT", label: "Notice" },
     { id: "HEARING_IN_PROGRESS", label: "Hearing" },
     { id: "ARBITRATION_IN_PROGRESS", label: "Arbitration" },
@@ -18,17 +19,22 @@ export default function StepProgress({ status }) {
       case "DARKHAST_SUBMITTED":
       case "DARKHAST_APPROVED":
         return 0;
-      case "NOTICE_SENT":
+      case "FORM_COMPLETED":
         return 1;
-      case "HEARING_IN_PROGRESS":
+      case "NOTICE_ISSUED":
+      case "NOTICE_SENT":
         return 2;
-      case "ARBITRATION_IN_PROGRESS":
+      case "HEARING_IN_PROGRESS":
+      case "HEARING_SCHEDULED":
+      case "HEARING_COMPLETED":
         return 3;
-      case "DECISION_PENDING":
+      case "ARBITRATION_IN_PROGRESS":
         return 4;
+      case "DECISION_PENDING":
+        return 5;
       case "DECISION_APPROVED":
       case "CASE_CLOSED":
-        return 5;
+        return 6;
       default:
         return 0;
     }
