@@ -22,13 +22,20 @@ import { createNotification } from "./notification.controller.js";
 const transitions = {
   DARKHAST_SUBMITTED: ["DARKHAST_APPROVED", "DARKHAST_REJECTED", "CASE_CLOSED"],
   DARKHAST_REJECTED: ["DARKHAST_APPROVED", "CASE_CLOSED"],
-  DARKHAST_APPROVED: ["FORM_COMPLETED"],
-  FORM_COMPLETED: ["NOTICE_ISSUED"],
-  NOTICE_ISSUED: ["HEARING_SCHEDULED"],
-  HEARING_SCHEDULED: ["HEARING_COMPLETED"],
+  DARKHAST_APPROVED: ["FORM_COMPLETED", "NEEDS_CORRECTION"],
+  FORM_COMPLETED: ["NOTICE_ISSUED", "NEEDS_CORRECTION", "UNDER_REVIEW", "APPROVED_FOR_CONTINUE"],
+  NEEDS_CORRECTION: ["DARKHAST_APPROVED", "FORM_COMPLETED", "APPROVED_FOR_CONTINUE"],
+  APPROVED_FOR_CONTINUE: ["FORM_COMPLETED", "NOTICE_ISSUED"],
+  UNDER_REVIEW: ["APPROVED", "NEEDS_CORRECTION", "APPROVED_FOR_CONTINUE"],
+  APPROVED: ["NOTICE_ISSUED", "CASE_CLOSED"],
+  NOTICE_ISSUED: ["HEARING_SCHEDULED", "NOTICE_SENT"],
+  NOTICE_SENT: ["HEARING_SCHEDULED"],
+  HEARING_SCHEDULED: ["HEARING_IN_PROGRESS", "HEARING_COMPLETED"],
+  HEARING_IN_PROGRESS: ["HEARING_COMPLETED"],
   HEARING_COMPLETED: ["ARBITRATION_IN_PROGRESS"],
   ARBITRATION_IN_PROGRESS: ["DECISION_PENDING", "CASE_CLOSED"],
-  DECISION_PENDING: ["CASE_CLOSED"],
+  DECISION_PENDING: ["DECISION_APPROVED", "CASE_CLOSED"],
+  DECISION_APPROVED: ["CASE_CLOSED"],
   CASE_CLOSED: [],
 };
 
@@ -195,8 +202,10 @@ export const saveFormData = async (req, res) => {
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
-    if (caseData.status !== "DARKHAST_APPROVED") {
-      return res.status(400).json({ message: "Case must be in DARKHAST_APPROVED status to submit form" });
+    // Allow form editing if status is DARKHAST_APPROVED, NEEDS_CORRECTION, or APPROVED_FOR_CONTINUE
+    const editableStatuses = ["DARKHAST_APPROVED", "NEEDS_CORRECTION", "APPROVED_FOR_CONTINUE"];
+    if (!editableStatuses.includes(caseData.status)) {
+      return res.status(400).json({ message: `Case must be in ${editableStatuses.join(", ")} status to edit form` });
     }
 
     if (!caseData.type) {
@@ -228,16 +237,22 @@ export const saveFormData = async (req, res) => {
       caseData.darkhast.khulaDeclaration = formData.khulaDeclaration;
     }
 
-    // Transition to FORM_COMPLETED
-    if (!canTransition(caseData.status, "FORM_COMPLETED")) {
-      return res.status(400).json({ message: "Invalid transition" });
+    // Transition to FORM_COMPLETED when form is submitted/resubmitted
+    // Both NEEDS_CORRECTION and APPROVED_FOR_CONTINUE should transition to FORM_COMPLETED on resubmission
+    if (caseData.status === "APPROVED_FOR_CONTINUE" || caseData.status === "NEEDS_CORRECTION") {
+      // User is resubmitting after correction or approval - move back to FORM_COMPLETED for admin review
+      caseData.status = "FORM_COMPLETED";
+      addHistory(caseData, "FORM_COMPLETED", getUserId(req), `${caseData.type} form resubmitted after ${caseData.status === "NEEDS_CORRECTION" ? "correction" : "approval"}`);
+    } else if (canTransition(caseData.status, "FORM_COMPLETED")) {
+      caseData.status = "FORM_COMPLETED";
+      addHistory(caseData, "FORM_COMPLETED", getUserId(req), `${caseData.type} form completed`);
+    } else {
+      return res.status(400).json({ message: "Invalid transition from current status" });
     }
 
-    caseData.status = "FORM_COMPLETED";
-    addHistory(caseData, "FORM_COMPLETED", getUserId(req), `${caseData.type} form completed`);
     await caseData.save();
 
-    createNotification(caseData.createdBy, `Your ${caseData.type} form has been submitted successfully.`, "SUCCESS", caseData._id);
+    createNotification(caseData.createdBy, `Your ${caseData.type} form has been ${caseData.status === "APPROVED_FOR_CONTINUE" ? "updated" : "submitted successfully"}.`, "SUCCESS", caseData._id);
     res.json(caseData);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -451,6 +466,82 @@ export const getAllCases = async (req, res) => {
 
     const cases = await Case.find(filter).sort({ createdAt: -1 });
     res.json(cases);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * ADMIN: SEND BACK FOR CORRECTION (After form submission)
+ */
+export const sendBackForCorrection = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminMessage } = req.body;
+    const caseData = await Case.findById(id);
+    if (!caseData) return res.status(404).json({ message: "Case not found" });
+
+    // Allow transition from FORM_COMPLETED, UNDER_REVIEW, or DARKHAST_APPROVED
+    if (!canTransition(caseData.status, "NEEDS_CORRECTION")) {
+      return res.status(400).json({ message: "Invalid transition to NEEDS_CORRECTION" });
+    }
+
+    caseData.status = "NEEDS_CORRECTION";
+    addHistory(caseData, "NEEDS_CORRECTION", getUserId(req), adminMessage || "Case sent back for correction");
+    await caseData.save();
+
+    await createNotification(caseData.createdBy, "Your case has been returned for correction. Please review and update your form.", "WARNING", caseData._id);
+
+    if (adminMessage) {
+      await Message.create({
+        caseId: caseData._id,
+        recipientId: caseData.createdBy,
+        title: "Correction Required",
+        body: adminMessage,
+        senderId: getUserId(req),
+        senderName: "Qazi Dar-ul-Qaza"
+      });
+    }
+
+    res.json(caseData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * ADMIN: APPROVE FOR CONTINUE (After form submission)
+ */
+export const approveForContinue = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminMessage } = req.body;
+    const caseData = await Case.findById(id);
+    if (!caseData) return res.status(404).json({ message: "Case not found" });
+
+    // Allow transition from FORM_COMPLETED, UNDER_REVIEW, or NEEDS_CORRECTION
+    if (!canTransition(caseData.status, "APPROVED_FOR_CONTINUE")) {
+      return res.status(400).json({ message: "Invalid transition to APPROVED_FOR_CONTINUE" });
+    }
+
+    caseData.status = "APPROVED_FOR_CONTINUE";
+    addHistory(caseData, "APPROVED_FOR_CONTINUE", getUserId(req), adminMessage || "Case approved for continuation");
+    await caseData.save();
+
+    await createNotification(caseData.createdBy, "Your case has been reviewed. You may now continue with the next step.", "SUCCESS", caseData._id);
+
+    if (adminMessage) {
+      await Message.create({
+        caseId: caseData._id,
+        recipientId: caseData.createdBy,
+        title: "Case Approved for Continue",
+        body: adminMessage,
+        senderId: getUserId(req),
+        senderName: "Qazi Dar-ul-Qaza"
+      });
+    }
+
+    res.json(caseData);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -15,6 +15,8 @@ import {
   closeCase,
   getMyCases,
   getAllCases,
+  sendBackForCorrection,
+  approveForContinue,
 } from "../controllers/case.controller.js";
 import { generateCertificatePDF } from "../controllers/pdf.controller.js";
 import { protect } from "../middlewares/auth.middleware.js";
@@ -42,6 +44,8 @@ router.get("/:id/certificate/pdf", generateCertificatePDF);
 router.get("/admin/all", getAllCases);
 router.put("/:id/approve-darkhast", approveDarkhast);
 router.put("/:id/reject-darkhast", rejectDarkhast);
+router.put("/:id/send-back-correction", sendBackForCorrection);
+router.put("/:id/approve-continue", approveForContinue);
 router.put("/:id/issue-notice", issueNotice);
 router.put("/:id/start-hearing", startHearing);
 router.put("/:id/record-attendance", recordAttendance);
