@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { saveFormData } from "../../api/case.api";
+import UserGuidanceBanner from "../UserGuidanceBanner";
 
-export default function TalaqForm({ caseData, onUpdated }) {
+export default function TalaqForm({ caseData, onUpdated, isEditable = true }) {
   const effectiveCaseId = caseData?._id;
 
   const [form, setForm] = useState({
@@ -98,13 +99,30 @@ export default function TalaqForm({ caseData, onUpdated }) {
     }
   };
 
+  const isReadOnly = !isEditable || caseData?.status === "UNDER_REVIEW" || caseData?.status === "APPROVED";
+
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 sm:p-8 max-w-3xl mx-auto">
+      {/* Show banner if status requires it */}
+      {(caseData?.status === "NEEDS_CORRECTION" || 
+        caseData?.status === "APPROVED_FOR_CONTINUE" || 
+        caseData?.status === "UNDER_REVIEW" || 
+        caseData?.status === "APPROVED") && (
+        <UserGuidanceBanner status={caseData.status} caseData={caseData} />
+      )}
+
       <div className="mb-6 space-y-2">
         <h2 className="text-2xl font-bold text-gray-900">Talaq Form (Husband-initiated)</h2>
         <p className="text-sm text-gray-600">
-          Please fill out all required fields to proceed with your Talaq application.
+          {isReadOnly 
+            ? "View your Talaq form details below."
+            : "Please fill out all required fields to proceed with your Talaq application."}
         </p>
+        {isReadOnly && (
+          <p className="text-xs text-amber-600 italic mt-2">
+            This form is currently read-only as your case is under review.
+          </p>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -119,7 +137,8 @@ export default function TalaqForm({ caseData, onUpdated }) {
             value={form.husbandName}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm"
+            disabled={isReadOnly}
+            className={`w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm ${isReadOnly ? 'bg-gray-50 cursor-not-allowed opacity-70' : ''}`}
             placeholder="Enter husband's full name"
           />
         </div>
@@ -135,7 +154,8 @@ export default function TalaqForm({ caseData, onUpdated }) {
             value={form.wifeName}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm"
+            disabled={isReadOnly}
+            className={`w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm ${isReadOnly ? 'bg-gray-50 cursor-not-allowed opacity-70' : ''}`}
             placeholder="Enter wife's full name"
           />
         </div>
@@ -151,8 +171,9 @@ export default function TalaqForm({ caseData, onUpdated }) {
             value={form.dateOfNikah}
             onChange={handleChange}
             required
+            disabled={isReadOnly}
             max={new Date().toISOString().split('T')[0]}
-            className="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm"
+            className={`w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm ${isReadOnly ? 'bg-gray-50 cursor-not-allowed opacity-70' : ''}`}
           />
         </div>
 
@@ -167,7 +188,8 @@ export default function TalaqForm({ caseData, onUpdated }) {
             value={form.placeOfNikah}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm"
+            disabled={isReadOnly}
+            className={`w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm ${isReadOnly ? 'bg-gray-50 cursor-not-allowed opacity-70' : ''}`}
             placeholder="Enter place of Nikah"
           />
         </div>
@@ -181,7 +203,8 @@ export default function TalaqForm({ caseData, onUpdated }) {
               checked={form.talaqIntentionConfirmed}
               onChange={handleChange}
               required
-              className="mt-1 h-5 w-5 rounded border-gray-300 text-islamicGreen focus:ring-islamicGreen"
+              disabled={isReadOnly}
+              className={`mt-1 h-5 w-5 rounded border-gray-300 text-islamicGreen focus:ring-islamicGreen ${isReadOnly ? 'cursor-not-allowed opacity-70' : ''}`}
             />
             <div className="flex-1">
               <span className="block text-sm font-semibold text-gray-900 mb-1">
@@ -204,7 +227,8 @@ export default function TalaqForm({ caseData, onUpdated }) {
             value={form.talaqCount}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm"
+            disabled={isReadOnly}
+            className={`w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-islamicGreen focus:border-transparent px-4 py-2 text-sm ${isReadOnly ? 'bg-gray-50 cursor-not-allowed opacity-70' : ''}`}
           >
             <option value="">Select count</option>
             <option value="1">1 (First pronouncement)</option>
@@ -222,7 +246,8 @@ export default function TalaqForm({ caseData, onUpdated }) {
               checked={form.iddatAcknowledgement}
               onChange={handleChange}
               required
-              className="mt-1 h-5 w-5 rounded border-gray-300 text-islamicGreen focus:ring-islamicGreen"
+              disabled={isReadOnly}
+              className={`mt-1 h-5 w-5 rounded border-gray-300 text-islamicGreen focus:ring-islamicGreen ${isReadOnly ? 'cursor-not-allowed opacity-70' : ''}`}
             />
             <div className="flex-1">
               <span className="block text-sm font-semibold text-gray-900 mb-1">
@@ -248,15 +273,17 @@ export default function TalaqForm({ caseData, onUpdated }) {
           </div>
         )}
 
-        <div className="flex justify-end gap-3 pt-4 border-t">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-islamicGreen text-white px-8 py-3 rounded-lg text-sm font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? "Submitting..." : "Submit Form"}
-          </button>
-        </div>
+        {!isReadOnly && (
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-islamicGreen text-white px-8 py-3 rounded-lg text-sm font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? "Submitting..." : caseData?.status === "NEEDS_CORRECTION" ? "Update & Resubmit Form" : "Submit Form"}
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );

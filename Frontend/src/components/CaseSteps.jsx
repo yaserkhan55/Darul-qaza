@@ -8,6 +8,7 @@ import NoticeView from "./case-steps/NoticeView";
 import HearingStep from "./case-steps/HearingStep";
 import ArbitrationStep from "./case-steps/ArbitrationStep";
 import FaislaView from "./case-steps/FaislaView";
+import UserGuidanceBanner from "./UserGuidanceBanner";
 
 export default function CaseSteps({ caseData, onUpdated }) {
   if (!caseData) {
@@ -25,6 +26,10 @@ export default function CaseSteps({ caseData, onUpdated }) {
     DARKHAST_APPROVED: "DARKHAST_APPROVED",
     DARKHAST_REJECTED: "DARKHAST_REJECTED",
     FORM_COMPLETED: "FORM_COMPLETED",
+    NEEDS_CORRECTION: "NEEDS_CORRECTION",
+    APPROVED_FOR_CONTINUE: "APPROVED_FOR_CONTINUE",
+    UNDER_REVIEW: "UNDER_REVIEW",
+    APPROVED: "APPROVED",
     NOTICE_ISSUED: "NOTICE_ISSUED",
     NOTICE_SENT: "NOTICE_SENT",
     HEARING_SCHEDULED: "HEARING_SCHEDULED",
@@ -54,6 +59,44 @@ export default function CaseSteps({ caseData, onUpdated }) {
           return <KhulaForm caseData={caseData} onUpdated={onUpdated} />;
         }
         return <CaseTypeSelection caseData={caseData} onUpdated={onUpdated} />;
+
+      case "NEEDS_CORRECTION":
+        // Show form for correction - editable
+        if (caseData.type === "Talaq") {
+          return <TalaqForm caseData={caseData} onUpdated={onUpdated} isEditable={true} />;
+        } else if (caseData.type === "Khula") {
+          return <KhulaForm caseData={caseData} onUpdated={onUpdated} isEditable={true} />;
+        }
+        // If no type selected, show type selection
+        return <CaseTypeSelection caseData={caseData} onUpdated={onUpdated} />;
+
+      case "APPROVED_FOR_CONTINUE":
+        // Show form for continuation - editable
+        if (caseData.type === "Talaq") {
+          return <TalaqForm caseData={caseData} onUpdated={onUpdated} isEditable={true} />;
+        } else if (caseData.type === "Khula") {
+          return <KhulaForm caseData={caseData} onUpdated={onUpdated} isEditable={true} />;
+        }
+        // If no type selected, show type selection
+        return <CaseTypeSelection caseData={caseData} onUpdated={onUpdated} />;
+
+      case "UNDER_REVIEW":
+        // Show form in read-only mode
+        if (caseData.type === "Talaq") {
+          return <TalaqForm caseData={caseData} onUpdated={onUpdated} isEditable={false} />;
+        } else if (caseData.type === "Khula") {
+          return <KhulaForm caseData={caseData} onUpdated={onUpdated} isEditable={false} />;
+        }
+        return <FormCompletedView caseData={caseData} />;
+
+      case "APPROVED":
+        // Show next step (Notice view or form if needed)
+        if (caseData.type === "Talaq") {
+          return <TalaqForm caseData={caseData} onUpdated={onUpdated} isEditable={false} />;
+        } else if (caseData.type === "Khula") {
+          return <KhulaForm caseData={caseData} onUpdated={onUpdated} isEditable={false} />;
+        }
+        return <NoticeView caseData={caseData} />;
 
       case "FORM_COMPLETED":
         return <FormCompletedView caseData={caseData} />;
@@ -85,6 +128,13 @@ export default function CaseSteps({ caseData, onUpdated }) {
   return (
     <div className="w-full space-y-4">
       <StepProgress status={effectiveStatus} />
+      {/* Show guidance banner for specific statuses */}
+      {(effectiveStatus === "NEEDS_CORRECTION" || 
+        effectiveStatus === "APPROVED_FOR_CONTINUE" || 
+        effectiveStatus === "UNDER_REVIEW" || 
+        effectiveStatus === "APPROVED") && (
+        <UserGuidanceBanner status={effectiveStatus} caseData={caseData} />
+      )}
       {renderStepComponent()}
     </div>
   );

@@ -65,6 +65,54 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
         }
     };
 
+    const handleSendBackForCorrection = async () => {
+        if (!messageToApplicant.trim()) {
+            if (!window.confirm("No message provided. Continue without sending a message to the applicant?")) {
+                return;
+            }
+        }
+
+        setActionLoading(true);
+        setError("");
+        try {
+            const payload = {
+                adminMessage: messageToApplicant || "Your case has been returned for correction. Please review and update your form."
+            };
+
+            await adminApi.sendBackForCorrection(caseData._id, payload);
+            alert("Case sent back for correction successfully.");
+            onUpdate && onUpdate();
+            onClose && onClose();
+        } catch (err) {
+            setError(err?.response?.data?.message || "Failed to send back for correction.");
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleApproveForContinue = async () => {
+        if (!window.confirm("Approve this case for the user to continue with the next step?")) {
+            return;
+        }
+
+        setActionLoading(true);
+        setError("");
+        try {
+            const payload = {
+                adminMessage: messageToApplicant || "Your case has been reviewed. You may now continue with the next step."
+            };
+
+            await adminApi.approveForContinue(caseData._id, payload);
+            alert("Case approved for continue successfully.");
+            onUpdate && onUpdate();
+            onClose && onClose();
+        } catch (err) {
+            setError(err?.response?.data?.message || "Failed to approve for continue.");
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     // Helper to safely display values with proper fallbacks
     const display = (value, fallback = "—") => {
         if (value === null || value === undefined || value === "") return fallback;
@@ -464,29 +512,58 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
 
                 {/* ACTION CONTROLS - Fixed at Bottom */}
                 <div className="bg-gray-50 border-t-2 border-gray-200 px-8 py-6 shrink-0">
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <button
-                            onClick={handleApprove}
-                            disabled={actionLoading || caseData.status !== "DARKHAST_SUBMITTED"}
-                            className="flex-1 bg-islamicGreen text-white py-4 px-6 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            <span className="text-xl">✅</span>
-                            {actionLoading ? "Processing..." : "Approve Case & Assign File Number"}
-                        </button>
+                    {/* Actions for DARKHAST_SUBMITTED */}
+                    {caseData.status === "DARKHAST_SUBMITTED" && (
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <button
+                                onClick={handleApprove}
+                                disabled={actionLoading}
+                                className="flex-1 bg-islamicGreen text-white py-4 px-6 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                <span className="text-xl">✅</span>
+                                {actionLoading ? "Processing..." : "Approve Case & Assign File Number"}
+                            </button>
 
-                        <button
-                            onClick={() => setShowRejectModal(true)}
-                            disabled={actionLoading || caseData.status !== "DARKHAST_SUBMITTED"}
-                            className="flex-1 bg-rose-600 text-white py-4 px-6 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                            <span className="text-xl">❌</span>
-                            {actionLoading ? "Processing..." : "Reject / Return Case"}
-                        </button>
-                    </div>
+                            <button
+                                onClick={() => setShowRejectModal(true)}
+                                disabled={actionLoading}
+                                className="flex-1 bg-rose-600 text-white py-4 px-6 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                <span className="text-xl">❌</span>
+                                {actionLoading ? "Processing..." : "Reject / Return Case"}
+                            </button>
+                        </div>
+                    )}
 
-                    {caseData.status !== "DARKHAST_SUBMITTED" && (
+                    {/* Actions for FORM_COMPLETED or UNDER_REVIEW */}
+                    {(caseData.status === "FORM_COMPLETED" || caseData.status === "UNDER_REVIEW") && (
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <button
+                                onClick={handleApproveForContinue}
+                                disabled={actionLoading}
+                                className="flex-1 bg-emerald-600 text-white py-4 px-6 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                <span className="text-xl">✓</span>
+                                {actionLoading ? "Processing..." : "Approve for Continue"}
+                            </button>
+
+                            <button
+                                onClick={handleSendBackForCorrection}
+                                disabled={actionLoading}
+                                className="flex-1 bg-amber-600 text-white py-4 px-6 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-amber-200 hover:bg-amber-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                <span className="text-xl">⚠️</span>
+                                {actionLoading ? "Processing..." : "Send Back for Correction"}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Info message for other statuses */}
+                    {caseData.status !== "DARKHAST_SUBMITTED" && 
+                     caseData.status !== "FORM_COMPLETED" && 
+                     caseData.status !== "UNDER_REVIEW" && (
                         <p className="text-center text-xs text-gray-500 mt-3 italic">
-                            Actions are only available for cases with status "DARKHAST_SUBMITTED"
+                            Actions are available for cases with status "DARKHAST_SUBMITTED", "FORM_COMPLETED", or "UNDER_REVIEW"
                         </p>
                     )}
                 </div>

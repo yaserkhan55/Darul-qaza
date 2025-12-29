@@ -15,6 +15,16 @@ export const rejectDarkhast = async (caseId, payload) => {
   return res.data;
 };
 
+export const sendBackForCorrection = async (caseId, payload) => {
+  const res = await api.put(`/cases/${caseId}/send-back-correction`, payload);
+  return res.data;
+};
+
+export const approveForContinue = async (caseId, payload) => {
+  const res = await api.put(`/cases/${caseId}/approve-continue`, payload);
+  return res.data;
+};
+
 export const issueNotice = async (caseId, payload) => {
   const res = await api.put(`/cases/${caseId}/issue-notice`, payload);
   return res.data;
