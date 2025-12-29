@@ -53,20 +53,6 @@ export const submitDarkhast = async (req, res) => {
     const createdBy = getUserId(req);
     const { darkhast } = req.body;
 
-    // Single Active Case Rule
-    const existingCase = await Case.findOne({
-      createdBy,
-      status: { $ne: "CASE_CLOSED" }
-    });
-
-    if (existingCase) {
-      return res.status(400).json({
-        code: "ACTIVE_CASE_EXISTS",
-        message: "You already have an active case.",
-        caseId: existingCase._id
-      });
-    }
-
     // Annual Reset Logic for Case ID
     const currentYear = new Date().getFullYear();
     const lastCase = await Case.findOne({ year: currentYear }).sort({ sequentialId: -1 });

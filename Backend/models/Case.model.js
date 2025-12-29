@@ -165,6 +165,33 @@ const caseSchema = new mongoose.Schema(
       },
       evidenceUrl: String // Reference to uploaded evidence
     },
+    affidavits: {
+      applicantAffidavit: {
+        url: String,
+        name: String,
+        uploadedAt: Date
+      },
+      respondentAffidavit: {
+        url: String,
+        name: String,
+        uploadedAt: Date
+      },
+      witnessAffidavits: [{
+        url: String,
+        name: String,
+        uploadedAt: Date
+      }],
+      nikahnama: {
+        url: String,
+        name: String,
+        uploadedAt: Date
+      },
+      idProof: {
+        url: String,
+        name: String,
+        uploadedAt: Date
+      }
+    },
     history: {
       type: [historyEntrySchema],
       default: [],
