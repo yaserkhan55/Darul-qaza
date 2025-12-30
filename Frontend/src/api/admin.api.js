@@ -30,6 +30,11 @@ export const issueNotice = async (caseId, payload) => {
   return res.data;
 };
 
+export const scheduleHearing = async (caseId, payload) => {
+  const res = await api.put(`/cases/${caseId}/schedule-hearing`, payload);
+  return res.data;
+};
+
 export const startHearing = async (caseId) => {
   const res = await api.put(`/cases/${caseId}/start-hearing`);
   return res.data;

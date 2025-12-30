@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { saveAffidavits, transitionCase } from "@/api/case.api";
+import { saveAffidavits } from "../../api/case.api";
 
 const initialUploads = {
   applicant: { url: "", progress: 0, filename: "", uploadedAt: null },
@@ -24,7 +24,39 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
 
   const { t } = useTranslation();
 
+  // Load existing affidavits if available
+  useEffect(() => {
+    if (caseData?.affidavits) {
+      const affs = caseData.affidavits;
+      setUploads({
+        applicant: affs.applicantAffidavit || initialUploads.applicant,
+        respondent: affs.respondentAffidavit || initialUploads.respondent,
+        witnesses: affs.witnessAffidavits || [],
+        nikahnama: affs.nikahnama || initialUploads.nikahnama,
+        idProof: affs.idProof || initialUploads.idProof,
+      });
+    }
+  }, [caseData]);
+
+  // Validate required affidavits based on case type
   const allComplete = useMemo(() => {
+    const caseType = caseData?.type;
+    
+    if (caseType === "Talaq") {
+      // Talaq: Husband affidavit + at least 1 witness required
+      const hasApplicant = uploads.applicant?.url;
+      const hasWitnesses = uploads.witnesses && uploads.witnesses.length >= 1 &&
+        uploads.witnesses.every((w) => w.url);
+      return hasApplicant && hasWitnesses;
+    } else if (caseType === "Khula") {
+      // Khula: Wife affidavit + at least 1 witness required
+      const hasApplicant = uploads.applicant?.url;
+      const hasWitnesses = uploads.witnesses && uploads.witnesses.length >= 1 &&
+        uploads.witnesses.every((w) => w.url);
+      return hasApplicant && hasWitnesses;
+    }
+    
+    // Fallback: require all
     const required = [
       uploads.applicant?.url,
       uploads.respondent?.url,
@@ -34,7 +66,7 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
     const witnessesComplete = uploads.witnesses && uploads.witnesses.length >= 1 &&
       uploads.witnesses.every((w) => w.url);
     return required.every(Boolean) && witnessesComplete;
-  }, [uploads]);
+  }, [uploads, caseData?.type]);
 
   const handleFile = async (key, file, witnessIndex = null) => {
     if (!file) return;
@@ -115,10 +147,32 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!allComplete) {
+    const caseType = caseData?.type;
+    
+    // Validate based on case type
+    if (caseType === "Talaq") {
+      if (!uploads.applicant?.url) {
+        setError("Husband affidavit is required for Talaq cases.");
+        return;
+      }
+      if (!uploads.witnesses || uploads.witnesses.length < 1 || !uploads.witnesses[0]?.url) {
+        setError("At least one witness affidavit is required for Talaq cases.");
+        return;
+      }
+    } else if (caseType === "Khula") {
+      if (!uploads.applicant?.url) {
+        setError("Wife affidavit is required for Khula cases.");
+        return;
+      }
+      if (!uploads.witnesses || uploads.witnesses.length < 1 || !uploads.witnesses[0]?.url) {
+        setError("At least one witness affidavit is required for Khula cases.");
+        return;
+      }
+    } else if (!allComplete) {
       setError("Please upload all required documents.");
       return;
     }
+    
     setError("");
     setLoading(true);
     try {
@@ -130,8 +184,7 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
         nikahnama: uploads.nikahnama,
         idProof: uploads.idProof,
       });
-      // Transition to UNDER_REVIEW after affidavits are done
-      await transitionCase(effectiveCaseId, { nextStatus: "UNDER_REVIEW" });
+      // Backend will transition to UNDER_REVIEW automatically
       onUpdated?.();
     } catch (err) {
       setError(err?.response?.data?.message || "Unable to save affidavits. Please try again.");
@@ -140,23 +193,64 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
     }
   };
 
+  const caseType = caseData?.type;
+  const isReadOnly = caseData?.status === "UNDER_REVIEW" || caseData?.status === "APPROVED";
+
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-6">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">{t("home.steps.affidavits.title")}</h2>
-        <p className="text-sm text-gray-600 mb-3">{t("home.steps.affidavits.description")}</p>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Affidavits (Mandatory Before Qazi Review)</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          {isReadOnly 
+            ? "View your uploaded affidavits below."
+            : "You must upload the required affidavits before your case can proceed to Qazi review."}
+        </p>
+        <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 text-sm text-amber-900 mb-4">
+          <strong className="block mb-2">Required Documents:</strong>
+          {caseType === "Talaq" ? (
+            <ul className="list-disc list-inside space-y-1">
+              <li>Husband affidavit (required)</li>
+              <li>At least 1 witness affidavit (required)</li>
+              <li>Nikahnama (optional but recommended)</li>
+              <li>ID Proof (optional but recommended)</li>
+            </ul>
+          ) : caseType === "Khula" ? (
+            <ul className="list-disc list-inside space-y-1">
+              <li>Wife affidavit (required)</li>
+              <li>At least 1 witness affidavit (required)</li>
+              <li>Nikahnama (optional but recommended)</li>
+              <li>ID Proof (optional but recommended)</li>
+            </ul>
+          ) : (
+            <p>Please upload all required documents.</p>
+          )}
+        </div>
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
           <strong>{t("documents.title")}:</strong> {t("documents.secureNote")}
         </div>
       </div>
+
+      {caseData?.decisionComment?.comment && (
+        <div className="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+          <h3 className="font-semibold text-blue-900 mb-2">Message from Qazi</h3>
+          <p className="text-sm text-blue-800 leading-relaxed">{caseData.decisionComment.comment}</p>
+          <p className="text-xs text-blue-600 mt-2 italic">
+            Final decisions are issued by qualified Islamic authorities.
+          </p>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
-              { key: "applicant", label: t("documents.labels.applicant"), required: true },
-              { key: "respondent", label: t("documents.labels.respondent"), required: true },
-              { key: "nikahnama", label: t("documents.labels.nikahnama"), required: true },
-              { key: "idProof", label: t("documents.labels.idProof"), required: true },
+              { 
+                key: "applicant", 
+                label: caseType === "Talaq" ? "Husband Affidavit" : caseType === "Khula" ? "Wife Affidavit" : t("documents.labels.applicant"), 
+                required: true 
+              },
+              { key: "respondent", label: t("documents.labels.respondent"), required: false },
+              { key: "nikahnama", label: t("documents.labels.nikahnama"), required: false },
+              { key: "idProof", label: t("documents.labels.idProof"), required: false },
             ].map((item) => (
               <div key={item.key} className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-gray-700">
@@ -166,7 +260,8 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
                   type="file"
                   accept=".pdf,image/*"
                   onChange={(e) => handleFile(item.key, e.target.files?.[0])}
-                  className="block w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-islamicGreen file:text-white hover:file:bg-teal-700"
+                  disabled={isReadOnly}
+                  className={`block w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-islamicGreen file:text-white hover:file:bg-teal-700 ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                 />
                 <Progress status={uploads[item.key]} />
               </div>
@@ -195,7 +290,8 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
                       type="file"
                       accept=".pdf,image/*"
                       onChange={(e) => handleFile("witnesses", e.target.files?.[0], index)}
-                      className="block w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-islamicGreen file:text-white hover:file:bg-teal-700"
+                      disabled={isReadOnly}
+                      className={`block w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-islamicGreen file:text-white hover:file:bg-teal-700 ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
                     />
                     <Progress status={witness} />
                   </div>
@@ -229,15 +325,17 @@ export default function AffidavitStep({ caseData, caseId, onUpdated }) {
           </div>
         )}
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-islamicGreen text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-60 transition"
-          >
-            {loading ? t("common.loading") : t("documents.buttons.submit")}
-          </button>
-        </div>
+        {!isReadOnly && (
+          <div className="flex justify-end pt-4 border-t">
+            <button
+              type="submit"
+              disabled={loading || !allComplete}
+              className="bg-islamicGreen text-white px-8 py-3 rounded-lg text-sm font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? t("common.loading") : "Submit Affidavits"}
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );

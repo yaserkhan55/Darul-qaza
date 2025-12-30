@@ -20,6 +20,16 @@ export const saveFormData = async (caseId, formData) => {
   return res.data;
 };
 
+export const saveResolution = async (caseId, resolutionData) => {
+  const res = await api.put(`/cases/${caseId}/save-resolution`, resolutionData);
+  return res.data;
+};
+
+export const saveAffidavits = async (caseId, affidavitsData) => {
+  const res = await api.put(`/cases/${caseId}/save-affidavits`, affidavitsData);
+  return res.data;
+};
+
 // Admin/Qazi Actions
 export const approveDarkhast = async (caseId) => {
   const res = await api.put(`/cases/${caseId}/approve-darkhast`);

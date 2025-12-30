@@ -4,6 +4,8 @@ import DarkhastView from "./case-steps/DarkhastView";
 import CaseTypeSelection from "./case-steps/CaseTypeSelection";
 import TalaqForm from "./case-steps/TalaqForm";
 import KhulaForm from "./case-steps/KhulaForm";
+import ResolutionStep from "./case-steps/ResolutionStep";
+import AffidavitStep from "./case-steps/AffidavitStep";
 import NoticeView from "./case-steps/NoticeView";
 import HearingStep from "./case-steps/HearingStep";
 import ArbitrationStep from "./case-steps/ArbitrationStep";
@@ -28,6 +30,9 @@ export default function CaseSteps({ caseData, onUpdated }) {
     FORM_COMPLETED: "FORM_COMPLETED",
     NEEDS_CORRECTION: "NEEDS_CORRECTION",
     APPROVED_FOR_CONTINUE: "APPROVED_FOR_CONTINUE",
+    RESOLUTION_PENDING: "RESOLUTION_PENDING",
+    RESOLUTION_SUCCESS: "RESOLUTION_SUCCESS",
+    RESOLUTION_FAILED: "RESOLUTION_FAILED",
     UNDER_REVIEW: "UNDER_REVIEW",
     APPROVED: "APPROVED",
     NOTICE_ISSUED: "NOTICE_ISSUED",
@@ -100,6 +105,15 @@ export default function CaseSteps({ caseData, onUpdated }) {
 
       case "FORM_COMPLETED":
         return <FormCompletedView caseData={caseData} />;
+
+      case "RESOLUTION_PENDING":
+      case "RESOLUTION_SUCCESS":
+      case "RESOLUTION_FAILED":
+        // Show Resolution step, or Affidavit step if resolution failed
+        if (caseData.status === "RESOLUTION_FAILED") {
+          return <AffidavitStep caseData={caseData} onUpdated={onUpdated} />;
+        }
+        return <ResolutionStep caseData={caseData} onUpdated={onUpdated} />;
 
       case "NOTICE_ISSUED":
       case "NOTICE_SENT":

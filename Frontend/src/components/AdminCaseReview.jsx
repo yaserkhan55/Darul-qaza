@@ -7,6 +7,15 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
     const [rejectReason, setRejectReason] = useState("");
     const [messageToApplicant, setMessageToApplicant] = useState("");
     const [showRejectModal, setShowRejectModal] = useState(false);
+    const [decisionComment, setDecisionComment] = useState("");
+    const [showHearingScheduler, setShowHearingScheduler] = useState(false);
+    const [hearingData, setHearingData] = useState({
+        hearingDate: "",
+        hearingTime: "",
+        hearingMode: "IN_PERSON",
+        locationOrLink: "",
+        hearingNotes: ""
+    });
 
     // Generate file number in Serial/Year format
     const generateFileNumber = () => {
@@ -16,6 +25,11 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
     };
 
     const handleApprove = async () => {
+        if (!decisionComment.trim()) {
+            alert("Please provide a decision comment. This is required for all admin actions.");
+            return;
+        }
+
         if (!window.confirm("Are you sure you want to APPROVE this case? A file number will be assigned.")) {
             return;
         }
@@ -26,7 +40,8 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
             const fileNumber = generateFileNumber();
             const payload = {
                 fileNumber,
-                adminMessage: messageToApplicant || `Your case has been approved. File Number: ${fileNumber}`
+                adminMessage: messageToApplicant || `Your case has been approved. File Number: ${fileNumber}`,
+                decisionComment: decisionComment.trim()
             };
 
             await adminApi.approveDarkhast(caseData._id, payload);
@@ -46,11 +61,17 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
             return;
         }
 
+        if (!decisionComment.trim()) {
+            alert("Please provide a decision comment. This is required for all admin actions.");
+            return;
+        }
+
         setActionLoading(true);
         setError("");
         try {
             const payload = {
-                adminMessage: `Case Rejected: ${rejectReason}`
+                adminMessage: `Case Rejected: ${rejectReason}`,
+                decisionComment: decisionComment.trim()
             };
 
             await adminApi.rejectDarkhast(caseData._id, payload);
@@ -96,6 +117,11 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
     };
 
     const handleApproveForContinue = async () => {
+        if (!decisionComment.trim()) {
+            alert("Please provide a decision comment. This is required for all admin actions.");
+            return;
+        }
+
         if (!window.confirm("Approve this case for the user to continue with the next step?")) {
             return;
         }
@@ -105,7 +131,8 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
         try {
             const payload = {
                 adminMessage: messageToApplicant || "Your case has been reviewed. You may now continue with the next step.",
-                guidanceForNextStep: guidanceForNextStep || messageToApplicant
+                guidanceForNextStep: guidanceForNextStep || messageToApplicant,
+                decisionComment: decisionComment.trim()
             };
 
             await adminApi.approveForContinue(caseData._id, payload);
@@ -114,6 +141,26 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
             onClose && onClose();
         } catch (err) {
             setError(err?.response?.data?.message || "Failed to approve for continue.");
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleScheduleHearing = async () => {
+        if (!hearingData.hearingDate || !hearingData.hearingTime || !hearingData.hearingMode) {
+            alert("Please provide hearing date, time, and mode.");
+            return;
+        }
+
+        setActionLoading(true);
+        setError("");
+        try {
+            await adminApi.scheduleHearing(caseData._id, hearingData);
+            alert("Hearing scheduled successfully.");
+            setShowHearingScheduler(false);
+            onUpdate && onUpdate();
+        } catch (err) {
+            setError(err?.response?.data?.message || "Failed to schedule hearing.");
         } finally {
             setActionLoading(false);
         }
@@ -498,6 +545,24 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                         </div>
                     </Section>
 
+                    {/* DECISION COMMENT (REQUIRED) */}
+                    <div className="bg-red-50/50 border-2 border-red-200 rounded-2xl p-6 space-y-3">
+                        <label className="text-[10px] font-black text-red-700 uppercase tracking-widest">
+                            ⚖️ Decision Comment (REQUIRED) <span className="text-red-600">*</span>
+                        </label>
+                        <textarea
+                            placeholder="Enter your decision comment. This will be visible to the user and recorded in case history..."
+                            value={decisionComment}
+                            onChange={e => setDecisionComment(e.target.value)}
+                            className="w-full bg-white border-2 border-red-200 rounded-xl p-4 text-sm focus:border-red-500 outline-none transition-all placeholder:text-gray-300"
+                            rows="4"
+                            required
+                        />
+                        <p className="text-[9px] text-red-700 font-semibold">
+                            This comment is mandatory for all admin actions and will be shown to the user.
+                        </p>
+                    </div>
+
                     {/* MESSAGE TO APPLICANT */}
                     <div className="bg-emerald-50/50 border-2 border-emerald-100 rounded-2xl p-6 space-y-3">
                         <label className="text-[10px] font-black text-islamicGreen uppercase tracking-widest">
@@ -588,6 +653,110 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                                 <span className="text-xl">⚠️</span>
                                 {actionLoading ? "Processing..." : "Send Back for Correction"}
                             </button>
+                        </div>
+                    )}
+
+                    {/* HEARING SCHEDULER BUTTON */}
+                    {(caseData.status === "FORM_COMPLETED" || 
+                      caseData.status === "RESOLUTION_FAILED" || 
+                      caseData.status === "UNDER_REVIEW" || 
+                      caseData.status === "APPROVED" ||
+                      caseData.status === "NOTICE_ISSUED" ||
+                      caseData.status === "HEARING_SCHEDULED") && (
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                            <button
+                                onClick={() => setShowHearingScheduler(!showHearingScheduler)}
+                                className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                            >
+                                <span className="text-xl">📅</span>
+                                {showHearingScheduler ? "Hide Hearing Scheduler" : "Schedule / Update Hearing"}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* HEARING SCHEDULER FORM */}
+                    {showHearingScheduler && (
+                        <div className="mt-4 bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-6 space-y-4">
+                            <h3 className="text-lg font-bold text-indigo-900">Schedule Hearing / Majlis</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Hearing Date <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={hearingData.hearingDate}
+                                        onChange={e => setHearingData({...hearingData, hearingDate: e.target.value})}
+                                        className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Hearing Time <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="time"
+                                        value={hearingData.hearingTime}
+                                        onChange={e => setHearingData({...hearingData, hearingTime: e.target.value})}
+                                        className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Mode <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        value={hearingData.hearingMode}
+                                        onChange={e => setHearingData({...hearingData, hearingMode: e.target.value})}
+                                        className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                                        required
+                                    >
+                                        <option value="IN_PERSON">In-Person</option>
+                                        <option value="ONLINE">Online</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Location / Link
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={hearingData.locationOrLink}
+                                        onChange={e => setHearingData({...hearingData, locationOrLink: e.target.value})}
+                                        placeholder={hearingData.hearingMode === "ONLINE" ? "Meeting link (Zoom/Google Meet)" : "Physical address"}
+                                        className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Admin Notes / Instructions
+                                </label>
+                                <textarea
+                                    value={hearingData.hearingNotes}
+                                    onChange={e => setHearingData({...hearingData, hearingNotes: e.target.value})}
+                                    placeholder="Add any instructions or notes for the parties (e.g., bring witnesses, documents)..."
+                                    className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                                    rows="3"
+                                />
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handleScheduleHearing}
+                                    disabled={actionLoading}
+                                    className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {actionLoading ? "Saving..." : "Save Hearing Details"}
+                                </button>
+                                <button
+                                    onClick={() => setShowHearingScheduler(false)}
+                                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     )}
 
