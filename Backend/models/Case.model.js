@@ -17,6 +17,9 @@ export const CASE_STATUSES = [
   "FORM_COMPLETED",
   "NEEDS_CORRECTION",
   "APPROVED_FOR_CONTINUE",
+  "RESOLUTION_PENDING",
+  "RESOLUTION_SUCCESS",
+  "RESOLUTION_FAILED",
   "UNDER_REVIEW",
   "APPROVED",
   "NOTICE_ISSUED",
@@ -217,6 +220,21 @@ const caseSchema = new mongoose.Schema(
       guidanceForNextStep: String,
       lastUpdatedBy: String,
       lastUpdatedAt: Date
+    },
+    // Resolution / Sulh attempt (mandatory after form submission)
+    resolution: {
+      resolutionNotes: String,
+      resolutionOutcome: {
+        type: String,
+        enum: ["RESOLUTION_SUCCESS", "RESOLUTION_FAILED"]
+      },
+      resolutionCompletedAt: Date
+    },
+    // Admin decision comments (required for all admin actions)
+    decisionComment: {
+      comment: String,
+      decisionBy: String,
+      decisionAt: Date
     },
     history: {
       type: [historyEntrySchema],

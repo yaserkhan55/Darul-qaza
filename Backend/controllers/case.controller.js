@@ -23,9 +23,12 @@ const transitions = {
   DARKHAST_SUBMITTED: ["DARKHAST_APPROVED", "DARKHAST_REJECTED", "CASE_CLOSED"],
   DARKHAST_REJECTED: ["DARKHAST_APPROVED", "CASE_CLOSED"],
   DARKHAST_APPROVED: ["FORM_COMPLETED", "NEEDS_CORRECTION"],
-  FORM_COMPLETED: ["NOTICE_ISSUED", "NEEDS_CORRECTION", "UNDER_REVIEW", "APPROVED_FOR_CONTINUE"],
+  FORM_COMPLETED: ["RESOLUTION_PENDING", "NEEDS_CORRECTION", "UNDER_REVIEW", "APPROVED_FOR_CONTINUE"],
   NEEDS_CORRECTION: ["DARKHAST_APPROVED", "FORM_COMPLETED", "APPROVED_FOR_CONTINUE"],
-  APPROVED_FOR_CONTINUE: ["FORM_COMPLETED", "NOTICE_ISSUED"],
+  APPROVED_FOR_CONTINUE: ["FORM_COMPLETED", "RESOLUTION_PENDING"],
+  RESOLUTION_PENDING: ["RESOLUTION_SUCCESS", "RESOLUTION_FAILED"],
+  RESOLUTION_SUCCESS: ["CASE_CLOSED"], // Admin must explicitly allow continuation
+  RESOLUTION_FAILED: ["UNDER_REVIEW"], // Proceed to Agreement/Affidavits
   UNDER_REVIEW: ["APPROVED", "NEEDS_CORRECTION", "APPROVED_FOR_CONTINUE"],
   APPROVED: ["NOTICE_ISSUED", "CASE_CLOSED"],
   NOTICE_ISSUED: ["HEARING_SCHEDULED", "NOTICE_SENT"],
@@ -92,9 +95,14 @@ export const submitDarkhast = async (req, res) => {
 export const approveDarkhast = async (req, res) => {
   try {
     const { id } = req.params;
-    const { adminMessage } = req.body;
+    const { adminMessage, decisionComment } = req.body;
     const caseData = await Case.findById(id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
+
+    // Require decision comment
+    if (!decisionComment || !decisionComment.trim()) {
+      return res.status(400).json({ message: "decisionComment is required for this action" });
+    }
 
     if (!canTransition(caseData.status, "DARKHAST_APPROVED")) {
       return res.status(400).json({ message: "Invalid transition" });
@@ -108,7 +116,14 @@ export const approveDarkhast = async (req, res) => {
       caseData.fileNumber = `${caseData.sequentialId}/${caseData.year}`;
     }
 
-    addHistory(caseData, "DARKHAST_APPROVED", getUserId(req), adminMessage || "Darkhast approved by Qazi");
+    // Store decision comment
+    caseData.decisionComment = {
+      comment: decisionComment,
+      decisionBy: getUserId(req),
+      decisionAt: new Date(),
+    };
+
+    addHistory(caseData, "DARKHAST_APPROVED", getUserId(req), decisionComment || adminMessage || "Darkhast approved by Qazi");
     await caseData.save();
 
     await createNotification(caseData.createdBy, `Your Darkhast has been approved. File Number: ${caseData.fileNumber}`, "SUCCESS", caseData._id);
@@ -137,16 +152,29 @@ export const approveDarkhast = async (req, res) => {
 export const rejectDarkhast = async (req, res) => {
   try {
     const { id } = req.params;
-    const { adminMessage } = req.body;
+    const { adminMessage, decisionComment } = req.body;
     const caseData = await Case.findById(id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
+
+    // Require decision comment
+    if (!decisionComment || !decisionComment.trim()) {
+      return res.status(400).json({ message: "decisionComment is required for this action" });
+    }
 
     if (!canTransition(caseData.status, "DARKHAST_REJECTED")) {
       return res.status(400).json({ message: "Invalid transition" });
     }
 
     caseData.status = "DARKHAST_REJECTED";
-    addHistory(caseData, "DARKHAST_REJECTED", getUserId(req), adminMessage || "Darkhast rejected for correction");
+
+    // Store decision comment
+    caseData.decisionComment = {
+      comment: decisionComment,
+      decisionBy: getUserId(req),
+      decisionAt: new Date(),
+    };
+
+    addHistory(caseData, "DARKHAST_REJECTED", getUserId(req), decisionComment || adminMessage || "Darkhast rejected for correction");
     await caseData.save();
 
     await createNotification(caseData.createdBy, "Your Darkhast needs correction. Please check messages.", "WARNING", caseData._id);
@@ -239,15 +267,22 @@ export const saveFormData = async (req, res) => {
 
     // Transition to FORM_COMPLETED when form is submitted/resubmitted
     // Both NEEDS_CORRECTION and APPROVED_FOR_CONTINUE should transition to FORM_COMPLETED on resubmission
+    const previousStatus = caseData.status;
     if (caseData.status === "APPROVED_FOR_CONTINUE" || caseData.status === "NEEDS_CORRECTION") {
       // User is resubmitting after correction or approval - move back to FORM_COMPLETED for admin review
       caseData.status = "FORM_COMPLETED";
-      addHistory(caseData, "FORM_COMPLETED", getUserId(req), `${caseData.type} form resubmitted after ${caseData.status === "NEEDS_CORRECTION" ? "correction" : "approval"}`);
+      addHistory(caseData, "FORM_COMPLETED", getUserId(req), `${caseData.type} form resubmitted after ${previousStatus === "NEEDS_CORRECTION" ? "correction" : "approval"}`);
     } else if (canTransition(caseData.status, "FORM_COMPLETED")) {
       caseData.status = "FORM_COMPLETED";
       addHistory(caseData, "FORM_COMPLETED", getUserId(req), `${caseData.type} form completed`);
     } else {
       return res.status(400).json({ message: "Invalid transition from current status" });
+    }
+
+    // After form completion, transition to RESOLUTION_PENDING (mandatory Resolution/Sulh step)
+    if (caseData.status === "FORM_COMPLETED" && canTransition("FORM_COMPLETED", "RESOLUTION_PENDING")) {
+      caseData.status = "RESOLUTION_PENDING";
+      addHistory(caseData, "RESOLUTION_PENDING", getUserId(req), "Resolution (Sulh) step required");
     }
 
     await caseData.save();
@@ -329,16 +364,45 @@ export const issueNotice = async (req, res) => {
  */
 export const scheduleHearing = async (req, res) => {
   try {
-    const caseData = await Case.findById(req.params.id);
+    const { id } = req.params;
+    const { hearingDate, hearingTime, hearingMode, hearingNotes } = req.body;
+    const caseData = await Case.findById(id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
-    if (!canTransition(caseData.status, "HEARING_SCHEDULED")) {
-      return res.status(400).json({ message: "Invalid transition" });
+    if (!hearingDate || !hearingTime || !hearingMode) {
+      return res.status(400).json({ message: "hearingDate, hearingTime, and hearingMode are required" });
     }
 
-    caseData.status = "HEARING_SCHEDULED";
-    addHistory(caseData, "HEARING_SCHEDULED", getUserId(req), "Hearing scheduled");
+    if (!["ONLINE", "IN_PERSON"].includes(hearingMode)) {
+      return res.status(400).json({ message: "hearingMode must be ONLINE or IN_PERSON" });
+    }
+
+    // Update hearing object
+    caseData.hearing = {
+      hearingDate: new Date(hearingDate),
+      hearingTime,
+      mode: hearingMode,
+      locationOrLink: req.body.locationOrLink || "",
+      notesByQazi: hearingNotes || "",
+    };
+
+    // Update status if not already scheduled
+    if (caseData.status !== "HEARING_SCHEDULED" && canTransition(caseData.status, "HEARING_SCHEDULED")) {
+      caseData.status = "HEARING_SCHEDULED";
+      addHistory(caseData, "HEARING_SCHEDULED", getUserId(req), `Hearing scheduled: ${hearingDate} at ${hearingTime} (${hearingMode})`);
+    } else {
+      addHistory(caseData, "HEARING_SCHEDULED", getUserId(req), `Hearing details updated: ${hearingDate} at ${hearingTime} (${hearingMode})`);
+    }
+
     await caseData.save();
+
+    await createNotification(
+      caseData.createdBy,
+      `Hearing scheduled: ${new Date(hearingDate).toLocaleDateString()} at ${hearingTime} (${hearingMode})`,
+      "INFO",
+      caseData._id
+    );
+
     res.json(caseData);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -508,6 +572,53 @@ export const getAllCases = async (req, res) => {
 };
 
 /**
+ * SAVE RESOLUTION / SULH (Mandatory step after form submission)
+ */
+export const saveResolution = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { resolutionNotes, resolutionOutcome } = req.body;
+    const caseData = await Case.findById(id);
+    if (!caseData) return res.status(404).json({ message: "Case not found" });
+
+    if (caseData.status !== "RESOLUTION_PENDING") {
+      return res.status(400).json({ message: "Case must be in RESOLUTION_PENDING status" });
+    }
+
+    if (!resolutionNotes || !resolutionOutcome) {
+      return res.status(400).json({ message: "resolutionNotes and resolutionOutcome are required" });
+    }
+
+    if (!["RESOLUTION_SUCCESS", "RESOLUTION_FAILED"].includes(resolutionOutcome)) {
+      return res.status(400).json({ message: "resolutionOutcome must be RESOLUTION_SUCCESS or RESOLUTION_FAILED" });
+    }
+
+    // Save resolution data
+    caseData.resolution = {
+      resolutionNotes,
+      resolutionOutcome,
+      resolutionCompletedAt: new Date(),
+    };
+
+    // Transition based on outcome
+    if (resolutionOutcome === "RESOLUTION_SUCCESS") {
+      caseData.status = "RESOLUTION_SUCCESS";
+      addHistory(caseData, "RESOLUTION_SUCCESS", getUserId(req), "Reconciliation (Sulh) achieved. Case resolved.");
+      await createNotification(caseData.createdBy, "Reconciliation (Sulh) achieved. Your case has been resolved.", "SUCCESS", caseData._id);
+    } else {
+      caseData.status = "RESOLUTION_FAILED";
+      addHistory(caseData, "RESOLUTION_FAILED", getUserId(req), "Reconciliation (Sulh) failed. Proceeding with case.");
+      await createNotification(caseData.createdBy, "Reconciliation attempt completed. You may proceed with the next step.", "INFO", caseData._id);
+    }
+
+    await caseData.save();
+    res.json(caseData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
  * ADMIN: SEND BACK FOR CORRECTION (After form submission)
  */
 export const sendBackForCorrection = async (req, res) => {
@@ -517,9 +628,15 @@ export const sendBackForCorrection = async (req, res) => {
       adminMessage,
       reasonForCorrection,
       guidanceForNextStep,
+      decisionComment, // Required decision comment
     } = req.body;
     const caseData = await Case.findById(id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
+
+    // Require decision comment
+    if (!decisionComment || !decisionComment.trim()) {
+      return res.status(400).json({ message: "decisionComment is required for this action" });
+    }
 
     // Allow transition from FORM_COMPLETED, UNDER_REVIEW, or DARKHAST_APPROVED
     if (!canTransition(caseData.status, "NEEDS_CORRECTION")) {
@@ -530,7 +647,7 @@ export const sendBackForCorrection = async (req, res) => {
 
     // Store structured admin notes on the case for user-facing guidance
     caseData.adminNotes = {
-      reasonForCorrection: reasonForCorrection || adminMessage || "",
+      reasonForCorrection: reasonForCorrection || adminMessage || decisionComment,
       guidanceForNextStep:
         guidanceForNextStep ||
         "Please review the Qazi's guidance and update the form below, then resubmit.",
@@ -538,11 +655,18 @@ export const sendBackForCorrection = async (req, res) => {
       lastUpdatedAt: new Date(),
     };
 
+    // Store decision comment
+    caseData.decisionComment = {
+      comment: decisionComment,
+      decisionBy: getUserId(req),
+      decisionAt: new Date(),
+    };
+
     addHistory(
       caseData,
       "NEEDS_CORRECTION",
       getUserId(req),
-      adminMessage || "Case sent back for correction"
+      decisionComment || adminMessage || "Case sent back for correction"
     );
     await caseData.save();
 
@@ -617,6 +741,67 @@ export const approveForContinue = async (req, res) => {
       });
     }
 
+    res.json(caseData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * SAVE AFFIDAVITS (Mandatory before UNDER_REVIEW)
+ */
+export const saveAffidavits = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { applicantAffidavit, respondentAffidavit, witnessAffidavits, nikahnama, idProof } = req.body;
+    const caseData = await Case.findById(id);
+    if (!caseData) return res.status(404).json({ message: "Case not found" });
+
+    // Must be in RESOLUTION_FAILED status to upload affidavits
+    if (caseData.status !== "RESOLUTION_FAILED") {
+      return res.status(400).json({ message: "Affidavits can only be uploaded after Resolution (Sulh) step is completed with FAILED outcome" });
+    }
+
+    if (!caseData.type) {
+      return res.status(400).json({ message: "Case type must be selected" });
+    }
+
+    // Validate required affidavits based on case type
+    if (caseData.type === "Talaq") {
+      // Talaq: Husband affidavit + at least 1 witness required
+      if (!applicantAffidavit?.url) {
+        return res.status(400).json({ message: "Husband affidavit is required for Talaq cases" });
+      }
+      if (!witnessAffidavits || witnessAffidavits.length < 1 || !witnessAffidavits[0]?.url) {
+        return res.status(400).json({ message: "At least one witness affidavit is required for Talaq cases" });
+      }
+    } else if (caseData.type === "Khula") {
+      // Khula: Wife affidavit + at least 1 witness required
+      if (!applicantAffidavit?.url) {
+        return res.status(400).json({ message: "Wife affidavit is required for Khula cases" });
+      }
+      if (!witnessAffidavits || witnessAffidavits.length < 1 || !witnessAffidavits[0]?.url) {
+        return res.status(400).json({ message: "At least one witness affidavit is required for Khula cases" });
+      }
+    }
+
+    // Save affidavits
+    caseData.affidavits = {
+      applicantAffidavit: applicantAffidavit || caseData.affidavits?.applicantAffidavit,
+      respondentAffidavit: respondentAffidavit || caseData.affidavits?.respondentAffidavit,
+      witnessAffidavits: witnessAffidavits || caseData.affidavits?.witnessAffidavits || [],
+      nikahnama: nikahnama || caseData.affidavits?.nikahnama,
+      idProof: idProof || caseData.affidavits?.idProof,
+    };
+
+    // Transition to UNDER_REVIEW after required affidavits are uploaded
+    if (canTransition(caseData.status, "UNDER_REVIEW")) {
+      caseData.status = "UNDER_REVIEW";
+      addHistory(caseData, "UNDER_REVIEW", getUserId(req), "Required affidavits uploaded. Case submitted for Qazi review.");
+      await createNotification(caseData.createdBy, "Your affidavits have been uploaded. Case is now under Qazi review.", "INFO", caseData._id);
+    }
+
+    await caseData.save();
     res.json(caseData);
   } catch (err) {
     res.status(500).json({ error: err.message });

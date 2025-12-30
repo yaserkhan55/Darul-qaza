@@ -6,7 +6,10 @@ import {
   rejectDarkhast,
   selectCaseType,
   saveFormData,
+  saveResolution,
+  saveAffidavits,
   issueNotice,
+  scheduleHearing,
   startHearing,
   recordAttendance,
   recordStatement,
@@ -37,6 +40,8 @@ router.use(protect);
 router.post("/darkhast", createCaseLimiter, submitDarkhast);
 router.put("/:id/select-type", selectCaseType);
 router.put("/:id/save-form", saveFormData);
+router.put("/:id/save-resolution", saveResolution);
+router.put("/:id/save-affidavits", saveAffidavits);
 router.get("/my", getMyCases);
 router.get("/:id/certificate/pdf", generateCertificatePDF);
 
@@ -47,6 +52,7 @@ router.put("/:id/reject-darkhast", rejectDarkhast);
 router.put("/:id/send-back-correction", sendBackForCorrection);
 router.put("/:id/approve-continue", approveForContinue);
 router.put("/:id/issue-notice", issueNotice);
+router.put("/:id/schedule-hearing", scheduleHearing);
 router.put("/:id/start-hearing", startHearing);
 router.put("/:id/record-attendance", recordAttendance);
 router.put("/:id/record-statement", recordStatement);
