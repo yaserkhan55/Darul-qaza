@@ -264,21 +264,57 @@ export const saveFormData = async (req, res) => {
  */
 export const issueNotice = async (req, res) => {
   try {
-    const { hearingDate, notes } = req.body;
+    const {
+      hearingDate,
+      hearingTime,
+      mode,
+      locationOrLink,
+      notes, // legacy field kept for backward compatibility
+      notesByQazi, // preferred new field name
+    } = req.body;
     const caseData = await Case.findById(req.params.id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
-    if (caseData.status !== "FORM_COMPLETED") {
-      return res.status(400).json({ message: "Form must be completed before issuing notice" });
-    }
-
-    if (!canTransition(caseData.status, "NOTICE_ISSUED")) {
+    // Allow initial notice from FORM_COMPLETED and controlled updates while in notice/hearing phase
+    if (
+      caseData.status === "FORM_COMPLETED" &&
+      !canTransition(caseData.status, "NOTICE_ISSUED")
+    ) {
       return res.status(400).json({ message: "Invalid transition" });
     }
 
-    caseData.status = "NOTICE_ISSUED";
-    caseData.notice = { issuedAt: new Date(), hearingDate, notes };
-    addHistory(caseData, "NOTICE_ISSUED", getUserId(req), "Notice issued, hearing date fixed");
+    if (caseData.status === "FORM_COMPLETED") {
+      caseData.status = "NOTICE_ISSUED";
+      addHistory(
+        caseData,
+        "NOTICE_ISSUED",
+        getUserId(req),
+        "Notice issued, hearing date fixed"
+      );
+    } else if (
+      !["NOTICE_ISSUED", "HEARING_SCHEDULED", "HEARING_IN_PROGRESS"].includes(
+        caseData.status
+      )
+    ) {
+      return res.status(400).json({
+        message:
+          "Notice/hearing details can only be managed after the form is completed and before the case moves to arbitration/decision",
+      });
+    }
+
+    // Keep legacy notice object for backwards compatibility
+    caseData.notice = { issuedAt: new Date(), hearingDate, notes: notes || notesByQazi };
+
+    // Populate structured hearing object for user dashboards
+    caseData.hearing = {
+      hearingDate,
+      hearingTime: hearingTime || caseData.hearing?.hearingTime || "",
+      mode: mode || caseData.hearing?.mode || "IN_PERSON",
+      locationOrLink:
+        locationOrLink || caseData.hearing?.locationOrLink || "",
+      notesByQazi: notesByQazi || notes || caseData.hearing?.notesByQazi || "",
+    };
+
     await caseData.save();
 
     createNotification(caseData.createdBy, `Notice issued. Hearing scheduled for ${new Date(hearingDate).toLocaleDateString()}`, "INFO", caseData._id);
@@ -477,7 +513,11 @@ export const getAllCases = async (req, res) => {
 export const sendBackForCorrection = async (req, res) => {
   try {
     const { id } = req.params;
-    const { adminMessage } = req.body;
+    const {
+      adminMessage,
+      reasonForCorrection,
+      guidanceForNextStep,
+    } = req.body;
     const caseData = await Case.findById(id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
@@ -487,7 +527,23 @@ export const sendBackForCorrection = async (req, res) => {
     }
 
     caseData.status = "NEEDS_CORRECTION";
-    addHistory(caseData, "NEEDS_CORRECTION", getUserId(req), adminMessage || "Case sent back for correction");
+
+    // Store structured admin notes on the case for user-facing guidance
+    caseData.adminNotes = {
+      reasonForCorrection: reasonForCorrection || adminMessage || "",
+      guidanceForNextStep:
+        guidanceForNextStep ||
+        "Please review the Qazi's guidance and update the form below, then resubmit.",
+      lastUpdatedBy: getUserId(req),
+      lastUpdatedAt: new Date(),
+    };
+
+    addHistory(
+      caseData,
+      "NEEDS_CORRECTION",
+      getUserId(req),
+      adminMessage || "Case sent back for correction"
+    );
     await caseData.save();
 
     await createNotification(caseData.createdBy, "Your case has been returned for correction. Please review and update your form.", "WARNING", caseData._id);
@@ -515,7 +571,10 @@ export const sendBackForCorrection = async (req, res) => {
 export const approveForContinue = async (req, res) => {
   try {
     const { id } = req.params;
-    const { adminMessage } = req.body;
+    const {
+      adminMessage,
+      guidanceForNextStep,
+    } = req.body;
     const caseData = await Case.findById(id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
@@ -525,7 +584,24 @@ export const approveForContinue = async (req, res) => {
     }
 
     caseData.status = "APPROVED_FOR_CONTINUE";
-    addHistory(caseData, "APPROVED_FOR_CONTINUE", getUserId(req), adminMessage || "Case approved for continuation");
+
+    // Update admin guidance for the next step, visible to the user above forms
+    caseData.adminNotes = {
+      reasonForCorrection: "",
+      guidanceForNextStep:
+        guidanceForNextStep ||
+        adminMessage ||
+        "Your case has been reviewed. Please proceed with the next step as indicated on this page.",
+      lastUpdatedBy: getUserId(req),
+      lastUpdatedAt: new Date(),
+    };
+
+    addHistory(
+      caseData,
+      "APPROVED_FOR_CONTINUE",
+      getUserId(req),
+      adminMessage || "Case approved for continuation"
+    );
     await caseData.save();
 
     await createNotification(caseData.createdBy, "Your case has been reviewed. You may now continue with the next step.", "SUCCESS", caseData._id);

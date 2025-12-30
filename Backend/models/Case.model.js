@@ -139,6 +139,18 @@ const caseSchema = new mongoose.Schema(
       husbandName: String,
       wifeName: String
     },
+    // Structured hearing / majlis information (user-facing)
+    hearing: {
+      hearingDate: Date,
+      hearingTime: String, // e.g. "10:30 AM"
+      mode: {
+        type: String,
+        enum: ["ONLINE", "IN_PERSON"],
+        default: "IN_PERSON"
+      },
+      locationOrLink: String,
+      notesByQazi: String
+    },
     fileNumber: {
       type: String,
       default: null // Assigned after Qazi approval
@@ -198,6 +210,13 @@ const caseSchema = new mongoose.Schema(
         name: String,
         uploadedAt: Date
       }
+    },
+    // Latest structured guidance from Qazi for the parties
+    adminNotes: {
+      reasonForCorrection: String,
+      guidanceForNextStep: String,
+      lastUpdatedBy: String,
+      lastUpdatedAt: Date
     },
     history: {
       type: [historyEntrySchema],
