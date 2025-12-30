@@ -2,6 +2,41 @@ import { useState, useEffect } from "react";
 import { saveFormData } from "../../api/case.api";
 import UserGuidanceBanner from "../UserGuidanceBanner";
 
+function QaziMessageBanner({ adminNotes }) {
+  if (!adminNotes?.reasonForCorrection && !adminNotes?.guidanceForNextStep) return null;
+
+  return (
+    <div className="mb-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
+      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-700 mb-2">
+        Message from Qazi
+      </p>
+      {adminNotes.reasonForCorrection && (
+        <div className="mb-2">
+          <p className="text-[11px] font-semibold text-emerald-800">
+            Reason for correction
+          </p>
+          <p className="text-xs text-emerald-900 leading-relaxed">
+            {adminNotes.reasonForCorrection}
+          </p>
+        </div>
+      )}
+      {adminNotes.guidanceForNextStep && (
+        <div>
+          <p className="text-[11px] font-semibold text-emerald-800">
+            Guidance for next step
+          </p>
+          <p className="text-xs text-emerald-900 leading-relaxed">
+            {adminNotes.guidanceForNextStep}
+          </p>
+        </div>
+      )}
+      <p className="mt-3 text-[10px] text-emerald-700/80 italic">
+        Final decisions are issued by qualified Islamic authorities.
+      </p>
+    </div>
+  );
+}
+
 export default function TalaqForm({ caseData, onUpdated, isEditable = true }) {
   const effectiveCaseId = caseData?._id;
 
@@ -103,10 +138,13 @@ export default function TalaqForm({ caseData, onUpdated, isEditable = true }) {
 
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 sm:p-8 max-w-3xl mx-auto">
-      {/* Show banner if status requires it */}
-      {(caseData?.status === "NEEDS_CORRECTION" || 
-        caseData?.status === "APPROVED_FOR_CONTINUE" || 
-        caseData?.status === "UNDER_REVIEW" || 
+      {/* Structured guidance from Qazi */}
+      {caseData?.adminNotes && <QaziMessageBanner adminNotes={caseData.adminNotes} />}
+
+      {/* Show status-based helper text */}
+      {(caseData?.status === "NEEDS_CORRECTION" ||
+        caseData?.status === "APPROVED_FOR_CONTINUE" ||
+        caseData?.status === "UNDER_REVIEW" ||
         caseData?.status === "APPROVED") && (
         <UserGuidanceBanner status={caseData.status} caseData={caseData} />
       )}
@@ -120,7 +158,7 @@ export default function TalaqForm({ caseData, onUpdated, isEditable = true }) {
         </p>
         {isReadOnly && (
           <p className="text-xs text-amber-600 italic mt-2">
-            This form is currently read-only as your case is under review.
+            ✔ This step has been completed and is now 🔒 locked while the Qazi reviews your case.
           </p>
         )}
       </div>

@@ -9,6 +9,7 @@ import CaseSteps from "../components/CaseSteps";
 import CaseTimeline from "../components/CaseTimeline";
 import LoadingSpinner from "../components/LoadingSpinner";
 import MandatoryDarkhastForm from "../components/case-steps/MandatoryDarkhastForm";
+import UpcomingHearingCard from "../components/UpcomingHearingCard";
 
 
 const STEP_LABELS = {
@@ -179,24 +180,31 @@ export default function Dashboard() {
 
       {/* Greeting card */}
       {user && (
-        <div className="bg-gradient-to-r from-islamicGreen/90 to-emerald-700 text-white rounded-xl shadow-lg p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/15 flex items-center justify-center text-lg font-bold">
-              {(user.firstName || user.fullName || "U")[0]}
+        <div className="space-y-3">
+          <div className="bg-gradient-to-r from-islamicGreen/90 to-emerald-700 text-white rounded-xl shadow-lg p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/15 flex items-center justify-center text-lg font-bold">
+                {(user.firstName || user.fullName || "U")[0]}
+              </div>
+              <div>
+                <p className="text-sm sm:text-base font-semibold">
+                  {t("dashboard.greeting", { name: user.firstName || user.fullName || "" })}
+                </p>
+                <p className="text-xs sm:text-sm text-emerald-100">
+                  {t("dashboard.greetingSubtitle")}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm sm:text-base font-semibold">
-                {t("dashboard.greeting", { name: user.firstName || user.fullName || "" })}
-              </p>
-              <p className="text-xs sm:text-sm text-emerald-100">
-                {t("dashboard.greetingSubtitle")}
-              </p>
+            <div className="sm:ml-auto text-xs sm:text-sm text-emerald-100">
+              {t("dashboard.nextStep")}:{" "}
+              <span className="font-semibold text-white">{stats.nextStep}</span>
             </div>
           </div>
-          <div className="sm:ml-auto text-xs sm:text-sm text-emerald-100">
-            {t("dashboard.nextStep")}:{" "}
-            <span className="font-semibold text-white">{stats.nextStep}</span>
-          </div>
+
+          {/* Upcoming Hearing / Majlis card */}
+          {activeCase && (
+            <UpcomingHearingCard caseData={activeCase} />
+          )}
         </div>
       )}
 
@@ -270,22 +278,58 @@ export default function Dashboard() {
         <div className="lg:col-span-1 space-y-6">
           {/* Timeline component */}
           <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-gray-800 mb-1 flex items-center gap-2">
               <svg className="w-5 h-5 text-islamicGreen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              {t("dashboard.timelineTitle")}
+              Case Activity Timeline
             </h3>
-            <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
-              <TimelineItem label={t("dashboard.timeline.application")} day="Day 1" active={activeCase?.status === "DARKHAST_SUBMITTED"} />
-              <TimelineItem label={t("dashboard.timeline.review")} day="Day 2-3" active={activeCase?.status === "DARKHAST_APPROVED"} />
-              <TimelineItem label={t("dashboard.timeline.hearing")} day="Day 5-10" active={activeCase?.status === "NOTICE_SENT" || activeCase?.status === "HEARING_IN_PROGRESS"} />
-              <TimelineItem label={t("dashboard.timeline.arbitration")} day="Day 12" active={activeCase?.status === "ARBITRATION_IN_PROGRESS"} />
-              <TimelineItem label={t("dashboard.timeline.decision")} day="Day 15" active={activeCase?.status === "DECISION_PENDING"} />
-              <TimelineItem label={t("dashboard.timeline.certificate")} day="Day 30+" active={activeCase?.status === "DECISION_APPROVED" || activeCase?.status === "CASE_CLOSED"} />
+            <p className="text-[11px] text-gray-500 mb-4">
+              A simple history of how your case has moved, showing actions by you and the Qazi.
+            </p>
+
+            <div className="space-y-4 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
+              {(activeCase?.history || []).length === 0 && (
+                <p className="text-xs text-gray-500 italic pl-6">
+                  History will appear here as your case progresses.
+                </p>
+              )}
+
+              {(activeCase?.history || []).map((entry, idx) => {
+                const isLatest = idx === (activeCase.history.length - 1);
+                const actor =
+                  entry.changedBy === activeCase.createdBy
+                    ? "You"
+                    : "Qazi / Admin";
+
+                return (
+                  <div key={idx} className="flex items-start gap-4 relative z-10 pl-2">
+                    <div
+                      className={`w-[22px] h-[22px] rounded-full border-4 ${
+                        isLatest
+                          ? "bg-islamicGreen border-emerald-100 ring-2 ring-islamicGreen/20 shadow-lg"
+                          : "bg-white border-slate-200"
+                      } transition-all shrink-0`}
+                    />
+                    <div className="flex-1">
+                      <p className={`text-sm font-semibold ${isLatest ? "text-islamicGreen" : "text-gray-700"}`}>
+                        {entry.note || entry.status?.replace(/_/g, " ")}
+                      </p>
+                      <p className="text-[10px] uppercase font-black tracking-widest text-gray-400 mt-0.5">
+                        {actor} •{" "}
+                        {entry.timestamp
+                          ? new Date(entry.timestamp).toLocaleString()
+                          : ""}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <p className="mt-8 text-xs text-gray-400 italic leading-relaxed border-t pt-4">
-              <strong className="text-islamicGreen font-black mr-1">Islamic Guidance:</strong> {t("dashboard.timelineGuidance")}
+
+            <p className="mt-6 text-xs text-gray-400 italic leading-relaxed border-t pt-4">
+              <strong className="text-islamicGreen font-black mr-1">Islamic Disclaimer:</strong>
+              Final decisions are issued by qualified Islamic authorities.
             </p>
           </div>
 
@@ -354,18 +398,6 @@ export default function Dashboard() {
   );
 }
 
-
-function TimelineItem({ label, day, active }) {
-  return (
-    <div className={`flex items-start gap-4 relative z-10 ${active ? 'opacity-100Scale-105' : 'opacity-40'}`}>
-      <div className={`w-[22px] h-[22px] rounded-full border-4 ${active ? 'bg-islamicGreen border-emerald-100 ring-2 ring-islamicGreen/20 shadow-lg' : 'bg-white border-slate-200'} transition-all shrink-0`} />
-      <div className="flex-1">
-        <p className={`text-sm font-bold ${active ? 'text-islamicGreen' : 'text-gray-600'}`}>{label}</p>
-        <p className="text-[10px] uppercase font-black tracking-widest text-gray-400 mt-0.5">{day}</p>
-      </div>
-    </div>
-  );
-}
 
 function StatCard({ label, value, color, icon, accent = "from-gray-50 to-white" }) {
   const iconMap = {

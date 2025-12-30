@@ -65,6 +65,9 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
         }
     };
 
+    const [reasonForCorrection, setReasonForCorrection] = useState("");
+    const [guidanceForNextStep, setGuidanceForNextStep] = useState("");
+
     const handleSendBackForCorrection = async () => {
         if (!messageToApplicant.trim()) {
             if (!window.confirm("No message provided. Continue without sending a message to the applicant?")) {
@@ -76,7 +79,9 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
         setError("");
         try {
             const payload = {
-                adminMessage: messageToApplicant || "Your case has been returned for correction. Please review and update your form."
+                adminMessage: messageToApplicant || "Your case has been returned for correction. Please review and update your form.",
+                reasonForCorrection: reasonForCorrection || messageToApplicant,
+                guidanceForNextStep: guidanceForNextStep
             };
 
             await adminApi.sendBackForCorrection(caseData._id, payload);
@@ -99,7 +104,8 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
         setError("");
         try {
             const payload = {
-                adminMessage: messageToApplicant || "Your case has been reviewed. You may now continue with the next step."
+                adminMessage: messageToApplicant || "Your case has been reviewed. You may now continue with the next step.",
+                guidanceForNextStep: guidanceForNextStep || messageToApplicant
             };
 
             await adminApi.approveForContinue(caseData._id, payload);
@@ -507,6 +513,33 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                         <p className="text-[9px] text-emerald-600 italic">
                             This message will appear on the applicant's dashboard as a notification.
                         </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-emerald-100 mt-3">
+                            <div>
+                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">
+                                    Reason for Correction (Shown above form)
+                                </label>
+                                <textarea
+                                    placeholder="Explain briefly what needs to be corrected..."
+                                    value={reasonForCorrection}
+                                    onChange={e => setReasonForCorrection(e.target.value)}
+                                    className="w-full bg-white border-2 border-emerald-100 rounded-xl p-3 text-xs focus:border-islamicGreen outline-none transition-all placeholder:text-gray-300"
+                                    rows="2"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">
+                                    Guidance for Next Step (Shown above form)
+                                </label>
+                                <textarea
+                                    placeholder="Describe calmly what the applicant should do next..."
+                                    value={guidanceForNextStep}
+                                    onChange={e => setGuidanceForNextStep(e.target.value)}
+                                    className="w-full bg-white border-2 border-emerald-100 rounded-xl p-3 text-xs focus:border-islamicGreen outline-none transition-all placeholder:text-gray-300"
+                                    rows="2"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
