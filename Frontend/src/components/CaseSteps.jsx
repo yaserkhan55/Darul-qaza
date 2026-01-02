@@ -11,6 +11,7 @@ import HearingStep from "./case-steps/HearingStep";
 import ArbitrationStep from "./case-steps/ArbitrationStep";
 import FaislaView from "./case-steps/FaislaView";
 import UserGuidanceBanner from "./UserGuidanceBanner";
+import DocumentsSection from "./DocumentsSection";
 
 export default function CaseSteps({ caseData, onUpdated }) {
   if (!caseData) {
@@ -143,13 +144,16 @@ export default function CaseSteps({ caseData, onUpdated }) {
     <div className="w-full space-y-4">
       <StepProgress status={effectiveStatus} />
       {/* Show guidance banner for specific statuses */}
-      {(effectiveStatus === "NEEDS_CORRECTION" || 
-        effectiveStatus === "APPROVED_FOR_CONTINUE" || 
-        effectiveStatus === "UNDER_REVIEW" || 
+      {(effectiveStatus === "NEEDS_CORRECTION" ||
+        effectiveStatus === "APPROVED_FOR_CONTINUE" ||
+        effectiveStatus === "UNDER_REVIEW" ||
         effectiveStatus === "APPROVED") && (
-        <UserGuidanceBanner status={effectiveStatus} caseData={caseData} />
-      )}
+          <UserGuidanceBanner status={effectiveStatus} caseData={caseData} />
+        )}
       {renderStepComponent()}
+
+      {/* Documents Section - shown after Darkhast approval (driven by backend fileNumber) */}
+      <DocumentsSection caseData={caseData} mode="user" onUpdate={onUpdated} />
     </div>
   );
 }

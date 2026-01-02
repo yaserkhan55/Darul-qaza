@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import * as adminApi from "../api/admin.api";
+import DocumentsSection from "./DocumentsSection";
 
 export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
     const [actionLoading, setActionLoading] = useState(false);
@@ -174,19 +175,19 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
 
     // Get applicant name (check multiple fields)
     const getApplicantName = () => {
-        return caseData.darkhast?.firstPartyName || 
-               caseData.darkhast?.applicantName || 
-               caseData.darkhast?.husbandName || 
-               caseData.darkhast?.wifeName || 
-               "—";
+        return caseData.darkhast?.firstPartyName ||
+            caseData.darkhast?.applicantName ||
+            caseData.darkhast?.husbandName ||
+            caseData.darkhast?.wifeName ||
+            "—";
     };
 
     // Get respondent name (check multiple fields)
     const getRespondentName = () => {
-        return caseData.darkhast?.secondPartyName || 
-               caseData.darkhast?.respondentName || 
-               (caseData.type === "Talaq" ? caseData.darkhast?.wifeName : caseData.darkhast?.husbandName) ||
-               "—";
+        return caseData.darkhast?.secondPartyName ||
+            caseData.darkhast?.respondentName ||
+            (caseData.type === "Talaq" ? caseData.darkhast?.wifeName : caseData.darkhast?.husbandName) ||
+            "—";
     };
 
     const darkhast = caseData.darkhast || {};
@@ -469,60 +470,8 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                         </Section>
                     )}
 
-                    {/* AFFIDAVITS / DOCUMENTS */}
-                    {caseData.affidavits && (
-                        <Section title="📄 Documents & Affidavits">
-                            <div className="space-y-4">
-                                {caseData.affidavits.applicantAffidavit?.url && (
-                                    <DocumentItem
-                                        label="Applicant Affidavit"
-                                        url={caseData.affidavits.applicantAffidavit.url}
-                                        name={caseData.affidavits.applicantAffidavit.name || "Applicant Affidavit"}
-                                    />
-                                )}
-                                {caseData.affidavits.respondentAffidavit?.url && (
-                                    <DocumentItem
-                                        label="Respondent Affidavit"
-                                        url={caseData.affidavits.respondentAffidavit.url}
-                                        name={caseData.affidavits.respondentAffidavit.name || "Respondent Affidavit"}
-                                    />
-                                )}
-                                {caseData.affidavits.nikahnama?.url && (
-                                    <DocumentItem
-                                        label="Nikahnama"
-                                        url={caseData.affidavits.nikahnama.url}
-                                        name={caseData.affidavits.nikahnama.name || "Nikahnama"}
-                                    />
-                                )}
-                                {caseData.affidavits.idProof?.url && (
-                                    <DocumentItem
-                                        label="ID Proof"
-                                        url={caseData.affidavits.idProof.url}
-                                        name={caseData.affidavits.idProof.name || "ID Proof"}
-                                    />
-                                )}
-                                {caseData.affidavits.witnessAffidavits && caseData.affidavits.witnessAffidavits.length > 0 && (
-                                    <div>
-                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-2">
-                                            Witness Affidavits
-                                        </label>
-                                        <div className="space-y-2">
-                                            {caseData.affidavits.witnessAffidavits.map((witness, idx) => (
-                                                witness.url && (
-                                                    <DocumentItem
-                                                        key={idx}
-                                                        label={`Witness ${idx + 1} Affidavit`}
-                                                        url={witness.url}
-                                                        name={witness.name || `Witness ${idx + 1} Affidavit`}
-                                                    />
-                                                )
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </Section>
-                    )}
+                    {/* DOCUMENTS & AFFIDAVITS - Using shared component */}
+                    <DocumentsSection caseData={caseData} mode="admin" onUpdate={onUpdate} />
 
                     {/* ADMINISTRATIVE INFO */}
                     <Section title="🏛️ Administrative Information">
@@ -657,22 +606,22 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                     )}
 
                     {/* HEARING SCHEDULER BUTTON */}
-                    {(caseData.status === "FORM_COMPLETED" || 
-                      caseData.status === "RESOLUTION_FAILED" || 
-                      caseData.status === "UNDER_REVIEW" || 
-                      caseData.status === "APPROVED" ||
-                      caseData.status === "NOTICE_ISSUED" ||
-                      caseData.status === "HEARING_SCHEDULED") && (
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                            <button
-                                onClick={() => setShowHearingScheduler(!showHearingScheduler)}
-                                className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
-                            >
-                                <span className="text-xl">📅</span>
-                                {showHearingScheduler ? "Hide Hearing Scheduler" : "Schedule / Update Hearing"}
-                            </button>
-                        </div>
-                    )}
+                    {(caseData.status === "FORM_COMPLETED" ||
+                        caseData.status === "RESOLUTION_FAILED" ||
+                        caseData.status === "UNDER_REVIEW" ||
+                        caseData.status === "APPROVED" ||
+                        caseData.status === "NOTICE_ISSUED" ||
+                        caseData.status === "HEARING_SCHEDULED") && (
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                                <button
+                                    onClick={() => setShowHearingScheduler(!showHearingScheduler)}
+                                    className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <span className="text-xl">📅</span>
+                                    {showHearingScheduler ? "Hide Hearing Scheduler" : "Schedule / Update Hearing"}
+                                </button>
+                            </div>
+                        )}
 
                     {/* HEARING SCHEDULER FORM */}
                     {showHearingScheduler && (
@@ -686,7 +635,7 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                                     <input
                                         type="date"
                                         value={hearingData.hearingDate}
-                                        onChange={e => setHearingData({...hearingData, hearingDate: e.target.value})}
+                                        onChange={e => setHearingData({ ...hearingData, hearingDate: e.target.value })}
                                         className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
                                         required
                                     />
@@ -698,7 +647,7 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                                     <input
                                         type="time"
                                         value={hearingData.hearingTime}
-                                        onChange={e => setHearingData({...hearingData, hearingTime: e.target.value})}
+                                        onChange={e => setHearingData({ ...hearingData, hearingTime: e.target.value })}
                                         className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
                                         required
                                     />
@@ -709,7 +658,7 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                                     </label>
                                     <select
                                         value={hearingData.hearingMode}
-                                        onChange={e => setHearingData({...hearingData, hearingMode: e.target.value})}
+                                        onChange={e => setHearingData({ ...hearingData, hearingMode: e.target.value })}
                                         className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
                                         required
                                     >
@@ -724,7 +673,7 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                                     <input
                                         type="text"
                                         value={hearingData.locationOrLink}
-                                        onChange={e => setHearingData({...hearingData, locationOrLink: e.target.value})}
+                                        onChange={e => setHearingData({ ...hearingData, locationOrLink: e.target.value })}
                                         placeholder={hearingData.hearingMode === "ONLINE" ? "Meeting link (Zoom/Google Meet)" : "Physical address"}
                                         className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
                                     />
@@ -736,7 +685,7 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                                 </label>
                                 <textarea
                                     value={hearingData.hearingNotes}
-                                    onChange={e => setHearingData({...hearingData, hearingNotes: e.target.value})}
+                                    onChange={e => setHearingData({ ...hearingData, hearingNotes: e.target.value })}
                                     placeholder="Add any instructions or notes for the parties (e.g., bring witnesses, documents)..."
                                     className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
                                     rows="3"
@@ -761,13 +710,13 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                     )}
 
                     {/* Info message for other statuses */}
-                    {caseData.status !== "DARKHAST_SUBMITTED" && 
-                     caseData.status !== "FORM_COMPLETED" && 
-                     caseData.status !== "UNDER_REVIEW" && (
-                        <p className="text-center text-xs text-gray-500 mt-3 italic">
-                            Actions are available for cases with status "DARKHAST_SUBMITTED", "FORM_COMPLETED", or "UNDER_REVIEW"
-                        </p>
-                    )}
+                    {caseData.status !== "DARKHAST_SUBMITTED" &&
+                        caseData.status !== "FORM_COMPLETED" &&
+                        caseData.status !== "UNDER_REVIEW" && (
+                            <p className="text-center text-xs text-gray-500 mt-3 italic">
+                                Actions are available for cases with status "DARKHAST_SUBMITTED", "FORM_COMPLETED", or "UNDER_REVIEW"
+                            </p>
+                        )}
                 </div>
             </div>
 
@@ -832,8 +781,8 @@ function InfoField({ label, value, highlight = false }) {
                 {label}
             </label>
             <div className={`text-sm font-bold ${highlight
-                    ? 'text-islamicGreen bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200'
-                    : 'text-gray-900'
+                ? 'text-islamicGreen bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200'
+                : 'text-gray-900'
                 }`}>
                 {value || "—"}
             </div>
