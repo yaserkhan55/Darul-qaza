@@ -164,10 +164,9 @@ export default function DocumentsSection({ caseData, mode = "user", onUpdate }) 
     // If documents section should not be visible
     if (!visible) {
         return (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
-                <div className="text-3xl mb-3">📄</div>
-                <p className="text-amber-800 font-medium">
-                    {message || "Documents & affidavits will be enabled after application approval."}
+            <div className="text-center py-4 opacity-60">
+                <p className="text-sm text-gray-500 italic">
+                    {message || "Documents will be required after application approval."}
                 </p>
             </div>
         );
@@ -246,8 +245,8 @@ export default function DocumentsSection({ caseData, mode = "user", onUpdate }) 
                                             <>
                                                 {uploadAllowed && (!doc || doc.status === "REJECTED") && (
                                                     <label className={`cursor-pointer px-4 py-2 rounded-lg text-sm font-medium transition ${isUploading
-                                                            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                                                            : "bg-islamicGreen text-white hover:bg-emerald-700"
+                                                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                                                        : "bg-islamicGreen text-white hover:bg-emerald-700"
                                                         }`}>
                                                         {isUploading ? (
                                                             <span className="flex items-center gap-2">
