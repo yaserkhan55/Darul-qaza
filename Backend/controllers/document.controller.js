@@ -20,10 +20,15 @@ export const isDocumentsSectionVisible = (caseData) => {
     // 1. Case exists
     // 2. File Number is assigned (implies Darkhast Approved)
     // 3. Matter Type is selected
+    // 4. Status is NOT initial submission phase
     const hasFileNumber = caseData && caseData.fileNumber && caseData.fileNumber.trim() !== "";
     const hasMatterType = caseData && caseData.type && caseData.type.trim() !== "";
 
-    return hasFileNumber && hasMatterType;
+    // Explicitly ensure status is not SUBMITTED/REJECTED
+    // Valid statuses: DARKHAST_APPROVED, FORM_COMPLETED, UNDER_REVIEW, APPROVED, etc.
+    const isValidStatus = caseData.status !== "DARKHAST_SUBMITTED" && caseData.status !== "DARKHAST_REJECTED";
+
+    return hasFileNumber && hasMatterType && isValidStatus;
 };
 
 /**
