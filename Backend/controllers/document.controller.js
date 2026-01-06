@@ -1,8 +1,5 @@
-import CaseDocument, {
-    DOCUMENT_STATUSES,
-    DOCUMENT_TYPES_BY_CASE,
-    ALL_DOCUMENT_TYPES
-} from "../models/CaseDocument.model.js";
+import CaseDocument, { DOCUMENT_STATUSES } from "../models/CaseDocument.model.js";
+import { CASE_RULES, VALID_STATUSES_FOR_DOCS } from "../config/caseRules.js";
 import Case from "../models/Case.model.js";
 
 // Helper to get user ID from either Clerk (req.auth.userId) or Legacy (req.user.id)
@@ -20,13 +17,12 @@ export const isDocumentsSectionVisible = (caseData) => {
     // 1. Case exists
     // 2. File Number is assigned (implies Darkhast Approved)
     // 3. Matter Type is selected
-    // 4. Status is NOT initial submission phase
+    // 4. Status is NOT initial submission phase (Strict Check)
     const hasFileNumber = caseData && caseData.fileNumber && caseData.fileNumber.trim() !== "";
     const hasMatterType = caseData && caseData.type && caseData.type.trim() !== "";
 
-    // Explicitly ensure status is not SUBMITTED/REJECTED
-    // Valid statuses: DARKHAST_APPROVED, FORM_COMPLETED, UNDER_REVIEW, APPROVED, etc.
-    const isValidStatus = caseData.status !== "DARKHAST_SUBMITTED" && caseData.status !== "DARKHAST_REJECTED";
+    // Strict status check using centralized list
+    const isValidStatus = VALID_STATUSES_FOR_DOCS.includes(caseData.status);
 
     return hasFileNumber && hasMatterType && isValidStatus;
 };
@@ -63,7 +59,7 @@ export const getAllowedDocumentTypes = async (req, res) => {
         }
 
         const caseType = caseData.type;
-        const allowedTypes = DOCUMENT_TYPES_BY_CASE[caseType] || [];
+        const allowedTypes = CASE_RULES[caseType]?.requiredDocuments || [];
 
         return res.json({
             visible: true,
@@ -101,7 +97,7 @@ export const getDocumentsForCase = async (req, res) => {
 
         const documents = await CaseDocument.find({ caseId }).sort({ createdAt: -1 });
         const caseType = caseData.type;
-        const allowedTypes = DOCUMENT_TYPES_BY_CASE[caseType] || [];
+        const allowedTypes = CASE_RULES[caseType]?.requiredDocuments || [];
 
         return res.json({
             visible: true,
@@ -146,7 +142,7 @@ export const uploadDocument = async (req, res) => {
         }
 
         // Validate document type is allowed for this case type
-        const allowedTypes = DOCUMENT_TYPES_BY_CASE[caseData.type] || [];
+        const allowedTypes = CASE_RULES[caseData.type]?.requiredDocuments || [];
         if (!allowedTypes.includes(documentType)) {
             return res.status(400).json({
                 message: `Document type "${documentType}" is not allowed for ${caseData.type} cases.`

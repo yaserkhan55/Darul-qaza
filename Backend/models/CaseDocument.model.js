@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-// Document status constants
+import { ALL_DOCUMENT_TYPES } from "../config/caseRules.js";
+
 export const DOCUMENT_STATUSES = [
     "PENDING",      // Document type available but not uploaded
     "SUBMITTED",    // User uploaded, awaiting review
@@ -8,57 +9,8 @@ export const DOCUMENT_STATUSES = [
     "REJECTED"      // Admin rejected
 ];
 
-// Allowed document types per case type (court-style formal naming)
-export const DOCUMENT_TYPES_BY_CASE = {
-    "Talaq": [
-        "Applicant Affidavit (حلف نامہ)",
-        "Witness Affidavit (گواہ حلف نامہ)",
-        "Nikahnama Copy (نکاح نامہ)",
-        "CNIC/ID Proof"
-    ],
-    "Khula": [
-        "Applicant Affidavit (حلف نامہ)",
-        "Witness Affidavit (گواہ حلف نامہ)",
-        "Nikahnama Copy (نکاح نامہ)",
-        "CNIC/ID Proof"
-    ],
-    "Faskh-e-Nikah": [
-        "Applicant Affidavit (حلف نامہ)",
-        "Witness Affidavit (گواہ حلف نامہ)",
-        "Nikahnama Copy (نکاح نامہ)",
-        "Evidence Document (ثبوت)",
-        "CNIC/ID Proof"
-    ],
-    "Talaq-e-Zaujiyat": [
-        "Applicant Affidavit (حلف نامہ)",
-        "Witness Affidavit (گواہ حلف نامہ)",
-        "Nikahnama Copy (نکاح نامہ)",
-        "CNIC/ID Proof"
-    ],
-    "Virasat": [
-        "Applicant Affidavit (حلف نامہ)",
-        "Death Certificate (وفات سرٹیفکیٹ)",
-        "Inheritance Document (وراثت نامہ)",
-        "CNIC/ID Proof"
-    ],
-    "Zauj Nama Dispute": [
-        "Applicant Affidavit (حلف نامہ)",
-        "Witness Affidavit (گواہ حلف نامہ)",
-        "Nikahnama Copy (نکاح نامہ)",
-        "CNIC/ID Proof"
-    ]
-};
-
-// All unique document types
-export const ALL_DOCUMENT_TYPES = [
-    "Applicant Affidavit (حلف نامہ)",
-    "Witness Affidavit (گواہ حلف نامہ)",
-    "Nikahnama Copy (نکاح نامہ)",
-    "Evidence Document (ثبوت)",
-    "Death Certificate (وفات سرٹیفکیٹ)",
-    "Inheritance Document (وراثت نامہ)",
-    "CNIC/ID Proof"
-];
+// Re-export for compatibility if needed, but prefer using config directly
+export { ALL_DOCUMENT_TYPES };
 
 const caseDocumentSchema = new mongoose.Schema(
     {
