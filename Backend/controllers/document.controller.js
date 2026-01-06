@@ -16,7 +16,14 @@ const FINALIZED_STATUSES = ["CASE_CLOSED", "DECISION_APPROVED"];
  * Documents are only visible after Darkhast is approved (fileNumber is assigned)
  */
 export const isDocumentsSectionVisible = (caseData) => {
-    return caseData && caseData.fileNumber && caseData.fileNumber.trim() !== "";
+    // Requirements:
+    // 1. Case exists
+    // 2. File Number is assigned (implies Darkhast Approved)
+    // 3. Matter Type is selected
+    const hasFileNumber = caseData && caseData.fileNumber && caseData.fileNumber.trim() !== "";
+    const hasMatterType = caseData && caseData.type && caseData.type.trim() !== "";
+
+    return hasFileNumber && hasMatterType;
 };
 
 /**
@@ -56,6 +63,7 @@ export const getAllowedDocumentTypes = async (req, res) => {
         return res.json({
             visible: true,
             allowedTypes,
+            requiredDocuments: allowedTypes, // Alias for frontend clarity
             uploadAllowed: isUploadAllowed(caseData),
             caseType
         });
@@ -94,6 +102,7 @@ export const getDocumentsForCase = async (req, res) => {
             visible: true,
             documents,
             allowedTypes,
+            requiredDocuments: allowedTypes, // Alias for frontend clarity
             uploadAllowed: isUploadAllowed(caseData),
             caseType
         });
