@@ -161,7 +161,7 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
             setShowHearingScheduler(false);
             onUpdate && onUpdate();
         } catch (err) {
-            setError(err?.response?.data?.message || "Failed to schedule hearing.");
+            setError(err?.response?.data?.message || err?.response?.data?.error || "Failed to schedule hearing.");
         } finally {
             setActionLoading(false);
         }
