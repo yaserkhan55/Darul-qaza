@@ -365,12 +365,17 @@ export const issueNotice = async (req, res) => {
 export const scheduleHearing = async (req, res) => {
   try {
     const { id } = req.params;
-    const { hearingDate, hearingTime, hearingMode, hearingNotes } = req.body;
+    const { hearingDate, hearingTime, hearingMode, hearingNotes, locationOrLink } = req.body;
     const caseData = await Case.findById(id);
     if (!caseData) return res.status(404).json({ message: "Case not found" });
 
     if (!hearingDate || !hearingTime || !hearingMode) {
       return res.status(400).json({ message: "hearingDate, hearingTime, and hearingMode are required" });
+    }
+
+    const dateObj = new Date(hearingDate);
+    if (isNaN(dateObj.getTime())) {
+      return res.status(400).json({ message: "Invalid hearingDate format" });
     }
 
     if (!["ONLINE", "IN_PERSON"].includes(hearingMode)) {
@@ -379,10 +384,10 @@ export const scheduleHearing = async (req, res) => {
 
     // Update hearing object
     caseData.hearing = {
-      hearingDate: new Date(hearingDate),
+      hearingDate: dateObj,
       hearingTime,
       mode: hearingMode,
-      locationOrLink: req.body.locationOrLink || "",
+      locationOrLink: locationOrLink || "",
       notesByQazi: hearingNotes || "",
     };
 
@@ -398,14 +403,15 @@ export const scheduleHearing = async (req, res) => {
 
     await createNotification(
       caseData.createdBy,
-      `Hearing scheduled: ${new Date(hearingDate).toLocaleDateString()} at ${hearingTime} (${hearingMode})`,
+      `Hearing scheduled: ${dateObj.toLocaleDateString()} at ${hearingTime} (${hearingMode})`,
       "INFO",
       caseData._id
     );
 
     res.json(caseData);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Schedule Hearing Error:", err);
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 };
 
