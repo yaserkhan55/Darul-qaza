@@ -614,100 +614,16 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                         caseData.status === "HEARING_SCHEDULED") && (
                             <div className="mt-4 pt-4 border-t border-gray-200">
                                 <button
-                                    onClick={() => setShowHearingScheduler(!showHearingScheduler)}
+                                    onClick={() => setShowHearingScheduler(true)}
                                     className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
                                 >
                                     <span className="text-xl">📅</span>
-                                    {showHearingScheduler ? "Hide Hearing Scheduler" : "Schedule / Update Hearing"}
+                                    Schedule / Update Hearing
                                 </button>
                             </div>
                         )}
 
-                    {/* HEARING SCHEDULER FORM */}
-                    {showHearingScheduler && (
-                        <div className="mt-4 bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-6 space-y-4">
-                            <h3 className="text-lg font-bold text-indigo-900">Schedule Hearing / Majlis</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Hearing Date <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={hearingData.hearingDate}
-                                        onChange={e => setHearingData({ ...hearingData, hearingDate: e.target.value })}
-                                        className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Hearing Time <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="time"
-                                        value={hearingData.hearingTime}
-                                        onChange={e => setHearingData({ ...hearingData, hearingTime: e.target.value })}
-                                        className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Mode <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        value={hearingData.hearingMode}
-                                        onChange={e => setHearingData({ ...hearingData, hearingMode: e.target.value })}
-                                        className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
-                                        required
-                                    >
-                                        <option value="IN_PERSON">In-Person</option>
-                                        <option value="ONLINE">Online</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Location / Link
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={hearingData.locationOrLink}
-                                        onChange={e => setHearingData({ ...hearingData, locationOrLink: e.target.value })}
-                                        placeholder={hearingData.hearingMode === "ONLINE" ? "Meeting link (Zoom/Google Meet)" : "Physical address"}
-                                        className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Admin Notes / Instructions
-                                </label>
-                                <textarea
-                                    value={hearingData.hearingNotes}
-                                    onChange={e => setHearingData({ ...hearingData, hearingNotes: e.target.value })}
-                                    placeholder="Add any instructions or notes for the parties (e.g., bring witnesses, documents)..."
-                                    className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
-                                    rows="3"
-                                />
-                            </div>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={handleScheduleHearing}
-                                    disabled={actionLoading}
-                                    className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {actionLoading ? "Saving..." : "Save Hearing Details"}
-                                </button>
-                                <button
-                                    onClick={() => setShowHearingScheduler(false)}
-                                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 transition-all"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    )}
+
 
                     {/* Info message for other statuses */}
                     {caseData.status !== "DARKHAST_SUBMITTED" &&
@@ -719,6 +635,105 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
                         )}
                 </div>
             </div>
+
+            {/* HEARING SCHEDULER MODAL */}
+            {showHearingScheduler && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl p-8 max-w-2xl w-full shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-xl font-black text-indigo-900 uppercase tracking-tight">
+                                Schedule Hearing / Majlis
+                            </h3>
+                            <button
+                                onClick={() => setShowHearingScheduler(false)}
+                                className="text-gray-400 hover:text-gray-600"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Hearing Date <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    value={hearingData.hearingDate}
+                                    onChange={e => setHearingData({ ...hearingData, hearingDate: e.target.value })}
+                                    className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Hearing Time <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="time"
+                                    value={hearingData.hearingTime}
+                                    onChange={e => setHearingData({ ...hearingData, hearingTime: e.target.value })}
+                                    className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Mode <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={hearingData.hearingMode}
+                                    onChange={e => setHearingData({ ...hearingData, hearingMode: e.target.value })}
+                                    className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                                    required
+                                >
+                                    <option value="IN_PERSON">In-Person</option>
+                                    <option value="ONLINE">Online</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Location / Link
+                                </label>
+                                <input
+                                    type="text"
+                                    value={hearingData.locationOrLink}
+                                    onChange={e => setHearingData({ ...hearingData, locationOrLink: e.target.value })}
+                                    placeholder={hearingData.hearingMode === "ONLINE" ? "Meeting link (Zoom/Google Meet)" : "Physical address"}
+                                    className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Admin Notes / Instructions
+                            </label>
+                            <textarea
+                                value={hearingData.hearingNotes}
+                                onChange={e => setHearingData({ ...hearingData, hearingNotes: e.target.value })}
+                                placeholder="Add any instructions or notes for the parties (e.g., bring witnesses, documents)..."
+                                className="w-full bg-white border-2 border-indigo-100 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none"
+                                rows="3"
+                            />
+                        </div>
+                        <div className="flex gap-3 pt-4 border-t border-gray-100">
+                            <button
+                                onClick={() => setShowHearingScheduler(false)}
+                                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleScheduleHearing}
+                                disabled={actionLoading}
+                                className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-200"
+                            >
+                                {actionLoading ? "Saving..." : "Save Hearing Details"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* REJECT MODAL */}
             {showRejectModal && (
