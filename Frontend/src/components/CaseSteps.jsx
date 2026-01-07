@@ -152,6 +152,23 @@ export default function CaseSteps({ caseData, onUpdated }) {
         )}
       {renderStepComponent()}
 
+      {/* Persistent Hearing Banner: Show if hearing is scheduled but user is NOT on HearingStep (to avoid double render) */}
+      {caseData.hearing && caseData.hearing.hearingDate && effectiveStatus !== "HEARING_SCHEDULED" && effectiveStatus !== "HEARING_IN_PROGRESS" && effectiveStatus !== "HEARING_COMPLETED" && (
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="text-2xl">📅</div>
+            <div>
+              <h4 className="font-bold text-indigo-900 uppercase text-sm tracking-wide mb-1">Upcoming Hearing Scheduled</h4>
+              <p className="text-indigo-700 text-xs">
+                Date: <strong>{new Date(caseData.hearing.hearingDate).toLocaleDateString()}</strong> at <strong>{caseData.hearing.hearingTime}</strong>
+                <br />
+                Mode: {caseData.hearing.hearingMode === 'ONLINE' ? 'Online' : 'In-Person'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Documents Section - shown after Darkhast approval (driven by backend fileNumber) */}
       <DocumentsSection caseData={caseData} mode="user" onUpdate={onUpdated} />
     </div>
