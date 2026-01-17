@@ -1,0 +1,331 @@
+{
+  "welcome": "Welcome to Dar-ul-Qaza Digital Court",
+  "login": "Login / Register",
+  "logout": "Logout",
+  "common": {
+    "dashboard": "Dashboard",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "loading": "Securing data...",
+    "error": "An error occurred. Please try again.",
+    "cancel": "Cancel",
+    "submit": "Submit Application",
+    "save": "Save Progress",
+    "next": "Next Step",
+    "back": "Go Back",
+    "print": "Print Document",
+    "brandEnglish": "Darul Qaza",
+    "brandUrdu": "دار القضاء"
+  },
+  "home": {
+    "title": "Dar-ul-Qaza Muslim Personal Law Court",
+    "subtitle": "A Digital Portal for Shariah-Compliant Marital Dissolution & Judicial Records",
+    "startDivorceCase": "Start New Application",
+    "selectDivorceType": "Please select a matter to proceed",
+    "proceedWith": "Proceed with {{type}}",
+    "signInToStart": "Sign In to Start Case",
+    "trustTitle": "Official Judicial Oversight",
+    "trustText": "Our digital court ensures that all marital matters are handled with the highest degree of Shariah integrity and legal precision.",
+    "understandingTitle": "The Judicial Process",
+    "understandingText1": "DAR-UL-QAZA provides a structured framework for resolving marital disputes under Muslim Personal Law.",
+    "understandingText2": "From initial application to final Order Sheet, every step is documented and reviewed by qualified Islamic authorities.",
+    "understandingText3": "All decisions issued are digitally authenticated and legally recognized within the community framework.",
+    "processTitle": "Workflow Overview",
+    "documentsTitle": "Primary Documentation",
+    "needHelpTitle": "Need Assistance?",
+    "contactUs": "Contact Registry",
+    "contactUsDesc": "Reach out for help with filing your application.",
+    "emailSupport": "Official Email",
+    "steps": {
+      "application": {
+        "title": "Application",
+        "description": "Submission of formal Darkhast."
+      },
+      "resolution": {
+        "title": "Arbitration",
+        "description": "Compulsory Sulh/Reconciliation session."
+      },
+      "agreement": {
+        "title": "Settlement",
+        "description": "Finalizing terms and conditions."
+      },
+      "affidavits": {
+        "title": "Statements",
+        "description": "Official records of parties/witnesses."
+      },
+      "review": {
+        "title": "Qazi Review",
+        "description": "Judicial assessment of all records."
+      },
+      "certificate": {
+        "title": "Order Sheet",
+        "description": "Issuance of the final decision."
+      }
+    },
+    "documents": {
+      "title": "Document Verification",
+      "secureNote": "Your documents are securely stored and accessible only to authorized court officials.",
+      "labels": {
+        "applicant": "Applicant Statement (Bayan-e-Halafi)",
+        "respondent": "Respondent ID/Statement",
+        "witness": "Witness Statement (Gawah Affidavit)",
+        "nikahnama": "Marriage Certificate (Nikahnama)",
+        "idProof": "Identity Proof (Aadhar/CNIC)",
+        "evidence": "Supporting Evidence (Suboot)",
+        "deathCert": "Death Certificate",
+        "inheritanceDoc": "Inheritance Document"
+      },
+      "buttons": {
+        "addWitness": "Add Another Witness Statement"
+      },
+      "affidavits": {
+        "title": "Identities & Statements",
+        "items": {
+          "applicant": "Party Identification (CNIC)",
+          "witnesses": "Witness Affidavits",
+          "supporting": "Marriage Record (Nikahnama)"
+        }
+      },
+      "agreement": {
+        "title": "Dissolution Terms",
+        "items": {
+          "mahr": "Mahr Settlement Status",
+          "iddat": "Iddat Period Compliance",
+          "custody": "Guardianship/Custody Terms"
+        }
+      }
+    },
+    "divorceTypes": {
+      "talaq": {
+        "title": "Talaq",
+        "description": "Divorce initiated by Husband",
+        "details": "Formal registration of Talaq declarations as per Shariah."
+      },
+      "khula": {
+        "title": "Khula",
+        "description": "Divorce initiated by Wife",
+        "details": "Dissolution via mutual consent or judicial request."
+      },
+      "faskh": {
+        "title": "Faskh-e-Nikah",
+        "description": "Judicial Dissolution",
+        "details": "Dissolution ordered by Qazi based on valid grounds."
+      },
+      "zaujiyat": {
+        "title": "Talaq-e-Zaujiyat",
+        "description": "Zaujiyat Protocol",
+        "details": "Specialized divorce proceeding for specific marital cases."
+      },
+      "virasat": {
+        "title": "Virasat",
+        "description": "Inheritance Rights",
+        "details": "Resolution of disputes regarding inheritance and maintenance."
+      },
+      "zauj_nama": {
+        "title": "Zauj Nama",
+        "description": "Contract Dispute",
+        "details": "Verification and resolution of Nikahnama discrepancies."
+      }
+    }
+  },
+  "dashboard": {
+    "title": "My Judicial Cases",
+    "activeCase": "Active Case",
+    "startNew": "Start New Application",
+    "completed": "Completed Cases",
+    "unableToLoad": "Unable to load cases. Please check your connection.",
+    "messageModalClose": "Close Notification",
+    "greeting": "As-salamu alaykum, {{name}}",
+    "greetingSubtitle": "Welcome to your judicial portal.",
+    "nextStep": "Action Required",
+    "timelineTitle": "Estimated Timeline",
+    "timelineGuidance": "This process follows a structured Islamic approach to ensure fairness and reflection (Iddat), avoiding hasty decisions.",
+    "closedRecords": "Closed Records",
+    "activeCaseWarn": "Active Case in Progress",
+    "activeCaseWarnDesc": "You must complete or close your current case before starting a new one.",
+    "resumeCase": "Resume Case",
+    "noActiveCase": "No Active Records",
+    "noActiveCaseDesc": "Select a case type above to begin your application.",
+    "timeline": {
+      "application": "Application",
+      "review": "Review",
+      "hearing": "Hearing",
+      "arbitration": "Arbitration",
+      "decision": "Decision",
+      "certificate": "Certificate"
+    }
+  },
+  "auth": {
+    "required": "Authentication required to access court records."
+  },
+  "caseTypes": {
+    "Talaq": {
+      "name": "Talaq (Divorce by Husband)",
+      "description": "Formalizing divorce initiated by the husband."
+    },
+    "Khula": {
+      "name": "Khula (Divorce by Wife)",
+      "description": "Dissolution of marriage through mutual agreement/wife's request."
+    },
+    "Faskh-e-Nikah": {
+      "name": "Faskh-e-Nikah (Judicial Dissolution)",
+      "description": "Dissolution of marriage by order of the Qazi based on valid grounds."
+    },
+    "Talaq-e-Zaujiyat": {
+      "name": "Talaq-e-Zaujiyat",
+      "description": "Specific divorce proceeding handled via Shariah protocols."
+    },
+    "Virasat": {
+      "name": "Virasat",
+      "description": "Judicial matter relating to inheritance rights and formal proceedings."
+    },
+    "Zauj Nama Dispute": {
+      "name": "Zauj Nama Dispute",
+      "description": "Resolution of disputes related to marital documentation."
+    }
+  },
+  "form": {
+    "submitDarkhast": "Submit Official Darkhast",
+    "personalDetails": "Personal Details / متعلقہ کوائف",
+    "marriageDetails": "Marriage Details / نکاح کی تفصیلات",
+    "sections": {
+      "talaq": "Talaq Declaration Details",
+      "khula": "Khula Request Details",
+      "faskh": "Faskh-e-Nikah Grounds",
+      "virasat": "Inheritance & Virasat",
+      "zaujnama": "Nikahnama Discrepancy",
+      "darkhastDate": "Date",
+      "firstParty": "First Party (Applicant)",
+      "secondParty": "Second Party (Respondent)",
+      "mandatoryNotice": "Important Notice",
+      "mandatoryMessage": "The Darkhast (Request Application) is a mandatory prerequisite. Kindly complete this form to proceed with your case submission."
+    },
+    "fields": {
+      "applicantName": "Full Name (Applicant)",
+      "fatherGuardianName": "Father / Guardian Name",
+      "cnic": "CNIC Number",
+      "address": "Residential Address",
+      "respondentName": "Respondent Name",
+      "respondentFatherName": "Respondent's Father Name",
+      "respondentAddress": "Respondent's Address",
+      "nikahDate": "Date of Nikah",
+      "nikahPlace": "Place of Nikah",
+      "natureOfDispute": "Nature of Dispute / نوعیتِ تنازع",
+      "reliefRequested": "Relief Requested",
+      "statement": "Detailed Statement / تحریری بیان",
+      "talaqDate": "Date of Pronouncement",
+      "talaqCount": "Number of Talaqs Pronounced",
+      "mahrStatus": "Mahr Status (Paid/Unpaid)",
+      "khulaReason": "Primary Reason for Khula",
+      "mahrReturn": "Agreement to Return Mahr",
+      "maintenanceAmount": "Maintenance Due (if any)",
+      "residenceStatus": "Current Living Status",
+      "nikahRegNo": "Nikah Registration No.",
+      "correctionRequired": "Correction Required in Nikahnama",
+      "date": "Date",
+      "firstPartyName": "Name",
+      "firstPartyFatherName": "Father / Guardian Name",
+      "firstPartyResidence": "Residence",
+      "firstPartyDistrict": "District",
+      "secondPartyName": "Name",
+      "secondPartyFatherName": "Father Name",
+      "secondPartyResidence": "Residence",
+      "secondPartyDistrict": "District"
+    },
+    "faskh": {
+      "grounds": "Shariah Grounds for Faskh",
+      "husbandMissing": "Husband missing for 4+ years",
+      "noMaintenance": "Non-provision of maintenance (2+ years)",
+      "cruelty": "Habitual cruelty / ill-treatment",
+      "impotence": "Husband's impotence",
+      "longAbsence": "Long absence without valid cause",
+      "other": "Other valid Shariah reason"
+    },
+    "errors": {
+      "required": "This field is mandatory.",
+      "evidence": "Mandatory: Evidence documentation required for Faskh cases.",
+      "witnesses": "Minimum 1 witness required"
+    }
+  },
+  "status": {
+    "DARKHAST_SUBMITTED": "Darkhast Submitted",
+    "DARKHAST_APPROVED": "Under Review",
+    "DARKHAST_REJECTED": "Needs Correction",
+    "NOTICE_SENT": "Notice Issued",
+    "NOTICE_ISSUED": "Notice Issued",
+    "HEARING_SCHEDULED": "Hearing Scheduled",
+    "HEARING_IN_PROGRESS": "Hearing in Progress",
+    "HEARING_COMPLETED": "Hearing Concluded",
+    "ARBITRATION_IN_PROGRESS": "Arbitration (Sulh)",
+    "DECISION_PENDING": "Decision Pending",
+    "DECISION_APPROVED": "Final Order Issued",
+    "CASE_CLOSED": "Record Closed"
+  },
+  "admin": {
+    "actions": {
+      "approve": "Approve Darkhast",
+      "reject": "Reject Application",
+      "sendBack": "Send for Correction"
+    }
+  },
+  "notice": {
+    "title": "Court Notice",
+    "courtName": "Dar-ul-Qaza Muslim Personal Law Court",
+    "body": "By order of the Qazi, a notice is hereby issued in the case of {{type}}. The parties are directed to appear before this court for the scheduled hearing as stated below.",
+    "schedule": "Hearing Schedule",
+    "venue": "Venue",
+    "venueDetails": "Dar-ul-Qaza Nanded • Main Court Room",
+    "instructions": "Qazi's Instructions",
+    "issued": "Issued",
+    "authenticated": "Digital Court Authenticated",
+    "awaiting": "Awaiting Notice from Qazi"
+  },
+  "hearing": {
+    "title": "Official Hearing Records",
+    "subtitle": "Dar-ul-Qaza Court Certified Digital Record",
+    "inProgress": "Hearing in Progress",
+    "waitingRecords": "Waiting for official records to be uploaded by the court clerk.",
+    "session": "Hearing Session",
+    "sessionDate": "Session Date",
+    "attendance": "Attendance Form (Hazri)",
+    "statements": "Hearing Statements",
+    "qaziNotes": "Judicial Notes (Qazi)",
+    "present": "PRESENT",
+    "absent": "ABSENT",
+    "noStatement": "No statement recorded."
+  },
+  "arbitration": {
+    "title": "Compulsory Arbitration (Sulh)",
+    "subtitle": "Mandatory reconciliation attempt as required by Shariah Law.",
+    "reconciled": "Reconciled Amicably",
+    "failed": "Reconciliation Failed",
+    "success": "The parties have mutually agreed to reconcile. The case has been closed as successful Sulh."
+  },
+  "faisla": {
+    "title": "Order Sheet",
+    "subtitle": "Official Judicial Record • Dar-ul-Qaza Nanded",
+    "caseNumber": "Case Number",
+    "matter": "Marriage Matter",
+    "date": "Date of Faisla",
+    "registry": "Registry Ref",
+    "judgment": "Final Judgment",
+    "qaziSignature": "Official Qazi Signature",
+    "seal": "Seal of Dar-ul-Qaza",
+    "awaiting": "Awaiting Final Decision",
+    "downloadTitle": "Download Certificate",
+    "downloadText": "Your final judgment has been formalized. You may now download your Shariah-compliant divorce certificate.",
+    "downloadButton": "Get PDF Certificate"
+  },
+  "footer": {
+    "jurisdiction": "Jurisdiction & Legality",
+    "jurisdictionText": "Dar-ul-Qaza operates within the framework of Muslim Personal Law (Shariat) Application Act. Decisions are binding within the community consensus and provide a documented basis for civil legal recognition where applicable.",
+    "links": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
+      "contact": "Contact Registry",
+      "about": "About the Court"
+    },
+    "address": "Dar-ul-Qaza Central Registry, Nanded, Maharashtra, India",
+    "copyright": "© {{year}} Dar-ul-Qaza Digital Portal. All rights reserved."
+  }
+}
