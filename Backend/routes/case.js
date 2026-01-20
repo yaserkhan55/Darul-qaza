@@ -14,6 +14,13 @@ import {
   closeCase,
   getMyCases,
   getAllCases,
+  saveFormData,
+  saveResolution,
+  saveAffidavits,
+  scheduleHearing,
+  sendBackForCorrection,
+  approveForContinue,
+  getDraft,
 } from "../controllers/case.js";
 import { generateCertificatePDF } from "../controllers/pdf.js";
 import { protect } from "../middlewares/auth.js";
@@ -33,7 +40,11 @@ router.use(protect);
 
 router.post("/darkhast", createCaseLimiter, submitDarkhast);
 router.put("/:id/select-type", selectCaseType);
+router.put("/:id/save-form", saveFormData);
+router.put("/:id/save-resolution", saveResolution);
+router.put("/:id/save-affidavits", saveAffidavits);
 router.get("/my", getMyCases);
+router.get("/:id/draft", getDraft);
 router.get("/:id/certificate/pdf", generateCertificatePDF);
 
 // ADMIN / QAZI ROUTES
@@ -41,7 +52,10 @@ router.get("/admin/all", getAllCases);
 router.put("/:id/approve-darkhast", approveDarkhast);
 router.put("/:id/reject-darkhast", rejectDarkhast);
 router.put("/:id/issue-notice", issueNotice);
+router.put("/:id/schedule-hearing", scheduleHearing);
 router.put("/:id/start-hearing", startHearing);
+router.put("/:id/send-back", sendBackForCorrection);
+router.put("/:id/approve-continue", approveForContinue);
 router.put("/:id/record-attendance", recordAttendance);
 router.put("/:id/record-statement", recordStatement);
 router.put("/:id/record-arbitration", recordArbitration);
