@@ -327,5 +327,13 @@
     },
     "address": "Dar-ul-Qaza Central Registry, Nanded, Maharashtra, India",
     "copyright": "© {{year}} Dar-ul-Qaza Digital Portal. All rights reserved."
+  },
+  "signIn": {
+    "title": "Sign In to Darul Qaza",
+    "subtitle": "Access your judicial portal and manage your cases"
+  },
+  "signUp": {
+    "title": "Create an Account",
+    "subtitle": "Register to start your official judicial application"
   }
 }
