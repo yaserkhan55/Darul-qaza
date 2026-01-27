@@ -620,6 +620,29 @@ export default function AdminCaseReview({ caseData, onClose, onUpdate }) {
 
                 {/* ACTION CONTROLS - Fixed at Bottom */}
                 <div className="bg-gray-50 border-t-2 border-gray-200 px-8 py-6 shrink-0">
+                    {/* Stage Clarification Info */}
+                    <div className="mb-6 p-4 bg-white border border-gray-200 rounded-2xl shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <div className={`w-2 h-10 rounded-full ${caseData.status === "DARKHAST_SUBMITTED" ? "bg-blue-500" :
+                                    ["FORM_COMPLETED", "UNDER_REVIEW"].includes(caseData.status) ? "bg-amber-500" :
+                                        "bg-emerald-500"
+                                }`}></div>
+                            <div>
+                                <h4 className="text-xs font-black uppercase tracking-widest text-gray-500">Current Process Stage</h4>
+                                <p className="text-sm font-bold text-gray-800">
+                                    {caseData.status === "DARKHAST_SUBMITTED" && "APPLICATION STAGE: Reviewing identity and basic eligibility."}
+                                    {caseData.status === "FORM_COMPLETED" && "VERIFICATION STAGE: Reviewing detailed marital history and declarations."}
+                                    {caseData.status === "UNDER_REVIEW" && "FINAL REVIEW: verifying affidavits before legal process (Notice/Hearing)."}
+                                    {!["DARKHAST_SUBMITTED", "FORM_COMPLETED", "UNDER_REVIEW"].includes(caseData.status) && "PROCESS STAGE: Case is moving through Hearing/Arbitration."}
+                                </p>
+                                <p className="text-[10px] text-gray-400 mt-0.5">
+                                    {caseData.status === "DARKHAST_SUBMITTED" && "Action 'Approve' here will ACCEPT the application and open a formal file."}
+                                    {["FORM_COMPLETED", "UNDER_REVIEW"].includes(caseData.status) && "Action 'Approve' here VERIFIES the full case as legally ready."}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Actions for DARKHAST_SUBMITTED */}
                     {caseData.status === "DARKHAST_SUBMITTED" && (
                         <div className="flex flex-col md:flex-row gap-4">
