@@ -195,9 +195,16 @@ export default function Dashboard() {
                 </p>
               </div>
             </div>
-            <div className="sm:ml-auto text-xs sm:text-sm text-emerald-100">
-              {t("dashboard.nextStep")}:{" "}
-              <span className="font-semibold text-white">{stats.nextStep}</span>
+            <div className="sm:ml-auto text-xs sm:text-sm text-emerald-100 flex flex-col items-end">
+              <div>
+                {t("dashboard.nextStep")}:{" "}
+                <span className="font-semibold text-white">{stats.nextStep}</span>
+              </div>
+              {activeCase?.fileNumber && (
+                <div className="mt-1 bg-white/20 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest text-white border border-white/30">
+                  File No: {activeCase.fileNumber}
+                </div>
+              )}
             </div>
           </div>
 
@@ -251,16 +258,20 @@ export default function Dashboard() {
                     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                   }, 100);
                 }}
-                className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  activeCase?._id === c._id
+                className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${activeCase?._id === c._id
                     ? "bg-emerald-50 border-islamicGreen shadow-md"
                     : "border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/30"
-                }`}
+                  }`}
               >
                 <div className="flex justify-between items-start gap-4">
                   <div>
                     <span className="font-bold text-gray-900 block mb-1">{c.type || "Case"}</span>
-                    <span className="text-xs text-gray-500 font-mono">{c.displayId || c.caseId}</span>
+                    <span className="text-xs text-gray-500 font-mono">App ID: {c.displayId || c.caseId}</span>
+                    {c.fileNumber && (
+                      <span className="text-[10px] font-black text-islamicGreen bg-emerald-50 px-1.5 py-0.5 rounded ml-2 border border-emerald-100 uppercase tracking-tighter">
+                        File: {c.fileNumber}
+                      </span>
+                    )}
                     <span className="text-xs text-gray-400 block mt-1">
                       {new Date(c.createdAt).toLocaleDateString()}
                     </span>
@@ -305,11 +316,10 @@ export default function Dashboard() {
                 return (
                   <div key={idx} className="flex items-start gap-4 relative z-10 pl-2">
                     <div
-                      className={`w-[22px] h-[22px] rounded-full border-4 ${
-                        isLatest
+                      className={`w-[22px] h-[22px] rounded-full border-4 ${isLatest
                           ? "bg-islamicGreen border-emerald-100 ring-2 ring-islamicGreen/20 shadow-lg"
                           : "bg-white border-slate-200"
-                      } transition-all shrink-0`}
+                        } transition-all shrink-0`}
                     />
                     <div className="flex-1">
                       <p className={`text-sm font-semibold ${isLatest ? "text-islamicGreen" : "text-gray-700"}`}>

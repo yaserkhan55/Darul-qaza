@@ -142,6 +142,20 @@ export default function CaseSteps({ caseData, onUpdated }) {
 
   return (
     <div className="w-full space-y-4">
+      {/* Case Header Info */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
+        <div className="flex flex-col">
+          <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Application Number</span>
+          <span className="text-sm font-bold text-gray-700 font-mono">{caseData.displayId || caseData.caseId}</span>
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">File Number</span>
+          <span className={`text-sm font-bold font-mono ${caseData.fileNumber ? 'text-islamicGreen' : 'text-amber-500 italic'}`}>
+            {caseData.fileNumber || "Generated after approval"}
+          </span>
+        </div>
+      </div>
+
       <StepProgress status={effectiveStatus} />
       {/* Show guidance banner for specific statuses */}
       {(effectiveStatus === "NEEDS_CORRECTION" ||
