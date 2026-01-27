@@ -236,6 +236,12 @@ const caseSchema = new mongoose.Schema(
       decisionBy: String,
       decisionAt: Date
     },
+    approvedAt: {
+      type: Date,
+    },
+    approvedBy: {
+      type: String,
+    },
     history: {
       type: [historyEntrySchema],
       default: [],

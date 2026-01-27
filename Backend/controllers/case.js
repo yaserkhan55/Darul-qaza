@@ -1,5 +1,6 @@
 import Case, { CASE_STATUSES, CASE_TYPES } from "../models/case.js";
 import Message from "../models/message.js";
+import { assignFileNumberToUser } from "../services/fileNumberService.js";
 
 // Helper to get user ID from either Clerk (req.auth.userId) or Legacy (req.user.id)
 const getUserId = (req) => req.auth?.userId || req.user?.id || req.body.createdBy || "anonymous";
@@ -111,10 +112,21 @@ export const approveDarkhast = async (req, res) => {
     const previousStatus = caseData.status;
     caseData.status = "DARKHAST_APPROVED";
 
-    // Auto-generate File Number on approval (format: sequentialId/year)
-    if (!caseData.fileNumber) {
-      caseData.fileNumber = `${caseData.sequentialId}/${caseData.year}`;
+    // Use centralized service to get or generate the unique File Number
+    // This ensures one user has only one file number across all cases.
+    try {
+      caseData.fileNumber = await assignFileNumberToUser(caseData.createdBy);
+    } catch (assignError) {
+      console.error("File Number Assignment Error:", assignError);
+      // Fallback to legacy format if service fails, to avoid blocking approval
+      if (!caseData.fileNumber) {
+        caseData.fileNumber = `${caseData.sequentialId}/${caseData.year}`;
+      }
     }
+
+    // Tracking approval metadata
+    caseData.approvedAt = new Date();
+    caseData.approvedBy = getUserId(req);
 
     // Store decision comment
     caseData.decisionComment = {

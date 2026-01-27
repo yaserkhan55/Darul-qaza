@@ -11,6 +11,12 @@ const userSchema = new mongoose.Schema(
       enum: ["USER", "ADMIN", "QAZI"],
       default: "USER",
     },
+    fileNumber: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows multiple null values
+      default: null,
+    },
   },
   { timestamps: true }
 );
